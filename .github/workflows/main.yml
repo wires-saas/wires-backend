@@ -1,4 +1,4 @@
-name: tests & build & deploy
+name: Build, lint, test and push
 
 on:
   push:
@@ -9,8 +9,8 @@ jobs:
   push:
     env:
       WEBHOOK_ENDPOINT: https://example.org/webhook
-      DOCKER_REPO: tmp-028157
-      DOCKER_IMAGE: backend
+      DOCKER_REPO: wiresantoine
+      DOCKER_IMAGE: saas-factory
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,9 +22,17 @@ jobs:
       - name: Echo environment variable
         run: echo $WEBHOOK_ENDPOINT
 
-      - name: Check NPM version
-        run: |
-          npm run version
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint with ESLint
+        run: npm run lint
+
+      - name: Run tests with Jest
+        run: npm run test
+
+      - name: Compile Typescript
+        run: npm run build
 
       - name: Docker Tags and Pull
         run: |
@@ -34,5 +42,5 @@ jobs:
       - name: Tag latest
         run: docker tag ${DOCKER_REPO}/${DOCKER_IMAGE}:latest
 
-      # - name: Docker push
-      #  run: docker push -a ${IMAGE_ID}
+      - name: Docker push
+        run: docker push -a ${DOCKER_REPO}/${DOCKER_IMAGE}
