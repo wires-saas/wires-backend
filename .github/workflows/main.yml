@@ -1,0 +1,38 @@
+name: tests & build & deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  push:
+    env:
+      WEBHOOK_ENDPOINT: https://example.org/webhook
+      DOCKER_REPO: tmp-028157
+      DOCKER_IMAGE: backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '20.9.0'
+
+      - name: Echo environment variable
+        run: echo $WEBHOOK_ENDPOINT
+
+      - name: Check NPM version
+        run: |
+          npm run version
+
+      - name: Docker Tags and Pull
+        run: |
+          docker pull ${DOCKER_REPO}/${DOCKER_IMAGE} || true
+          docker build --cache-from ${DOCKER_REPO}/${DOCKER_IMAGE} -t ${DOCKER_REPO}/${DOCKER_IMAGE}:${GITHUB_SHA} .
+
+      - name: Tag latest
+        run: docker tag ${DOCKER_REPO}/${DOCKER_IMAGE}:latest
+
+      # - name: Docker push
+      #  run: docker push -a ${IMAGE_ID}
