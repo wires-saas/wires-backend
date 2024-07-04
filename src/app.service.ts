@@ -7,6 +7,6 @@ export class AppService {
   }
 
   getVersion(): string {
-    return '1.0';
+    return '1.0.1';
   }
 }
