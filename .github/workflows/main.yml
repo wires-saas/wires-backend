@@ -32,10 +32,25 @@ jobs:
       - name: Compile Typescript
         run: npm run build
 
+      - uses: actions/upload-artifact@master
+        with:
+          name: backend-dist
+          path: dist
+
   docker:
     needs: package
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/download-artifact@master
+        with:
+          name: backend-dist
+          path: dist
+
+      - name: List available files
+        run: |
+          ls -l dist
+          ls -l
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
