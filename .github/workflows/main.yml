@@ -33,6 +33,7 @@ jobs:
         run: npm run build
 
   docker:
+    needs: package
     runs-on: ubuntu-latest
     steps:
       - name: Set up QEMU
