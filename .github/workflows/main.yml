@@ -7,18 +7,15 @@ on:
 
 jobs:
   package:
-    env:
-      WEBHOOK_ENDPOINT: https://example.org/webhook
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          node-version: 20
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '20.9.0'
-
-      - name: Echo environment variable
-        run: echo $WEBHOOK_ENDPOINT
+          node-version: 20
 
       - name: Install dependencies
         run: npm install
@@ -47,6 +44,7 @@ jobs:
       # This will check out only the Dockerfile
       - uses: actions/checkout@v4
         with:
+          node-version: 20
           sparse-checkout: |
             Dockerfile
           sparse-checkout-cone-mode: false
@@ -60,7 +58,6 @@ jobs:
       - name: List available files
         run: |
           ls -l
-          ls -l dist
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
