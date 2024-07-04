@@ -9,8 +9,6 @@ jobs:
   package:
     env:
       WEBHOOK_ENDPOINT: https://example.org/webhook
-      DOCKER_REPO: wiresantoine
-      DOCKER_IMAGE: saas-factory
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,4 +49,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${DOCKER_REPO}/${DOCKER_IMAGE}:${GITHUB_SHA}
+          image: wiresantoine/saas-factory
+          tags: latest
