@@ -32,6 +32,9 @@ jobs:
       - name: Compile Typescript
         run: npm run build
 
+  docker:
+    runs-on: ubuntu-latest
+    steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
