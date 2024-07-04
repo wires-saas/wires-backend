@@ -32,10 +32,12 @@ jobs:
       - name: Compile Typescript
         run: npm run build
 
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v4
         with:
-          name: backend-dist
-          path: dist
+          name: backend
+          path: |
+            dist
+            node_modules
 
   docker:
     needs: package
@@ -50,10 +52,10 @@ jobs:
           sparse-checkout-cone-mode: false
 
       # Must be after checkout to not be erased by it
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
-          name: backend-dist
-          path: dist
+          name: backend
+          path: .
 
       - name: List available files
         run: |
