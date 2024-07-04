@@ -37,11 +37,6 @@ jobs:
           name: backend-dist
           path: dist
 
-      - uses: actions/upload-artifact@master
-        with:
-          name: backend-dockerfile
-          path: Dockerfile
-
   docker:
     needs: package
     runs-on: ubuntu-latest
@@ -51,10 +46,11 @@ jobs:
           name: backend-dist
           path: dist
 
-      - uses: actions/download-artifact@master
+      - uses: actions/checkout@v4
         with:
-          name: backend-dockerfile
-          path: Dockerfile
+          sparse-checkout: |
+            Dockerfile
+          sparse-checkout-cone-mode: false
 
       - name: List available files
         run: |
