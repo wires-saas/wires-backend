@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  push:
+  package:
     env:
       WEBHOOK_ENDPOINT: https://example.org/webhook
       DOCKER_REPO: wiresantoine
@@ -37,10 +37,7 @@ jobs:
       - name: Docker Tags and Pull
         run: |
           docker pull ${DOCKER_REPO}/${DOCKER_IMAGE} || true
-          docker build --cache-from ${DOCKER_REPO}/${DOCKER_IMAGE} -t ${DOCKER_REPO}/${DOCKER_IMAGE}:${GITHUB_SHA} .
-
-      - name: Tag latest
-        run: docker tag ${DOCKER_REPO}/${DOCKER_IMAGE}:latest
+          docker build --cache-from ${DOCKER_REPO}/${DOCKER_IMAGE} -t ${DOCKER_REPO}/${DOCKER_IMAGE}:${GITHUB_SHA} -t ${DOCKER_REPO}/${DOCKER_IMAGE}:latest .
 
       - name: Docker push
         run: docker push -a ${DOCKER_REPO}/${DOCKER_IMAGE}
