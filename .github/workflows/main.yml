@@ -59,12 +59,14 @@ jobs:
           tags: wiresantoine/saas-factory:latest
 
       - name: Check if commit contains release
+        id: check_release
         uses: gsactions/commit-message-checker@v2
         with:
           pattern: '^release\:.+$'
           flags: 'gm'
           error: 'We expect a release message to be in the format "release: <version>"'
+        continue-on-error: true
 
       - name: Deploy on release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: steps.check_release.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: curl --fail -XGET "${DEPLOY_WEBHOOK_URL}?app=saas-factory&version=${GITHUB_SHA}"
