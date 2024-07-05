@@ -8,6 +8,8 @@ on:
 jobs:
   package:
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -55,3 +57,17 @@ jobs:
           context: .
           push: true
           tags: wiresantoine/saas-factory:latest
+
+      - name: Echo commit message
+        run: echo ${{ github.event.head_commit.message }}
+
+      - name: Check if commit contains release
+        uses: gsactions/commit-message-checker@v2
+        with:
+          pattern: '\release\:.+$'
+          flags: 'gm'
+          error: 'We expect a release message to be in the format "release: <message>"'
+
+      - name: Deploy on release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: curl --fail -XGET "${DEPLOY_WEBHOOK_URL}?app=saas-factory&version=${GITHUB_SHA}"

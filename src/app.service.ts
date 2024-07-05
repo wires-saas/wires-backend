@@ -7,6 +7,6 @@ export class AppService {
   }
 
   getVersion(): string {
-    return '1.0.6-cache-node_modules';
+    return '1.0.7-webhook';
   }
 }
