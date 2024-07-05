@@ -58,9 +58,6 @@ jobs:
           push: true
           tags: wiresantoine/saas-factory:latest
 
-      - name: Echo commit message
-        run: echo ${{ github.event.head_commit.message }}
-
       - name: Check if commit contains release
         uses: gsactions/commit-message-checker@v2
         with:
