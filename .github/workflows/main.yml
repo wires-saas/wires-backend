@@ -21,18 +21,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: .
+          path: ./node_modules
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          # key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-
-
-      - name: Echo current location
-        run: pwd
-
-      - name: Echo files
-        run: |
-          ls -l
 
       - name: Generate node modules if cache miss
         if: steps.cache_node_modules.outputs.cache-hit != 'true'
@@ -46,10 +36,6 @@ jobs:
 
       - name: Compile Typescript
         run: npm run build
-
-      - name: Echo files
-        run: |
-          ls -l
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
