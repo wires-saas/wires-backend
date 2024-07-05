@@ -7,6 +7,6 @@ export class AppService {
   }
 
   getVersion(): string {
-    return '1.0.7-webhook';
+    return '1.0.8-release';
   }
 }
