@@ -70,6 +70,4 @@ jobs:
       - name: Deploy on release
         if: steps.check_release.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          curl --fail
-          \ -H "Authorization: ${DEPLOY_WEBHOOK_TOKEN}"
-          \ -XGET "${DEPLOY_WEBHOOK_URL}?app=saas-factory&version=${GITHUB_SHA}"
+          curl --fail -H "Authorization: ${DEPLOY_WEBHOOK_TOKEN}" -XGET "${DEPLOY_WEBHOOK_URL}?app=saas-factory&version=${GITHUB_SHA}"
