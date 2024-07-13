@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
+import { repl } from '@nestjs/core';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -13,8 +15,16 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
+  repl(AppModule).then((replServer) => {
+    replServer.setupHistory('.nestjs_repl_history', (err) => {
+      if (err) {
+        console.error(err);
+      }
+    });
+  });
+
   await app.listen(3000);
 }
-bootstrap().then(() =>
-  console.log('Application is running on: http://localhost:3000'),
-);
+bootstrap().then(() => {
+  // console.log('Application is running on: http://localhost:3000'),
+});

@@ -3,9 +3,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CaslModule } from './casl/casl.module';
 import { UsersModule } from './users/users.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [CaslModule, UsersModule],
+  imports: [CaslModule, UsersModule, HealthModule],
   controllers: [AppController],
   providers: [AppService],
 })
