@@ -2,7 +2,9 @@ import { Controller, Get } from '@nestjs/common';
 import {
   HealthCheckService,
   HttpHealthIndicator,
-  HealthCheck, DiskHealthIndicator, MemoryHealthIndicator,
+  HealthCheck,
+  DiskHealthIndicator,
+  MemoryHealthIndicator,
 } from '@nestjs/terminus';
 
 @Controller('health')
