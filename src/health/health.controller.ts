@@ -20,7 +20,10 @@ export class HealthController {
     return this.health.check([
       () => this.http.pingCheck('nestjs-docs', 'https://docs.nestjs.com'),
       () =>
-        this.disk.checkStorage('storage', { path: '/', thresholdPercent: 0.95 }),
+        this.disk.checkStorage('storage', {
+          path: '/',
+          thresholdPercent: 0.95,
+        }),
       () => this.memory.checkHeap('memory_heap', 150 * 1024 * 1024),
     ]);
   }

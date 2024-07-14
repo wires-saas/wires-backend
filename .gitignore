@@ -9,6 +9,8 @@
 .idea/dictionaries
 
 .nestjs_repl_history
+vault/**.secret.js
+vault
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
