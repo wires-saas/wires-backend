@@ -7,12 +7,16 @@ import * as crypto from 'crypto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
+import { EncryptService } from '../commons/encrypt.service';
 
 @Injectable()
 export class UsersService {
   private users: User[] = [];
 
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private encryptService: EncryptService,
+  ) {}
 
   convertToEntity(createUserDto: CreateUserDto): User {
     return new User({
@@ -21,7 +25,7 @@ export class UsersService {
       isSuperAdmin: false,
       isOrgAdmin: createUserDto.isOrgAdmin,
       status: UserStatus.PENDING,
-      email: createUserDto.email,
+      email: this.encryptService.encrypt(createUserDto.email),
       emailStatus: UserEmailStatus.UNCONFIRMED,
       emailChangeCandidate: '',
       password: '',
@@ -39,13 +43,26 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+    return this.userModel
+      .find()
+      .exec()
+      .then((users) => {
+        return users.map((user) => {
+          user.email = this.encryptService.decrypt(user.email);
+          return user;
+        });
+      });
   }
 
   async findOne(id: string): Promise<User> {
-    const match = await this.userModel.findById(id).exec();
-    if (!match) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
-    return match;
+    return this.userModel
+      .findById(id)
+      .exec()
+      .then((user) => {
+        if (!user) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+        user.email = this.encryptService.decrypt(user.email);
+        return user;
+      });
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {
