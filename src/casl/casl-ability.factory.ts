@@ -7,7 +7,7 @@ import {
 } from '@casl/ability';
 import { Action } from '../entities/action.entity';
 import { Injectable } from '@nestjs/common';
-import { User } from '../users/entities/user.entity';
+import { User } from '../users/schemas/user.schema';
 
 type Subjects = InferSubjects<typeof Organization | typeof User> | 'all';
 

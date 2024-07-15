@@ -1,18 +1,21 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
 import { UserStatus } from './entities/user-status.entity';
 import { UserEmailStatus } from './entities/user-email-status.entity';
 import * as crypto from 'crypto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User } from './schemas/user.schema';
 
 @Injectable()
 export class UsersService {
   private users: User[] = [];
 
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+
   convertToEntity(createUserDto: CreateUserDto): User {
     return new User({
-      id: new Date().toISOString(),
       firstName: createUserDto.firstName,
       lastName: createUserDto.lastName,
       isSuperAdmin: false,
@@ -30,24 +33,23 @@ export class UsersService {
     });
   }
 
-  create(createUserDto: CreateUserDto): User {
+  create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.convertToEntity(createUserDto);
-    this.users = [...this.users, user];
-    return user;
+    return new this.userModel(user).save();
   }
 
-  findAll() {
-    return this.users;
+  async findAll(): Promise<User[]> {
+    return this.userModel.find().exec();
   }
 
-  findOne(id: string) {
-    const match = this.users.find((user) => user.id === id);
+  async findOne(id: string): Promise<User> {
+    const match = await this.userModel.findById(id).exec();
     if (!match) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     return match;
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {
-    const match = this.users.find((user) => user.id === id);
+    const match = this.users.find((user) => user._id === id);
     if (!match) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
 
     const userUpdated = new User({ ...match, ...updateUserDto });
@@ -55,13 +57,13 @@ export class UsersService {
     // TODO change updateUserDto and have custom logic for password/email change
 
     this.users = this.users.map((user) =>
-      user.id === id ? userUpdated : user,
+      user._id === id ? userUpdated : user,
     );
 
     return userUpdated;
   }
 
-  remove(id: string) {
-    this.users = this.users.filter((user) => user.id !== id);
+  async remove(id: string) {
+    return this.userModel.findByIdAndDelete(id).exec();
   }
 }

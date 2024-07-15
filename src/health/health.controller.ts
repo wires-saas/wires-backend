@@ -5,8 +5,11 @@ import {
   HealthCheck,
   DiskHealthIndicator,
   MemoryHealthIndicator,
+  MongooseHealthIndicator,
 } from '@nestjs/terminus';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Miscellaneous')
 @Controller('health')
 export class HealthController {
   constructor(
@@ -14,6 +17,7 @@ export class HealthController {
     private http: HttpHealthIndicator,
     private readonly disk: DiskHealthIndicator,
     private memory: MemoryHealthIndicator,
+    private db: MongooseHealthIndicator,
   ) {}
 
   @Get()
@@ -27,6 +31,7 @@ export class HealthController {
           thresholdPercent: 0.95,
         }),
       () => this.memory.checkHeap('memory_heap', 150 * 1024 * 1024),
+      () => this.db.pingCheck('database'),
     ]);
   }
 }

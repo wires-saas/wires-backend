@@ -4,9 +4,16 @@ import { AppService } from './app.service';
 import { CaslModule } from './casl/casl.module';
 import { UsersModule } from './users/users.module';
 import { HealthModule } from './health/health.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { connectionString } from '../vault/mongo.secret.js';
 
 @Module({
-  imports: [CaslModule, UsersModule, HealthModule],
+  imports: [
+    CaslModule,
+    UsersModule,
+    HealthModule,
+    MongooseModule.forRoot(connectionString),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
