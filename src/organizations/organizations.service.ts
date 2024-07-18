@@ -14,7 +14,7 @@ export class OrganizationsService {
 
   convertToEntity(createOrganizationDto: CreateOrganizationDto): Organization {
     return new Organization({
-      slug: createOrganizationDto.slug,
+      _id: createOrganizationDto.slug.toLowerCase().replace(/ /g, '-'),
       name: createOrganizationDto.name,
     });
   }
@@ -36,7 +36,7 @@ export class OrganizationsService {
     return this.organizationModel.findByIdAndUpdate(
       id,
       new Organization({
-        name: updateOrganizationDto.name,
+        ...updateOrganizationDto,
       }),
       { returnOriginal: false },
     );

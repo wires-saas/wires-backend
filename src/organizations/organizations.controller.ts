@@ -14,7 +14,6 @@ import { Organization } from './schemas/organization.schema';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 
 @ApiTags('Organizations')
-// @UseInterceptors(TransformInterceptor)
 @Controller('organizations')
 export class OrganizationsController {
   constructor(private readonly organizationsService: OrganizationsService) {}
