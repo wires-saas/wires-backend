@@ -14,8 +14,12 @@ export type UserDocument = HydratedDocument<User>;
     transform: function (_, ret, __) {
       delete ret.password;
       delete ret.updatedAt;
-      delete ret.isSuperAdmin;
       delete ret.createdAt;
+      delete ret.isSuperAdmin;
+      delete ret.passwordResetToken;
+      delete ret.passwordResetTokenExpiresAt;
+      delete ret.emailVerificationToken;
+      delete ret.emailVerificationTokenExpiresAt;
       return ret;
     },
   },
@@ -26,8 +30,12 @@ export type UserDocument = HydratedDocument<User>;
     transform: function (_, ret, __) {
       delete ret.password;
       delete ret.updatedAt;
-      delete ret.isSuperAdmin;
       delete ret.createdAt;
+      delete ret.isSuperAdmin;
+      delete ret.passwordResetToken;
+      delete ret.passwordResetTokenExpiresAt;
+      delete ret.emailVerificationToken;
+      delete ret.emailVerificationTokenExpiresAt;
       return ret;
     },
   },
@@ -43,9 +51,6 @@ export class User {
 
   @Prop()
   isSuperAdmin: boolean;
-
-  @Prop()
-  isOrgAdmin: boolean;
 
   @Prop()
   status: UserStatus;

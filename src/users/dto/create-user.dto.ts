@@ -12,5 +12,5 @@ export class CreateUserDto {
   @IsString()
   lastName: string;
 
-  isOrgAdmin: boolean;
+  organizations: string[];
 }

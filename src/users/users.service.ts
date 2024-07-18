@@ -23,7 +23,6 @@ export class UsersService {
       firstName: createUserDto.firstName,
       lastName: createUserDto.lastName,
       isSuperAdmin: false,
-      isOrgAdmin: createUserDto.isOrgAdmin,
       status: UserStatus.PENDING,
       email: this.encryptService.encrypt(createUserDto.email),
       emailStatus: UserEmailStatus.UNCONFIRMED,
@@ -66,18 +65,13 @@ export class UsersService {
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {
-    const match = this.users.find((user) => user._id === id);
-    if (!match) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
-
-    const userUpdated = new User({ ...match, ...updateUserDto });
-
-    // TODO change updateUserDto and have custom logic for password/email change
-
-    this.users = this.users.map((user) =>
-      user._id === id ? userUpdated : user,
+    return this.userModel.findByIdAndUpdate(
+      id,
+      new User({
+        ...updateUserDto,
+      }),
+      { returnOriginal: false },
     );
-
-    return userUpdated;
   }
 
   async remove(id: string) {
