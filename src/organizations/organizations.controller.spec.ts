@@ -1,30 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrganizationsController } from './organizations.controller';
 import { OrganizationsService } from './organizations.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import {
-  Organization,
-  OrganizationSchema,
-} from './schemas/organization.schema';
+
+const mockOrganizationsService = {
+  create: jest.fn(),
+  findAll: jest.fn(),
+  findOne: jest.fn(),
+  update: jest.fn(),
+  remove: jest.fn(),
+};
 
 describe('OrganizationsController', () => {
   let controller: OrganizationsController;
+  let service: typeof mockOrganizationsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        MongooseModule.forFeature([
-          { name: Organization.name, schema: OrganizationSchema },
-        ]),
-      ],
       controllers: [OrganizationsController],
-      providers: [OrganizationsService],
+      providers: [
+        { provide: OrganizationsService, useValue: mockOrganizationsService },
+      ],
     }).compile();
 
     controller = module.get<OrganizationsController>(OrganizationsController);
+    service = module.get<typeof mockOrganizationsService>(OrganizationsService);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+    expect(service).toBeDefined();
   });
 });
