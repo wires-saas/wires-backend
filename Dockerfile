@@ -6,6 +6,8 @@ WORKDIR /home/node/app
 
 COPY dist ./
 
+COPY .env ./
+
 USER node
 
 COPY --chown=node:node . .

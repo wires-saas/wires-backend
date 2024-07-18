@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import { key } from '../../vault/key.secret.js';
 
 const aes256gcm = (key) => {
 
@@ -30,7 +29,7 @@ const aes256gcm = (key) => {
   };
 };
 
-const keyParsed = Buffer.from(key, 'hex');
+const keyParsed = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
 const cipher = aes256gcm(keyParsed);
 
 // Use : cipher.encrypt(XXX) and cipher.decrypt(XXX)

@@ -43,6 +43,11 @@ jobs:
       - name: Compile Typescript
         run: npm run build
 
+      - name: Create .env file containing secrets
+        env:
+          ENV_SECRETS: ${{ secrets.ENV_SECRETS }}
+        run: echo $ENV_SECRETS > .env
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 

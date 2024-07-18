@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcrypt';
-import { salt } from '../../vault/salt.secret.js';
+
+const salt = process.env.HASH_SALT;
 
 const saltOrRounds = 10;
 const goodPassword = 'good';

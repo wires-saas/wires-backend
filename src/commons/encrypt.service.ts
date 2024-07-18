@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
-import { key as SECRET_KEY } from '../../vault/key.secret';
 
 @Injectable()
 export class EncryptService {
   private cipher: any;
 
   constructor() {
-    const keyParsed = Buffer.from(SECRET_KEY, 'hex');
+    const keyParsed = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
     this.cipher = this.aes256gcm(keyParsed);
   }
 
@@ -20,14 +19,15 @@ export class EncryptService {
   }
 
   private aes256gcm(key) {
-
     const encrypt = (str) => {
       const iv = randomBytes(12);
       const cipher = createCipheriv('aes-256-gcm', key, iv);
 
       const enc1 = cipher.update(str, 'utf8');
       const enc2 = cipher.final();
-      return Buffer.concat([enc1, enc2, iv, cipher.getAuthTag()]).toString('base64');
+      return Buffer.concat([enc1, enc2, iv, cipher.getAuthTag()]).toString(
+        'base64',
+      );
     };
 
     const decrypt = (enc) => {
