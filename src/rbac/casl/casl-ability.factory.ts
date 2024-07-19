@@ -5,9 +5,9 @@ import {
   ExtractSubjectType,
   InferSubjects,
 } from '@casl/ability';
-import { Action } from '../entities/action.entity';
 import { Injectable } from '@nestjs/common';
-import { User } from '../users/schemas/user.schema';
+import { User } from '../../users/schemas/user.schema';
+import { Action } from '../permissions/entities/action.entity';
 
 type Subjects = InferSubjects<typeof Organization | typeof User> | 'all';
 

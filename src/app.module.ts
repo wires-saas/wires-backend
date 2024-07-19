@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { CaslModule } from './casl/casl.module';
+import { CaslModule } from './rbac/casl/casl.module';
 import { UsersModule } from './users/users.module';
 import { HealthModule } from './health/health.module';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -9,6 +9,8 @@ import { OrganizationsModule } from './organizations/organizations.module';
 
 import { config as readEnvFile } from 'dotenv';
 import { AuthModule } from './auth/auth.module';
+import { RolesModule } from './rbac/roles/roles.module';
+import { PermissionsModule } from './rbac/permissions/permissions.module';
 
 readEnvFile();
 const connectionString = process.env.MONGO_URI;
@@ -21,6 +23,8 @@ const connectionString = process.env.MONGO_URI;
     MongooseModule.forRoot(connectionString),
     OrganizationsModule,
     AuthModule,
+    RolesModule,
+    PermissionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
