@@ -12,7 +12,7 @@ export type UserDocument = HydratedDocument<User>;
     versionKey: false,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
-      delete ret.password;
+      // delete ret.password;
       delete ret.updatedAt;
       delete ret.createdAt;
       delete ret.isSuperAdmin;
@@ -55,7 +55,7 @@ export class User {
   @Prop()
   status: UserStatus;
 
-  @Prop()
+  @Prop({ required: true })
   email: string;
 
   @Prop()

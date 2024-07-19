@@ -8,6 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { OrganizationsModule } from './organizations/organizations.module';
 
 import { config as readEnvFile } from 'dotenv';
+import { AuthModule } from './auth/auth.module';
 
 readEnvFile();
 const connectionString = process.env.MONGO_URI;
@@ -19,6 +20,7 @@ const connectionString = process.env.MONGO_URI;
     HealthModule,
     MongooseModule.forRoot(connectionString),
     OrganizationsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

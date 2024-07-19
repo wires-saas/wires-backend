@@ -8,4 +8,10 @@ export class CreateOrganizationDto {
   @IsNotEmpty()
   @IsString()
   slug: string;
+
+  @IsString()
+  logo: string;
+
+  @IsString()
+  activity: string;
 }

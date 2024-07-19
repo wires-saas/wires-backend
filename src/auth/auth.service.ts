@@ -1,0 +1,35 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
+import { HashService } from '../commons/hash.service';
+import { JwtService } from '@nestjs/jwt';
+import { EncryptService } from '../commons/encrypt.service';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private usersService: UsersService,
+    private hashService: HashService,
+    private jwtService: JwtService,
+    private encryptService: EncryptService,
+  ) {}
+
+  async signIn(email: string, pass: string): Promise<{ access_token: string }> {
+    const user = await this.usersService.findOneByEmail(email).catch(() => {
+      // obfuscate the error message
+      throw new UnauthorizedException();
+    });
+    const passwordMatches = await this.hashService.compare(pass, user.password);
+
+    if (!passwordMatches) {
+      throw new UnauthorizedException();
+    }
+
+    const clearEmail = this.encryptService.decrypt(user.email);
+
+    const payload = { sub: user._id.toString(), email: clearEmail };
+    console.log(payload);
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
+  }
+}
