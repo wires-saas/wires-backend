@@ -27,7 +27,6 @@ export class AuthService {
     const clearEmail = this.encryptService.decrypt(user.email);
 
     const payload = { sub: user._id.toString(), email: clearEmail };
-    console.log(payload);
     return {
       access_token: await this.jwtService.signAsync(payload),
     };

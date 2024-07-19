@@ -21,7 +21,7 @@ export class UsersService {
     private hashService: HashService,
   ) {}
 
-  convertToEntity(createUserDto: CreateUserDto): User {
+  private convertToEntity(createUserDto: CreateUserDto): User {
     return new User({
       firstName: createUserDto.firstName,
       lastName: createUserDto.lastName,
@@ -80,11 +80,9 @@ export class UsersService {
       .find()
       .exec()
       .then((users) => {
-        console.log(users.map((usr) => this.encryptService.decrypt(usr.email)));
         const user = users.find((usr) => {
           return email === this.encryptService.decrypt(usr.email);
         });
-        console.log(user);
 
         if (!user) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
         return user;
