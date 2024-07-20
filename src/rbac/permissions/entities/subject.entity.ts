@@ -1,4 +1,4 @@
 export enum Subject {
-  User = 'user',
-  Organization = 'organization',
+  Users = 'users',
+  Organizations = 'organizations',
 }

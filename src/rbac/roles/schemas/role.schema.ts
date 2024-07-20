@@ -22,6 +22,8 @@ export type RoleDocument = HydratedDocument<Role>;
     versionKey: false,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
+      ret.name = ret._id;
+      delete ret._id;
       delete ret.updatedAt;
       delete ret.createdAt;
       return ret;
@@ -29,16 +31,17 @@ export type RoleDocument = HydratedDocument<Role>;
   },
 })
 export class Role {
+  @Prop({ type: String })
   _id: string;
 
-  @Prop({ required: true })
   name: string;
 
-  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Permission' })
+  @Prop({ type: [String], ref: 'Permission' })
   permissions: Permission[];
 
   constructor(partial: Partial<Role>) {
     Object.assign(this, partial);
+    if (partial.name) this._id = partial.name;
   }
 }
 

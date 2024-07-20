@@ -41,7 +41,7 @@ export class UserRolesController {
   async setAll(
     @Body() userRoles: CreateOrUpdateUserRoleDto[],
     @Param('userId') userId: string,
-  ): Promise<void> {
+  ): Promise<UserRole[]> {
     return this.userRolesService.setAll(userId, userRoles);
   }
 

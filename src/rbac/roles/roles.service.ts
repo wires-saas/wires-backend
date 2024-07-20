@@ -1,26 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { RoleDto } from './dto/role.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Role } from './schemas/role.schema';
 
 @Injectable()
 export class RolesService {
-  create(createRoleDto: CreateRoleDto) {
-    return 'This action adds a new role';
+  constructor(
+    @InjectModel(Role.name)
+    private roleModel: Model<Role>,
+  ) {}
+
+  async create(roleDto: RoleDto): Promise<Role> {
+    const role = new Role({ ...roleDto });
+    console.log(role);
+    return new this.roleModel(role).save();
   }
 
-  findAll() {
-    return `This action returns all roles`;
+  async update(id: string, roleDto: RoleDto): Promise<Role> {
+    return this.roleModel.findByIdAndUpdate(
+      id,
+      new Role({
+        ...roleDto,
+      }),
+      { returnOriginal: false },
+    );
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} role`;
+  async findAll(): Promise<Role[]> {
+    // By populating we exclude deleted/non-existent permissions
+    return this.roleModel.find().populate('permissions').exec();
   }
 
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return `This action updates a #${id} role`;
+  findOne(id: string) {
+    return this.roleModel.findById(id).populate('permissions').exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} role`;
+  remove(id: string) {
+    return this.roleModel.findByIdAndDelete(id).exec();
   }
 }
