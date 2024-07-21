@@ -23,6 +23,7 @@ export class PermissionsService {
     return `This action returns a #${id} permission`;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   update(id: string, updatePermissionDto: UpdatePermissionDto) {
     return `This action updates a #${id} permission`;
   }

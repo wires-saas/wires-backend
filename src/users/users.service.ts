@@ -8,7 +8,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { EncryptService } from '../commons/encrypt.service';
-import { canReferenceNode } from '@nestjs/swagger/dist/plugin/utils/plugin-utils';
 import { HashService } from '../commons/hash.service';
 
 @Injectable()
