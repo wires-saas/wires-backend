@@ -29,7 +29,12 @@ export class UserRolesService {
   async findAll(userId: string): Promise<UserRole[]> {
     return this.userRoleModel
       .find({ user: userId })
-      .populate(['role', 'user', 'organization'])
+      .populate('organization')
+      .populate('user')
+      .populate({
+        path: 'role',
+        populate: { path: 'permissions', model: 'Permission' },
+      })
       .exec();
   }
 
