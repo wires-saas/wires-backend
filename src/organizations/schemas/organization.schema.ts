@@ -1,5 +1,6 @@
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { User } from '../../users/schemas/user.schema';
 
 export type OrganizationDocument = HydratedDocument<Organization>;
 
@@ -33,6 +34,8 @@ export class Organization {
   @Prop({ required: true }) // not specify it will throw, resulting in error 500
   name: string;
 
+  slug: string;
+
   @Prop()
   logo: string;
 
@@ -49,23 +52,11 @@ export class Organization {
   )
   address: Record<string, string>;
 
-  @Prop(
-    raw({
-      firstName: { type: String },
-      lastName: { type: String },
-      email: { type: String },
-    }),
-  )
-  adminContact: Record<string, string>;
+  @Prop({ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  adminContact: User;
 
-  @Prop(
-    raw({
-      firstName: { type: String },
-      lastName: { type: String },
-      email: { type: String },
-    }),
-  )
-  billingContact: Record<string, string>;
+  @Prop({ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  billingContact: User;
 
   @Prop(
     raw({
@@ -81,7 +72,7 @@ export class Organization {
       willExpireAt: { type: Date },
     }),
   )
-  subscription: Record<string, unknown>;
+  subscription: Record<string, unknown>; // TODO subscription type
 
   @Prop()
   createdAt: Date;

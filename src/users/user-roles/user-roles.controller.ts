@@ -1,14 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Put,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { UserRolesService } from './user-roles.service';
-import { CreateOrUpdateUserRoleDto } from '../dto/create-or-update-user-role.dto';
 import {
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -17,6 +8,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserRole } from '../schemas/user-role.schema';
+import { UserRoleDto } from '../dto/user-role.dto';
 
 @ApiTags('Users (Roles)')
 @Controller('users')
@@ -29,20 +21,10 @@ export class UserRolesController {
   @ApiOperation({ summary: 'Add new roles for user' })
   @ApiOkResponse({ description: 'Roles added' })
   async create(
-    @Body() userRoles: CreateOrUpdateUserRoleDto[],
+    @Body() userRoles: UserRoleDto[],
     @Param('userId') userId: string,
   ): Promise<UserRole[]> {
     return this.userRolesService.createOrUpdate(userId, userRoles);
-  }
-
-  @Put(':userId/roles')
-  @ApiOperation({ summary: 'Set all roles of user' })
-  @ApiOkResponse({ description: 'All roles set' })
-  async setAll(
-    @Body() userRoles: CreateOrUpdateUserRoleDto[],
-    @Param('userId') userId: string,
-  ): Promise<UserRole[]> {
-    return this.userRolesService.setAll(userId, userRoles);
   }
 
   @Get(':userId/roles')
@@ -52,17 +34,20 @@ export class UserRolesController {
     return this.userRolesService.findAll(userId);
   }
 
-  @Delete(':userId/roles')
+  @Delete(':userId/roles/all')
   @ApiOperation({ summary: 'Remove all roles from user' })
   @ApiOkResponse({ description: 'All roles removed' })
   remove(@Param('userId') userId: string) {
     return this.userRolesService.removeAll(userId);
   }
 
-  @Delete(':userId/roles/:roleId')
+  @Delete(':userId/roles')
   @ApiOperation({ summary: 'Remove specific role from user' })
   @ApiOkResponse({ description: 'Role removed' })
-  removeOne(@Param('userId') userId: string, @Param('roleId') roleId: string) {
-    return this.userRolesService.remove(userId, roleId);
+  removeOne(
+    @Body() userRoleToDelete: UserRoleDto,
+    @Param('userId') userId: string,
+  ) {
+    return this.userRolesService.removeOne(userId, userRoleToDelete);
   }
 }

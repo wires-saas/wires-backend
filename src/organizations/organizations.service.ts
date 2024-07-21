@@ -25,11 +25,17 @@ export class OrganizationsService {
   }
 
   async findAll(): Promise<Organization[]> {
-    return this.organizationModel.find().exec();
+    return this.organizationModel
+      .find()
+      .populate(['adminContact', 'billingContact'])
+      .exec();
   }
 
   async findOne(id: string): Promise<Organization> {
-    return this.organizationModel.findById(id).exec();
+    return this.organizationModel
+      .findById(id)
+      .populate(['adminContact', 'billingContact'])
+      .exec();
   }
 
   update(id: string, updateOrganizationDto: UpdateOrganizationDto) {
@@ -37,6 +43,7 @@ export class OrganizationsService {
       id,
       new Organization({
         ...updateOrganizationDto,
+        slug: undefined, // For convenience, we don't allow updating the slug
       }),
       { returnOriginal: false },
     );

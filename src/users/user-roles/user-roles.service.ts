@@ -1,31 +1,49 @@
 import { Injectable } from '@nestjs/common';
-import { CreateOrUpdateUserRoleDto } from '../dto/create-or-update-user-role.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { UserRole, UserRoleColl } from '../schemas/user-role.schema';
+import { UserRoleDto } from '../dto/user-role.dto';
 
 @Injectable()
 export class UserRolesService {
-  createOrUpdate(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor(
+    @InjectModel(UserRoleColl)
+    private userRoleModel: Model<UserRole>,
+  ) {}
+
+  async createOrUpdate(
     userId: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createUserRoleDto: CreateOrUpdateUserRoleDto,
-  ): any {
-    return 'This action adds a new userRole';
+    dtos: UserRoleDto[],
+  ): Promise<UserRole[]> {
+    const userRoles = dtos.map(
+      (dto) =>
+        new UserRole({
+          ...dto,
+          user: userId,
+        }),
+    );
+
+    return this.userRoleModel.insertMany(userRoles);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setAll(userId: string, userRoles: CreateOrUpdateUserRoleDto[]): any {
-    return 'This action sets all user roles';
-  }
-
-  findAll(userId: string): any {
-    return `This action returns all roles of user #${userId}`;
+  async findAll(userId: string): Promise<UserRole[]> {
+    return this.userRoleModel
+      .find({ user: userId })
+      .populate(['role', 'user', 'organization'])
+      .exec();
   }
 
   removeAll(userId: string) {
-    return `This action removes all user #${userId} roles`;
+    return this.userRoleModel.deleteMany({ user: userId }).exec();
   }
 
-  remove(userId: string, roleId: string) {
-    return `This action removes user #${userId} role #${roleId}`;
+  async removeOne(userId: string, dto: UserRoleDto) {
+    return this.userRoleModel
+      .deleteOne({
+        user: userId,
+        role: dto.role,
+        organization: dto.organization,
+      })
+      .exec();
   }
 }
