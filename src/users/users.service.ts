@@ -9,11 +9,11 @@ import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { EncryptService } from '../commons/encrypt.service';
 import { HashService } from '../commons/hash.service';
+import { UserRoleColl } from './schemas/user-role.schema';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [];
-
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     private encryptService: EncryptService,
@@ -45,7 +45,16 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     return this.userModel
-      .find()
+      .aggregate([
+        {
+          $lookup: {
+            from: UserRoleColl, // collection name in db
+            localField: '_id',
+            foreignField: 'user',
+            as: 'roles',
+          },
+        },
+      ])
       .exec()
       .then((users) => {
         return users.map((user) => {
@@ -57,7 +66,9 @@ export class UsersService {
               HttpStatus.INTERNAL_SERVER_ERROR,
             );
           }
-          return user;
+          // as we are working with an aggregate, we need custom logic
+          // to enforce schema validation
+          return new this.userModel(user).toObject();
         });
       });
   }

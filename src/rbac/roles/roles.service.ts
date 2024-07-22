@@ -13,7 +13,6 @@ export class RolesService {
 
   async create(roleDto: RoleDto): Promise<Role> {
     const role = new Role({ ...roleDto });
-    console.log(role);
     return new this.roleModel(role).save();
   }
 

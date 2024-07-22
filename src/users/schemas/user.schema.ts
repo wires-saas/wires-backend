@@ -2,6 +2,7 @@ import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { UserStatus } from '../entities/user-status.entity';
 import { UserEmailStatus } from '../entities/user-email-status.entity';
+import { UserRole } from './user-role.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -81,6 +82,9 @@ export class User {
 
   @Prop()
   lastSeenAt?: number;
+
+  @Prop()
+  roles: UserRole[];
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
