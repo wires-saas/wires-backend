@@ -1,16 +1,14 @@
-FROM node:lts
+FROM node:lts-slim
 
 RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 
 WORKDIR /home/node/app
 
-COPY dist ./
-
-COPY .env ./
+COPY --chown=node:node dist ./
+COPY --chown=node:node .env ./
+COPY --chown=node:node . .
 
 USER node
-
-COPY --chown=node:node . .
 
 EXPOSE 3000
 
