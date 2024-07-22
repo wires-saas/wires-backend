@@ -1,4 +1,4 @@
-FROM node:lts-slim
+FROM node:lts-alpine
 
 RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 
