@@ -10,7 +10,6 @@ import { User } from './schemas/user.schema';
 import { EncryptService } from '../commons/encrypt.service';
 import { HashService } from '../commons/hash.service';
 import { UserRoleColl } from './schemas/user-role.schema';
-import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class UsersService {
