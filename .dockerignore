@@ -1,10 +1,12 @@
 .prettierrc
+.gitignore
+.eslintrc.js
+.github
+.git
 README.md
 tsconfig.json
 tsconfig.build.json
 webpack-hmr.config.js
 Dockerfile
-.gitignore
 test
 src
-.github

@@ -69,6 +69,8 @@ jobs:
           context: .
           push: true
           tags: wiresantoine/saas-factory:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Always deploy on dev environment
         if: github.event_name == 'push'
