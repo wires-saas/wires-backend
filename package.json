@@ -21,6 +21,12 @@
   "overrides": {
     "bin-check": {
       "execa": "^5.0.0"
+    },
+    "chokidar": {
+      "braces": "~3.0.3"
+    },
+    "micromatch": {
+      "braces": "~3.0.3"
     }
   },
   "dependencies": {
