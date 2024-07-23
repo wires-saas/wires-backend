@@ -1,1 +1,10 @@
-node_modules
+.prettierrc
+README.md
+tsconfig.json
+tsconfig.build.json
+webpack-hmr.config.js
+Dockerfile
+.gitignore
+test
+src
+.github
