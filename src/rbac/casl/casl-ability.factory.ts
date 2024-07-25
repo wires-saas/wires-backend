@@ -1,9 +1,9 @@
 import {
-  Ability,
   AbilityBuilder,
-  AbilityClass,
+  createMongoAbility,
   ExtractSubjectType,
   InferSubjects,
+  MongoAbility,
 } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import { User } from '../../users/schemas/user.schema';
@@ -15,18 +15,16 @@ import { Organization } from '../../organizations/schemas/organization.schema';
 
 type Subjects = InferSubjects<typeof Organization | typeof User> | 'all';
 
-export type AppAbility = Ability<[Action, Subjects]>;
-
 @Injectable()
 export class CaslAbilityFactory {
-  createForUser(user: User) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { can, cannot, build } = new AbilityBuilder<
+  createForUser(user: User): MongoAbility {
+    /* const { can, cannot, build } = new AbilityBuilder<
       Ability<[Action, Subjects]>
-    >(Ability as AbilityClass<AppAbility>);
+    >(Ability as AbilityClass<AppAbility>); */
+
+    const { can, build } = new AbilityBuilder(createMongoAbility);
 
     if (user.isSuperAdmin) {
-      console.log('isSuperAdmin');
       can(Action.Manage, 'all'); // read-write access to everything
     } else {
       // This is a dynamic way to define ABILITIES
@@ -40,24 +38,13 @@ export class CaslAbilityFactory {
           const permission: Permission = Permission.getPermissionFromId(
             id.toString(),
           );
-          console.log(permission.subject);
           switch (permission.subject) {
             case Subject.Organization:
-              console.log(
-                'adding permission',
-                permission.action,
-                'to organization',
-                userRole.organization,
-              );
               can(permission.action, Organization, {
-                slug: userRole.organization,
+                _id: userRole.organization,
               });
-              // {
-              //                 slug: userRole.organization,
-              //               });
               break;
             case Subject.User:
-              console.log('adding permission', permission.action, 'to user');
               can(permission.action, User);
               break;
           }

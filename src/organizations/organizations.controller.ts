@@ -43,7 +43,7 @@ export class OrganizationsController {
       throw new UnauthorizedException();
     }
 
-    return this.organizationsService.findAll();
+    return this.organizationsService.findAll(ability);
   }
 
   @Get(':id')

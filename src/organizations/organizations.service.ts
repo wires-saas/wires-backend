@@ -4,6 +4,8 @@ import { Model } from 'mongoose';
 import { Organization } from './schemas/organization.schema';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { accessibleBy } from '@casl/mongoose';
+import { MongoAbility } from '@casl/ability';
 
 @Injectable()
 export class OrganizationsService {
@@ -24,9 +26,9 @@ export class OrganizationsService {
     return new this.organizationModel(org).save();
   }
 
-  async findAll(): Promise<Organization[]> {
+  async findAll(ability: MongoAbility): Promise<Organization[]> {
     return this.organizationModel
-      .find()
+      .find(accessibleBy(ability, 'read').ofType(Organization))
       .populate(['adminContact', 'billingContact'])
       .exec();
   }
