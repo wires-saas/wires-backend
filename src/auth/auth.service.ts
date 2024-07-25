@@ -31,6 +31,13 @@ export class AuthService {
     const clearEmail = this.encryptService.decrypt(user.email);
 
     const payload = { sub: user._id.toString(), email: clearEmail };
+
+    user.roles = user.roles.map((userRole) => ({
+      organization: userRole.organization,
+      user: userRole.user,
+      role: userRole.role._id,
+    }));
+
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: user,
