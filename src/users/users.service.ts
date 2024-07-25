@@ -9,12 +9,13 @@ import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { EncryptService } from '../commons/encrypt.service';
 import { HashService } from '../commons/hash.service';
-import { UserRoleColl } from './schemas/user-role.schema';
+import { UserRole, UserRoleColl } from './schemas/user-role.schema';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(UserRoleColl) private userRoleModel: Model<UserRole>,
     private encryptService: EncryptService,
     private hashService: HashService,
   ) {}
@@ -88,12 +89,21 @@ export class UsersService {
     return this.userModel
       .find()
       .exec()
-      .then((users) => {
+      .then(async (users) => {
         const user = users.find((usr) => {
           return email === this.encryptService.decrypt(usr.email);
         });
 
         if (!user) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+
+        // adding roles
+        const roles: UserRole[] = await this.userRoleModel
+          .find({ user: user._id })
+          .exec()
+          .catch(() => []);
+
+        if (roles?.length) user.roles = roles;
+
         return user;
       });
   }

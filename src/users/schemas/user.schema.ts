@@ -14,7 +14,6 @@ export type UserDocument = HydratedDocument<User>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
       // delete ret.password;
-      delete ret.isSuperAdmin;
       delete ret.passwordResetToken;
       delete ret.passwordResetTokenExpiresAt;
       delete ret.emailVerificationToken;
@@ -28,7 +27,6 @@ export type UserDocument = HydratedDocument<User>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
       delete ret.password;
-      delete ret.isSuperAdmin;
       delete ret.passwordResetToken;
       delete ret.passwordResetTokenExpiresAt;
       delete ret.emailVerificationToken;
