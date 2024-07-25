@@ -1,9 +1,10 @@
 import { IsNotEmpty, IsString } from 'class-validator';
+import { RoleName } from '../../commons/types/authentication.types';
 
 export class UserRoleDto {
   @IsNotEmpty()
   @IsString()
-  role: string;
+  role: RoleName;
 
   @IsNotEmpty()
   @IsString()

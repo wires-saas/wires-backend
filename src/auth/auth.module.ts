@@ -17,8 +17,10 @@ readEnvFile();
 const jwtSecret = process.env.JWT_SECRET;
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    MongooseModule.forFeature([{ name: UserRoleColl, schema: UserRoleSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: UserRoleColl, schema: UserRoleSchema },
+    ]),
     JwtModule.register({
       global: true,
       secret: jwtSecret,

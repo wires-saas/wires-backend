@@ -17,7 +17,8 @@ async function bootstrap() {
   app.setGlobalPrefix('v1', {
     exclude: [{ path: 'health', method: RequestMethod.ALL }],
   });
-  // app.enableCors({ origin: '*' });
+  // TODO if localhost/dev
+  app.enableCors({ origin: '*' });
 
   const config = new DocumentBuilder()
     .setTitle('Documentation')

@@ -4,8 +4,17 @@ import { getModelToken } from '@nestjs/mongoose';
 import { EncryptService } from '../commons/encrypt.service';
 import { User } from './schemas/user.schema';
 import { HashService } from '../commons/hash.service';
+import { UserRoleColl } from './schemas/user-role.schema';
 
 const mockUserModel = {
+  save: jest.fn(),
+  find: jest.fn(),
+  findById: jest.fn(),
+  findByIdAndUpdate: jest.fn(),
+  findByIdAndDelete: jest.fn(),
+};
+
+const mockUserRolesModel = {
   save: jest.fn(),
   find: jest.fn(),
   findById: jest.fn(),
@@ -26,6 +35,7 @@ const mockHashService = {
 describe('UsersService', () => {
   let service: UsersService;
   let userModel: typeof mockUserModel;
+  let userRolesModel: typeof mockUserRolesModel;
   let encryptService: typeof mockEncryptService;
   let hashService: typeof mockHashService;
 
@@ -34,6 +44,7 @@ describe('UsersService', () => {
       providers: [
         UsersService,
         { provide: getModelToken(User.name), useValue: mockUserModel },
+        { provide: getModelToken(UserRoleColl), useValue: mockUserRolesModel },
         { provide: EncryptService, useValue: mockEncryptService },
         { provide: HashService, useValue: mockHashService },
       ],
@@ -41,6 +52,7 @@ describe('UsersService', () => {
 
     service = module.get<UsersService>(UsersService);
     userModel = module.get(getModelToken(User.name));
+    userRolesModel = module.get(getModelToken(UserRoleColl));
     encryptService = module.get(EncryptService);
     hashService = module.get(HashService);
   });
@@ -48,6 +60,7 @@ describe('UsersService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
     expect(userModel).toBeDefined();
+    expect(userRolesModel).toBeDefined();
     expect(encryptService).toBeDefined();
     expect(hashService).toBeDefined();
   });

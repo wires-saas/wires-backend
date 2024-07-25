@@ -99,6 +99,7 @@ export class UsersService {
         // adding roles
         const roles: UserRole[] = await this.userRoleModel
           .find({ user: user._id })
+          .populate('role')
           .exec()
           .catch(() => []);
 

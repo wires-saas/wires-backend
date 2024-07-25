@@ -27,7 +27,7 @@ export type UserRoleDocument = HydratedDocument<UserRole>;
   },
 })
 export class UserRole {
-  _id: string;
+  _id?: string;
 
   @Prop({
     required: true,
@@ -40,7 +40,7 @@ export class UserRole {
   user: string;
 
   @Prop({ required: true, type: String, ref: 'Role' })
-  role: string;
+  role: any;
 
   constructor(partial: Partial<UserRole>) {
     Object.assign(this, partial);

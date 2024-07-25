@@ -38,6 +38,13 @@ export class Permission {
   @Prop({ required: true, index: true })
   subject: Subject;
 
+  static getPermissionFromId(id: string): Permission {
+    return new Permission({
+      action: id.split('_')[0] as Action,
+      subject: id.split('_')[1] as Subject,
+    });
+  }
+
   constructor(partial: Partial<Permission>) {
     Object.assign(this, partial);
   }
