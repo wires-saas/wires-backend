@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Organization } from './schemas/organization.schema';
@@ -33,25 +33,57 @@ export class OrganizationsService {
       .exec();
   }
 
-  async findOne(id: string): Promise<Organization> {
+  async findOne(ability: MongoAbility, id: string): Promise<Organization> {
     return this.organizationModel
-      .findById(id)
+      .find({
+        $and: [{ _id: id }, accessibleBy(ability, 'read').ofType(Organization)],
+      })
       .populate(['adminContact', 'billingContact'])
+      .exec()
+      .then((res) => {
+        if (!res || res.length === 0) {
+          throw new NotFoundException(`Organization with id ${id} not found`);
+        } else {
+          return res[0];
+        }
+      });
+  }
+
+  async update(
+    ability: MongoAbility,
+    id: string,
+    updateOrganizationDto: UpdateOrganizationDto,
+  ): Promise<Organization> {
+    return this.organizationModel
+      .findOneAndUpdate(
+        {
+          $and: [
+            { _id: id },
+            accessibleBy(ability, 'update').ofType(Organization),
+          ],
+        },
+        new Organization({
+          ...updateOrganizationDto,
+          slug: undefined, // For convenience, we don't allow updating the slug
+        }),
+        { returnOriginal: false },
+      )
+      .then((res) => {
+        if (!res) {
+          throw new NotFoundException(`Organization with id ${id} not found`);
+          // Maybe we should return a 401 here if user has access to the organization but not to update it..
+        } else {
+          return res;
+        }
+      });
+  }
+
+  async remove(ability: MongoAbility, id: string) {
+    return this.organizationModel
+      .findByIdAndDelete(
+        id,
+        accessibleBy(ability, 'delete').ofType(Organization),
+      )
       .exec();
-  }
-
-  update(id: string, updateOrganizationDto: UpdateOrganizationDto) {
-    return this.organizationModel.findByIdAndUpdate(
-      id,
-      new Organization({
-        ...updateOrganizationDto,
-        slug: undefined, // For convenience, we don't allow updating the slug
-      }),
-      { returnOriginal: false },
-    );
-  }
-
-  async remove(id: string) {
-    return this.organizationModel.findByIdAndDelete(id).exec();
   }
 }

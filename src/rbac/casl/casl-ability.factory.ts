@@ -18,10 +18,6 @@ type Subjects = InferSubjects<typeof Organization | typeof User> | 'all';
 @Injectable()
 export class CaslAbilityFactory {
   createForUser(user: User): MongoAbility {
-    /* const { can, cannot, build } = new AbilityBuilder<
-      Ability<[Action, Subjects]>
-    >(Ability as AbilityClass<AppAbility>); */
-
     const { can, build } = new AbilityBuilder(createMongoAbility);
 
     if (user.isSuperAdmin) {
