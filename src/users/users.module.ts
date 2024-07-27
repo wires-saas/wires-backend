@@ -7,6 +7,7 @@ import { EncryptService } from '../commons/encrypt.service';
 import { HashService } from '../commons/hash.service';
 import { UserRolesModule } from './user-roles/user-roles.module';
 import { UserRoleColl, UserRoleSchema } from './schemas/user-role.schema';
+import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { UserRoleColl, UserRoleSchema } from './schemas/user-role.schema';
     UserRolesModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService, EncryptService, HashService],
+  providers: [UsersService, EncryptService, HashService, CaslAbilityFactory],
 })
 export class UsersModule {}

@@ -5,11 +5,16 @@ import { UserStatus } from './entities/user-status.entity';
 import { UserEmailStatus } from './entities/user-email-status.entity';
 import * as crypto from 'crypto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { EncryptService } from '../commons/encrypt.service';
 import { HashService } from '../commons/hash.service';
 import { UserRole, UserRoleColl } from './schemas/user-role.schema';
+import { MongoAbility } from '@casl/ability';
+import { Organization } from '../organizations/schemas/organization.schema';
+import { accessibleBy } from '@casl/mongoose';
+import { Action } from '../rbac/permissions/entities/action.entity';
+import { CaslUtils } from '../rbac/casl/casl.utils';
 
 @Injectable()
 export class UsersService {
@@ -43,18 +48,64 @@ export class UsersService {
     return new this.userModel(user).save();
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userModel
-      .aggregate([
+  async findAll(ability: MongoAbility, orgs?: string[]): Promise<User[]> {
+    let pipeline: PipelineStage[] = [
+      {
+        $lookup: {
+          from: UserRoleColl, // collection name in db
+          localField: '_id',
+          foreignField: 'user',
+          as: 'roles',
+        },
+      },
+    ];
+
+    if (ability.cannot(Action.Manage, 'all')) {
+      const readableSlugs = CaslUtils.abilityToOrganizationSlugs(
+        ability,
+        Action.Read,
+      );
+
+      const slugs = orgs?.length
+        ? readableSlugs.filter((slug) => orgs.includes(slug))
+        : readableSlugs;
+
+      pipeline = [
+        ...pipeline,
         {
-          $lookup: {
-            from: UserRoleColl, // collection name in db
-            localField: '_id',
-            foreignField: 'user',
-            as: 'roles',
+          $match: {
+            roles: {
+              $elemMatch: {
+                organization: {
+                  $in: slugs,
+                },
+              },
+            },
           },
         },
-      ])
+      ];
+    } else {
+      // Applying organization filter if provided
+      if (orgs?.length) {
+        pipeline = [
+          ...pipeline,
+          {
+            $match: {
+              roles: {
+                $elemMatch: {
+                  organization: {
+                    $in: orgs,
+                  },
+                },
+              },
+            },
+          },
+        ];
+      }
+    }
+
+    return this.userModel
+      .aggregate(pipeline)
       .exec()
       .then((users) => {
         return users.map((user) => {
