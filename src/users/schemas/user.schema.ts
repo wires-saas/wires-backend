@@ -50,6 +50,18 @@ export class User {
   @Prop()
   status: UserStatus;
 
+  @Prop()
+  street: string;
+
+  @Prop()
+  city: string;
+
+  @Prop()
+  zipCode: string;
+
+  @Prop()
+  country: string;
+
   @Prop({ required: true })
   email: string;
 

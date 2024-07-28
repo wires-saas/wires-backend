@@ -29,6 +29,12 @@ export class UsersService {
       lastName: createUserDto.lastName,
       isSuperAdmin: false,
       status: UserStatus.PENDING,
+
+      street: createUserDto.street || '',
+      city: createUserDto.city || '',
+      zipCode: createUserDto.zipCode || '',
+      country: createUserDto.country || '',
+
       email: this.encryptService.encrypt(createUserDto.email),
       emailStatus: UserEmailStatus.UNCONFIRMED,
       emailChangeCandidate: '',
