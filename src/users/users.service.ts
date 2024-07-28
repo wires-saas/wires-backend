@@ -11,8 +11,6 @@ import { EncryptService } from '../commons/encrypt.service';
 import { HashService } from '../commons/hash.service';
 import { UserRole, UserRoleColl } from './schemas/user-role.schema';
 import { MongoAbility } from '@casl/ability';
-import { Organization } from '../organizations/schemas/organization.schema';
-import { accessibleBy } from '@casl/mongoose';
 import { Action } from '../rbac/permissions/entities/action.entity';
 import { CaslUtils } from '../rbac/casl/casl.utils';
 
