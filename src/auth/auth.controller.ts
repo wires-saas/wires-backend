@@ -6,8 +6,6 @@ import {
   UseGuards,
   Request,
   Param,
-  UnauthorizedException,
-  NotFoundException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
