@@ -10,6 +10,7 @@ import {
   Request,
   UseGuards,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -25,6 +26,8 @@ import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 import { Action } from '../rbac/permissions/entities/action.entity';
 import { AuthenticatedRequest } from '../commons/types/authentication.types';
 import { AuthGuard } from '../auth/auth.guard';
+import { Organization } from '../organizations/schemas/organization.schema';
+import { RbacUtils } from '../commons/utils/rbac.utils';
 
 @ApiTags('Users')
 @UseGuards(AuthGuard)
@@ -63,6 +66,8 @@ export class UsersController {
       throw new UnauthorizedException();
     }
 
+    // FIXME only return users with roles in the organizations the user can manage
+
     if (organizations) {
       return this.usersService.findAll(ability, organizations.split(','));
     }
@@ -77,9 +82,7 @@ export class UsersController {
       throw new UnauthorizedException();
     }
 
-    // TODO create user roles
-
-    return this.usersService.findOne(id);
+    return this.usersService.findOne(id, false);
   }
 
   @Patch(':id')
@@ -97,12 +100,38 @@ export class UsersController {
   }
 
   @Delete(':id')
-  remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-    if (ability.cannot(Action.Delete, User)) {
-      throw new UnauthorizedException();
+  async remove(
+    @Request() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Query('organization') organization: string,
+  ) {
+    if (!organization) {
+      throw new BadRequestException('Organization is required');
     }
 
-    return this.usersService.remove(id);
+    const ability = this.caslAbilityFactory.createForUser(req.user);
+    if (ability.cannot(Action.Delete, User)) {
+      throw new UnauthorizedException('User cannot delete other users');
+    }
+
+    if (ability.cannot(Action.Update, Organization, organization)) {
+      throw new UnauthorizedException(
+        'User cannot delete users from this organization',
+      );
+    }
+
+    if (ability.cannot(Action.Manage, Organization, organization)) {
+      const target = await this.usersService.findOne(id, true);
+
+      if (
+        RbacUtils.isUserGreaterThan(target.roles, req.user.roles, organization)
+      ) {
+        throw new UnauthorizedException(
+          'User cannot delete other users with same or higher roles',
+        );
+      }
+    }
+
+    return this.usersService.remove(id, organization);
   }
 }

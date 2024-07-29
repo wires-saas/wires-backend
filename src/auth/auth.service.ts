@@ -38,6 +38,14 @@ export class AuthService {
       role: userRole.role._id,
     }));
 
+    await this.usersService
+      .update(user._id, {
+        lastSeenAt: Date.now(),
+      })
+      .catch(() => {
+        // silently ignoring the error
+      });
+
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: user,

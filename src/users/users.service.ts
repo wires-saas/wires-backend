@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserStatus } from './entities/user-status.entity';
@@ -13,6 +18,7 @@ import { UserRole, UserRoleColl } from './schemas/user-role.schema';
 import { MongoAbility } from '@casl/ability';
 import { Action } from '../rbac/permissions/entities/action.entity';
 import { CaslUtils } from '../rbac/casl/casl.utils';
+import { RoleName } from '../commons/types/authentication.types';
 
 @Injectable()
 export class UsersService {
@@ -47,9 +53,20 @@ export class UsersService {
     });
   }
 
-  create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.convertToEntity(createUserDto);
-    return new this.userModel(user).save();
+
+    const userCreated = await new this.userModel(user).save();
+
+    const userRole = new UserRole({
+      organization: createUserDto.organization,
+      role: RoleName.USER,
+      user: userCreated._id,
+    });
+
+    await new this.userRoleModel(userRole).save();
+
+    return userCreated;
   }
 
   async findAll(ability: MongoAbility, orgs?: string[]): Promise<User[]> {
@@ -128,13 +145,24 @@ export class UsersService {
       });
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string, withRoles: boolean): Promise<User> {
     return this.userModel
       .findById(id)
       .exec()
-      .then((user) => {
+      .then(async (user) => {
         if (!user) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
         user.email = this.encryptService.decrypt(user.email);
+
+        if (withRoles) {
+          const roles: UserRole[] = await this.userRoleModel
+            .find({ user: user._id })
+            .populate('role')
+            .exec()
+            .catch(() => []);
+
+          if (roles) user.roles = roles;
+        }
+
         return user;
       });
   }
@@ -184,7 +212,21 @@ export class UsersService {
     );
   }
 
-  async remove(id: string) {
-    return this.userModel.findByIdAndDelete(id).exec();
+  async remove(id: string, organization: string) {
+    const userRoles = await this.userRoleModel.find({ user: id }).exec();
+
+    if (userRoles?.length) {
+      // removing all roles in the organization
+      await this.userRoleModel.deleteMany({ user: id, organization }).exec();
+    }
+
+    const userRolesPostDelete = await this.userRoleModel
+      .find({ user: id })
+      .exec();
+
+    if (!userRolesPostDelete?.length) {
+      // user has no role in any organization, deleting user
+      return this.userModel.findByIdAndDelete(id).exec();
+    }
   }
 }
