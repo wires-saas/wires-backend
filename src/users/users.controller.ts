@@ -28,6 +28,8 @@ import { AuthenticatedRequest } from '../commons/types/authentication.types';
 import { AuthGuard } from '../auth/auth.guard';
 import { Organization } from '../organizations/schemas/organization.schema';
 import { RbacUtils } from '../commons/utils/rbac.utils';
+import { permittedFieldsOf } from '@casl/ability/extra';
+import { accessibleBy, accessibleFieldsBy } from '@casl/mongoose';
 
 @ApiTags('Users')
 @UseGuards(AuthGuard)
@@ -72,7 +74,7 @@ export class UsersController {
       return this.usersService.findAll(ability, organizations.split(','));
     }
 
-    return this.usersService.findAll(ability);
+    return this.usersService.findAll(ability); // filter here users that the user can read organization from ?
   }
 
   @Get(':id')
@@ -86,14 +88,37 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Request() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ) {
+  ): Promise<User> {
     const ability = this.caslAbilityFactory.createForUser(req.user);
     if (ability.cannot(Action.Update, User)) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('User cannot update other users');
+    }
+
+    const target = await this.usersService.findOne(id, true);
+
+    // console.log('rules', ability.rules);
+
+    // console.log(ability.relevantRuleFor(Action.Update, User));
+
+    const fieldsToKeep = accessibleFieldsBy(ability, Action.Update).of(target);
+    console.log(fieldsToKeep);
+
+    console.log('fields to keep for entity ?');
+    const fieldsToKeepEntity = accessibleFieldsBy(
+      ability,
+      Action.Update,
+    ).ofType(User);
+
+    console.log(fieldsToKeepEntity);
+
+    console.log(ability.can(Action.Update, target));
+
+    if (ability.cannot(Action.Update, target)) {
+      throw new UnauthorizedException('User cannot update target user');
     }
 
     return this.usersService.update(id, updateUserDto);

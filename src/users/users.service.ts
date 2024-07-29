@@ -11,7 +11,7 @@ import { UserEmailStatus } from './entities/user-email-status.entity';
 import * as crypto from 'crypto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
-import { User } from './schemas/user.schema';
+import { User, UserDocument } from './schemas/user.schema';
 import { EncryptService } from '../commons/encrypt.service';
 import { HashService } from '../commons/hash.service';
 import { UserRole, UserRoleColl } from './schemas/user-role.schema';
@@ -71,39 +71,47 @@ export class UsersService {
 
   async findAll(ability: MongoAbility, orgs?: string[]): Promise<User[]> {
     let pipeline: PipelineStage[] = [
+      // Left join with user roles
       {
         $lookup: {
-          from: UserRoleColl, // collection name in db
+          from: UserRoleColl,
           localField: '_id',
           foreignField: 'user',
           as: 'roles',
         },
       },
+
+      // Following pipeline stages are used to calculate "organizations" field
+      {
+        $unwind: {
+          path: '$roles',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: '$_id',
+          document: { $first: '$$ROOT' },
+          organizations: { $addToSet: '$roles.organization' },
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ['$document', { organizations: '$organizations' }],
+          },
+        },
+      },
     ];
 
     if (ability.cannot(Action.Manage, 'all')) {
-      const readableSlugs = CaslUtils.abilityToOrganizationSlugs(
-        ability,
-        Action.Read,
-      );
-
-      const slugs = orgs?.length
-        ? readableSlugs.filter((slug) => orgs.includes(slug))
-        : readableSlugs;
-
       pipeline = [
         ...pipeline,
-        {
-          $match: {
-            roles: {
-              $elemMatch: {
-                organization: {
-                  $in: slugs,
-                },
-              },
-            },
-          },
-        },
+        CaslUtils.getUserOrganizationsPipelineStageFromAbility(
+          ability,
+          Action.Read,
+          orgs?.length ? orgs : undefined,
+        ),
       ];
     } else {
       // Applying organization filter if provided
@@ -112,12 +120,8 @@ export class UsersService {
           ...pipeline,
           {
             $match: {
-              roles: {
-                $elemMatch: {
-                  organization: {
-                    $in: orgs,
-                  },
-                },
+              organizations: {
+                $in: orgs,
               },
             },
           },
@@ -150,7 +154,7 @@ export class UsersService {
       .findById(id)
       .exec()
       .then(async (user) => {
-        if (!user) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+        if (!user) throw new NotFoundException('User not found');
         user.email = this.encryptService.decrypt(user.email);
 
         if (withRoles) {
@@ -162,6 +166,8 @@ export class UsersService {
 
           if (roles) user.roles = roles;
         }
+
+        console.log(user.organizations);
 
         return user;
       });

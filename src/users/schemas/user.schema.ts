@@ -8,6 +8,15 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({
   timestamps: true,
+  virtuals: {
+    organizations: {
+      get(): string[] {
+        return [
+          ...new Set(this.roles.map((role: UserRole) => role.organization)),
+        ] as string[];
+      },
+    },
+  },
   toObject: {
     //delete __v from output object
     versionKey: false,
@@ -18,6 +27,7 @@ export type UserDocument = HydratedDocument<User>;
       delete ret.passwordResetTokenExpiresAt;
       delete ret.emailVerificationToken;
       delete ret.emailVerificationTokenExpiresAt;
+      ret.toString = () => 'User';
       return ret;
     },
   },
@@ -91,6 +101,8 @@ export class User {
 
   @Prop()
   roles: UserRole[];
+
+  organizations?: UserRole['organization'][];
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);

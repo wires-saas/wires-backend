@@ -18,7 +18,7 @@ type Subjects = InferSubjects<typeof Organization | typeof User> | 'all';
 @Injectable()
 export class CaslAbilityFactory {
   createForUser(user: User): MongoAbility {
-    const { can, build } = new AbilityBuilder(createMongoAbility);
+    const { can, cannot, build } = new AbilityBuilder(createMongoAbility);
 
     if (user.isSuperAdmin) {
       can(Action.Manage, 'all'); // read-write access to everything
@@ -41,17 +41,48 @@ export class CaslAbilityFactory {
               });
               break;
             case Subject.User:
-              can(permission.action, User);
+              switch (permission.action) {
+                case Action.Update:
+                  can(permission.action, User, ['firstName', 'lastName'], {
+                    organizations: { $in: [userRole.organization] },
+                  });
+                  break;
+
+                case Action.Manage:
+                  can(
+                    permission.action,
+                    User,
+                    ['firstName', 'lastName', 'email'],
+                    {
+                      organizations: { $in: [userRole.organization] },
+                    },
+                  );
+                  break;
+
+                default:
+                  can(permission.action, User, {
+                    organizations: { $in: [userRole.organization] },
+                  });
+                  break;
+              }
+
               break;
           }
         });
       });
+
+      can(Action.Update, User, ['password'], { _id: user._id });
     }
 
     return build({
       // Read https://casl.js.org/v6/en/guide/subject-type-detection#use-classes-as-subject-types for details
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
+      detectSubjectType: (item) => {
+        let subjectType;
+        if (item.firstName) subjectType = User;
+        else if (item.slug) subjectType = Organization;
+
+        return subjectType as ExtractSubjectType<Subjects>;
+      },
     });
   }
 }

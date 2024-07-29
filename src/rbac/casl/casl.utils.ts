@@ -1,27 +1,44 @@
 import { MongoAbility } from '@casl/ability';
 import { Action } from '../permissions/entities/action.entity';
-import { Organization } from '../../organizations/schemas/organization.schema';
 import { accessibleBy } from '@casl/mongoose';
-
-interface SlugQuery {
-  _id: string;
-}
-
-interface OrQuery {
-  $or: Array<SlugQuery>;
-}
+import { PipelineStage } from 'mongoose';
+import { User } from '../../users/schemas/user.schema';
 
 export class CaslUtils {
-  static abilityToOrganizationSlugs(
+  static getUserOrganizationsPipelineStageFromAbility(
     ability: MongoAbility,
     action: Action,
-  ): string[] {
-    const orQuery: OrQuery = accessibleBy(ability, action).ofType(
-      Organization,
-    ) as any as OrQuery;
+    orgsToKeep?: string[],
+  ): PipelineStage {
+    // This CASL/Mongoose utility generate smth like this:
+    // { '$or': [ { organizations: { $in: [org1, org2] } } ] }
+    // We want to flatten it to ['org1', 'org2']
+    const readableUsersPipeline = accessibleBy(ability, action).ofType(User);
 
-    return orQuery['$or'].map((slugQuery: SlugQuery) => {
-      return slugQuery['_id'];
-    });
+    const filters: Array<Record<string, any>> = readableUsersPipeline[
+      '$or'
+    ] as Array<Record<string, any>>;
+
+    const readableOrgs: string[] = filters.find(
+      (filter) => !!filter.organizations,
+    )?.organizations?.$in;
+
+    if (orgsToKeep?.length > 0) {
+      return {
+        $match: {
+          organizations: {
+            $in: readableOrgs.filter((org) => orgsToKeep.includes(org)),
+          },
+        },
+      };
+    }
+
+    return {
+      $match: {
+        organizations: {
+          $in: readableOrgs,
+        },
+      },
+    };
   }
 }
