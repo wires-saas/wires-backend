@@ -1,7 +1,6 @@
 import {
-  HttpException,
-  HttpStatus,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -11,7 +10,7 @@ import { UserEmailStatus } from './entities/user-email-status.entity';
 import * as crypto from 'crypto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
-import { User, UserDocument } from './schemas/user.schema';
+import { User } from './schemas/user.schema';
 import { EncryptService } from '../commons/encrypt.service';
 import { HashService } from '../commons/hash.service';
 import { UserRole, UserRoleColl } from './schemas/user-role.schema';
@@ -93,12 +92,16 @@ export class UsersService {
           _id: '$_id',
           document: { $first: '$$ROOT' },
           organizations: { $addToSet: '$roles.organization' },
+          roles: { $push: '$roles' },
         },
       },
       {
         $replaceRoot: {
           newRoot: {
-            $mergeObjects: ['$document', { organizations: '$organizations' }],
+            $mergeObjects: [
+              '$document',
+              { organizations: '$organizations', roles: '$roles' },
+            ],
           },
         },
       },
@@ -137,10 +140,7 @@ export class UsersService {
           try {
             user.email = this.encryptService.decrypt(user.email);
           } catch (err) {
-            throw new HttpException(
-              'Invalid decryption',
-              HttpStatus.INTERNAL_SERVER_ERROR,
-            );
+            throw new InternalServerErrorException('Invalid decryption');
           }
           // as we are working with an aggregate, we need custom logic
           // to enforce schema validation
@@ -167,10 +167,13 @@ export class UsersService {
           if (roles) user.roles = roles;
         }
 
-        console.log(user.organizations);
-
         return user;
       });
+  }
+
+  async findOneByPasswordToken(token: string): Promise<User> {
+    // TODO add token expiration check
+    return this.userModel.findOne({ passwordResetToken: token }).exec();
   }
 
   // As email is encrypted, we need to decrypt it all users base before finding a match
@@ -183,7 +186,7 @@ export class UsersService {
           return email === this.encryptService.decrypt(usr.email);
         });
 
-        if (!user) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+        if (!user) throw new NotFoundException('User not found');
 
         // adding roles
         const roles: UserRole[] = await this.userRoleModel
@@ -203,10 +206,14 @@ export class UsersService {
       updateUserDto.password = await this.hashService.hash(
         updateUserDto.password,
       );
+
+      // TODO update password workflow
     }
 
     if (updateUserDto.email) {
       updateUserDto.email = this.encryptService.encrypt(updateUserDto.email);
+
+      // TODO update email workflow
     }
 
     return this.userModel.findByIdAndUpdate(

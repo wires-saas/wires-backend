@@ -17,8 +17,28 @@ type Subjects = InferSubjects<typeof Organization | typeof User> | 'all';
 
 @Injectable()
 export class CaslAbilityFactory {
+  static UpdatableUserFields: Array<keyof User> = [
+    'firstName',
+    'lastName',
+    'street',
+    'city',
+    'zipCode',
+    'country',
+  ];
+
+  static ReadableUserFields: Array<keyof User> = [
+    'firstName',
+    'lastName',
+    'street',
+    'city',
+    'zipCode',
+    'country',
+    'email',
+    'lastSeenAt',
+  ];
+
   createForUser(user: User): MongoAbility {
-    const { can, cannot, build } = new AbilityBuilder(createMongoAbility);
+    const { can, build } = new AbilityBuilder(createMongoAbility);
 
     if (user.isSuperAdmin) {
       can(Action.Manage, 'all'); // read-write access to everything
@@ -43,16 +63,32 @@ export class CaslAbilityFactory {
             case Subject.User:
               switch (permission.action) {
                 case Action.Update:
-                  can(permission.action, User, ['firstName', 'lastName'], {
-                    organizations: { $in: [userRole.organization] },
-                  });
+                  can(
+                    permission.action,
+                    User,
+                    [...CaslAbilityFactory.UpdatableUserFields],
+                    {
+                      organizations: { $in: [userRole.organization] },
+                    },
+                  );
                   break;
 
                 case Action.Manage:
                   can(
                     permission.action,
                     User,
-                    ['firstName', 'lastName', 'email'],
+                    [...CaslAbilityFactory.UpdatableUserFields],
+                    {
+                      organizations: { $in: [userRole.organization] },
+                    },
+                  );
+                  break;
+
+                case Action.Read:
+                  can(
+                    permission.action,
+                    User,
+                    [...CaslAbilityFactory.ReadableUserFields],
                     {
                       organizations: { $in: [userRole.organization] },
                     },
@@ -71,14 +107,20 @@ export class CaslAbilityFactory {
         });
       });
 
-      can(Action.Update, User, ['password'], { _id: user._id });
+      // User can update its own data (including email and password)
+      can(
+        Action.Update,
+        User,
+        [...CaslAbilityFactory.UpdatableUserFields, 'email', 'password'],
+        { _id: user._id },
+      );
     }
 
     return build({
       // Read https://casl.js.org/v6/en/guide/subject-type-detection#use-classes-as-subject-types for details
       detectSubjectType: (item) => {
         let subjectType;
-        if (item.firstName) subjectType = User;
+        if (item.email) subjectType = User;
         else if (item.slug) subjectType = Organization;
 
         return subjectType as ExtractSubjectType<Subjects>;

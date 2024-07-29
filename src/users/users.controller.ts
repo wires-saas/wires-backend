@@ -16,6 +16,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -28,8 +29,7 @@ import { AuthenticatedRequest } from '../commons/types/authentication.types';
 import { AuthGuard } from '../auth/auth.guard';
 import { Organization } from '../organizations/schemas/organization.schema';
 import { RbacUtils } from '../commons/utils/rbac.utils';
-import { permittedFieldsOf } from '@casl/ability/extra';
-import { accessibleBy, accessibleFieldsBy } from '@casl/mongoose';
+import { accessibleFieldsBy } from '@casl/mongoose';
 
 @ApiTags('Users')
 @UseGuards(AuthGuard)
@@ -68,7 +68,7 @@ export class UsersController {
       throw new UnauthorizedException();
     }
 
-    // FIXME only return users with roles in the organizations the user can manage
+    // FIXME only return roles of users in the organizations the current user can manage
 
     if (organizations) {
       return this.usersService.findAll(ability, organizations.split(','));
@@ -88,6 +88,10 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update user information' })
+  @ApiOkResponse({ description: 'User updated' })
+  @ApiUnauthorizedResponse({ description: 'Cannot update target user' })
+  @ApiNotFoundResponse({ description: 'User not found' })
   async update(
     @Request() req: AuthenticatedRequest,
     @Param('id') id: string,
@@ -95,36 +99,33 @@ export class UsersController {
   ): Promise<User> {
     const ability = this.caslAbilityFactory.createForUser(req.user);
     if (ability.cannot(Action.Update, User)) {
-      throw new UnauthorizedException('User cannot update other users');
+      throw new UnauthorizedException('Cannot update other users');
     }
 
-    const target = await this.usersService.findOne(id, true);
-
-    // console.log('rules', ability.rules);
-
-    // console.log(ability.relevantRuleFor(Action.Update, User));
-
-    const fieldsToKeep = accessibleFieldsBy(ability, Action.Update).of(target);
-    console.log(fieldsToKeep);
-
-    console.log('fields to keep for entity ?');
-    const fieldsToKeepEntity = accessibleFieldsBy(
-      ability,
-      Action.Update,
-    ).ofType(User);
-
-    console.log(fieldsToKeepEntity);
-
-    console.log(ability.can(Action.Update, target));
+    const target: User = await this.usersService.findOne(id, true);
 
     if (ability.cannot(Action.Update, target)) {
-      throw new UnauthorizedException('User cannot update target user');
+      throw new UnauthorizedException('Cannot update target user');
     }
 
-    return this.usersService.update(id, updateUserDto);
+    const fieldsToKeep = accessibleFieldsBy(ability, Action.Update).of(target);
+
+    const safeUpdateUserDto = {};
+    for (const field of fieldsToKeep) {
+      if (updateUserDto[field] !== undefined)
+        safeUpdateUserDto[field] = updateUserDto[field];
+    }
+
+    return this.usersService.update(id, safeUpdateUserDto);
   }
 
   @Delete(':id')
+  @ApiOperation({
+    summary: 'Remove user roles from organization, delete user if no roles',
+  })
+  @ApiOkResponse({ description: 'User excluded from organization' })
+  @ApiUnauthorizedResponse({ description: 'Cannot delete other users' })
+  @ApiNotFoundResponse({ description: 'User not found' })
   async remove(
     @Request() req: AuthenticatedRequest,
     @Param('id') id: string,
@@ -136,12 +137,12 @@ export class UsersController {
 
     const ability = this.caslAbilityFactory.createForUser(req.user);
     if (ability.cannot(Action.Delete, User)) {
-      throw new UnauthorizedException('User cannot delete other users');
+      throw new UnauthorizedException('Cannot delete other users');
     }
 
     if (ability.cannot(Action.Update, Organization, organization)) {
       throw new UnauthorizedException(
-        'User cannot delete users from this organization',
+        'Cannot delete users from this organization',
       );
     }
 
@@ -152,7 +153,7 @@ export class UsersController {
         RbacUtils.isUserGreaterThan(target.roles, req.user.roles, organization)
       ) {
         throw new UnauthorizedException(
-          'User cannot delete other users with same or higher roles',
+          'Cannot delete other users with same or higher roles',
         );
       }
     }

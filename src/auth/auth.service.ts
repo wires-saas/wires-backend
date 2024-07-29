@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { HashService } from '../commons/hash.service';
 import { JwtService } from '@nestjs/jwt';
@@ -50,6 +54,17 @@ export class AuthService {
       access_token: await this.jwtService.signAsync(payload),
       user: user,
     };
+  }
+
+  async checkInviteToken(token: string): Promise<boolean> {
+    const userWithToken = await this.usersService.findOneByPasswordToken(token);
+
+    if (!userWithToken) throw new NotFoundException();
+
+    if (userWithToken.passwordResetTokenExpiresAt < Date.now())
+      throw new UnauthorizedException();
+
+    return true;
   }
 
   signOut() {

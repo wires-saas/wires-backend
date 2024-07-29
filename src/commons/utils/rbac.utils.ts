@@ -32,8 +32,6 @@ export class RbacUtils {
       }
     };
 
-    console.log(roleNameOfUser, roleNameOfTargetUser);
-
     return roleToInt(roleNameOfUser) > roleToInt(roleNameOfTargetUser);
   }
 }

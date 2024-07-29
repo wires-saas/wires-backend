@@ -2,42 +2,56 @@ import {
   Body,
   Controller,
   Get,
-  HttpCode,
-  HttpStatus,
   Post,
   UseGuards,
   Request,
+  Param,
+  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { SignInDto } from './signin.dto';
-import { UsersService } from '../users/users.service';
 import { User } from '../users/schemas/user.schema';
 import { AuthenticatedRequest } from '../commons/types/authentication.types';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private authService: AuthService,
-    private usersService: UsersService,
-  ) {}
+  constructor(private authService: AuthService) {}
 
-  @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() signInDto: SignInDto) {
+  @ApiOperation({ summary: 'Sign in and get JWT' })
+  @ApiOkResponse({
+    description: 'Valid access token for 30 days and user data',
+  })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  signIn(
+    @Body() signInDto: SignInDto,
+  ): Promise<{ access_token: string; user: User }> {
     return this.authService.signIn(signInDto.email, signInDto.password);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Post('logout')
+  @ApiOperation({ summary: 'Sign out' })
+  @ApiOkResponse({ description: 'User signed out' })
   signOut() {
     return this.authService.signOut();
   }
 
   @UseGuards(AuthGuard)
   @Get('profile')
+  @ApiOperation({
+    summary: 'Get profile',
+  })
+  @ApiOkResponse({ description: 'User data and access token properties' })
   async getProfile(@Request() req: AuthenticatedRequest): Promise<{
     jwt: {
       email: string;
@@ -59,5 +73,14 @@ export class AuthController {
       jwt: req.jwt,
       user: req.user,
     };
+  }
+
+  @Get('invite/:token')
+  @ApiOperation({ summary: 'Check if invite token is valid' })
+  @ApiOkResponse({ description: 'Invite token is valid' })
+  @ApiNotFoundResponse({ description: 'Invite token is invalid' })
+  @ApiUnauthorizedResponse({ description: 'Invite token is expired' })
+  async checkInviteToken(@Param('token') token: string): Promise<boolean> {
+    return this.authService.checkInviteToken(token);
   }
 }
