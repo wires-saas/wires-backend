@@ -11,6 +11,14 @@
           "dtoFileNameSuffix": [".dto.ts", ".entity.ts", ".schema.ts"]
         }
       }
-    ]
+    ],
+    "assets": [
+      {
+        "include": "../views",
+        "outDir": "dist/views",
+        "watchAssets": true
+      }
+    ],
+    "watchAssets": true
   }
 }

@@ -3,9 +3,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import * as compression from 'compression';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.use(compression({ threshold: '1KB' }));
   app.useGlobalPipes(
     new ValidationPipe({
@@ -17,8 +19,6 @@ async function bootstrap() {
   app.setGlobalPrefix('v1', {
     exclude: [{ path: 'health', method: RequestMethod.ALL }],
   });
-  // TODO if localhost/dev
-  app.enableCors({ origin: '*' });
 
   const config = new DocumentBuilder()
     .setTitle('Documentation')
@@ -33,8 +33,14 @@ async function bootstrap() {
     },
   });
 
+  // EJS view engine for debugging mail
+  app.setBaseViewsDir(join(__dirname, '..', 'views'));
+  app.setViewEngine('ejs');
+
+  app.enableCors({ origin: '*' });
+
   await app.listen(3000);
 }
 bootstrap().then(() => {
-  // console.log('Application is running on: http://localhost:3000'),
+  // ...
 });

@@ -11,6 +11,8 @@ import { config as readEnvFile } from 'dotenv';
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './rbac/roles/roles.module';
 import { PermissionsModule } from './rbac/permissions/permissions.module';
+import { ConfigModule } from '@nestjs/config';
+import configuration from '../environments/environment.local';
 
 readEnvFile();
 const connectionString = process.env.MONGO_URI;
@@ -25,6 +27,10 @@ const connectionString = process.env.MONGO_URI;
     AuthModule,
     RolesModule,
     PermissionsModule,
+    ConfigModule.forRoot({
+      load: [configuration],
+      isGlobal: true,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

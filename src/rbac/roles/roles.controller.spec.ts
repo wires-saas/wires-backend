@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RolesController } from './roles.controller';
 import { RolesService } from './roles.service';
+import { SuperAdminGuard } from '../../auth/super-admin.guard';
+import { AuthModule } from '../../auth/auth.module';
 
 const mockRolesService = {
   create: jest.fn(),
@@ -8,6 +10,10 @@ const mockRolesService = {
   findOne: jest.fn(),
   update: jest.fn(),
   remove: jest.fn(),
+};
+
+const mockSuperAdminGuard = {
+  canActivate: jest.fn(),
 };
 
 describe('RolesController', () => {
@@ -21,6 +27,10 @@ describe('RolesController', () => {
         {
           provide: RolesService,
           useValue: mockRolesService,
+        },
+        {
+          provide: SuperAdminGuard,
+          useValue: mockSuperAdminGuard,
         },
       ],
     }).compile();

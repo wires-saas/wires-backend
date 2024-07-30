@@ -12,6 +12,8 @@ import {
   UserRoleColl,
   UserRoleSchema,
 } from '../users/schemas/user-role.schema';
+import { MailService } from './mail/mail.service';
+import { MailController } from './mail/mail.controller';
 
 readEnvFile();
 const jwtSecret = process.env.JWT_SECRET;
@@ -27,7 +29,13 @@ const jwtSecret = process.env.JWT_SECRET;
       signOptions: { expiresIn: '30d' },
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, UsersService, EncryptService, HashService],
+  controllers: [AuthController, MailController],
+  providers: [
+    AuthService,
+    UsersService,
+    EncryptService,
+    HashService,
+    MailService,
+  ],
 })
 export class AuthModule {}

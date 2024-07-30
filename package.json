@@ -7,7 +7,7 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \\\"src/**/*.ts\\\" \\\"test/**/*.ts\\\"",
-    "start": "nest start --watch",
+    "start": "set NODE_ENV=local && nest start --watch",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
@@ -34,6 +34,7 @@
     "@casl/mongoose": "^8.0.2",
     "@nestjs/axios": "^3.0.2",
     "@nestjs/common": "^10.3.2",
+    "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.3.2",
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/mapped-types": "*",
@@ -47,6 +48,7 @@
     "class-validator": "^0.14.1",
     "compression": "^1.7.4",
     "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
     "mongoose": "^8.5.1",
     "reflect-metadata": "^0.2.1",
     "rxjs": "^7.8.1"
