@@ -70,7 +70,7 @@ export class OrganizationsController {
   @ApiOperation({ summary: 'Fetch one organization by id (slug)' })
   @ApiOkResponse({ description: 'Organization matching id' })
   @ApiNotFoundResponse({ description: 'Organization not found' })
-  findOne(
+  async findOne(
     @Request() req: AuthenticatedRequest,
     @Param('id') id: string,
   ): Promise<Organization> {
@@ -79,7 +79,13 @@ export class OrganizationsController {
       throw new UnauthorizedException();
     }
 
-    return this.organizationsService.findOne(ability, id);
+    const organization = await this.organizationsService.findOne(id);
+
+    if (ability.cannot(Action.Read, organization)) {
+      throw new UnauthorizedException();
+    }
+
+    return organization;
   }
 
   @Patch(':id')

@@ -14,6 +14,11 @@ import {
 } from '../users/schemas/user-role.schema';
 import { MailService } from './mail/mail.service';
 import { MailController } from './mail/mail.controller';
+import { OrganizationsService } from '../organizations/organizations.service';
+import {
+  Organization,
+  OrganizationSchema,
+} from '../organizations/schemas/organization.schema';
 
 readEnvFile();
 const jwtSecret = process.env.JWT_SECRET;
@@ -22,6 +27,7 @@ const jwtSecret = process.env.JWT_SECRET;
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: UserRoleColl, schema: UserRoleSchema },
+      { name: Organization.name, schema: OrganizationSchema },
     ]),
     JwtModule.register({
       global: true,
@@ -33,6 +39,7 @@ const jwtSecret = process.env.JWT_SECRET;
   providers: [
     AuthService,
     UsersService,
+    OrganizationsService,
     EncryptService,
     HashService,
     MailService,

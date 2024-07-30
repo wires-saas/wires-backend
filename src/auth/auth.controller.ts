@@ -78,7 +78,9 @@ export class AuthController {
   @ApiOkResponse({ description: 'Invite token is valid' })
   @ApiNotFoundResponse({ description: 'Invite token is invalid' })
   @ApiUnauthorizedResponse({ description: 'Invite token is expired' })
-  async checkInviteToken(@Param('token') token: string): Promise<boolean> {
+  async checkInviteToken(
+    @Param('token') token: string,
+  ): Promise<{ organization: string; firstName: string }> {
     return this.authService.checkInviteToken(token);
   }
 }

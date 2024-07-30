@@ -5,7 +5,7 @@
 </head>
 <body style="margin: 0;">
 <span style="display: none;">Invitation pour <%= fullName %></span>
-<div style="background-color: <%= theme.highlightBg %>; width: 100%; min-height: 100%; font-family: 'Poppins', 'Arial', 'Helvetica Neue', 'Helvetica', sans-serif; font-feature-settings: 'cv02','cv03','cv04','cv11';box-sizing: border-box; padding-bottom: 25px; margin: 0;">
+<div style="background-color: <%= theme.highlightBg %>; width: 100%; min-height: 100%; font-family: 'Poppins', 'Arial', 'Helvetica Neue', 'Helvetica', sans-serif;box-sizing: border-box; padding-bottom: 25px; margin: 0;">
   <div style="background: transparent; padding-top: 30px; padding-bottom: 20px; text-align: center;">
     <img style="display: inline-block; height: 50px; width: auto; margin-left: auto; margin-right: auto;" alt="Logo" src="http://via.placeholder.com/400x120/fafafa/000?text=Logo"/>
   </div>
@@ -15,9 +15,9 @@
     <p style="margin-bottom: 25px;">Vous avez été invité à rejoindre <b><%= orgName %></b>,</p>
     <p style="margin-bottom: 25px;">En cliquant sur le bouton ci-dessous, vous serez invité à définir votre mot de passe :</p>
     <div style="margin-bottom: 25px; text-align: center;">
-      <a style="background-color: <%= theme.primaryDarkerColor %>; display: inline-block; font-size: 1.1em; color: #fff; padding: 10px 35px 10px; font-weight: 500; text-decoration: none; border-radius: 7px;" href="<%= acceptInviteURL %>">Confirmer mon adresse email</a>
+      <a style="background-color: <%= theme.primaryDarkerColor %>; display: inline-block; font-size: 1.1em; color: #fff; padding: 10px 35px 10px; font-weight: 500; text-decoration: none; border-radius: 7px;" target="_blank" href="<%= acceptInviteURL %>">Confirmer mon adresse email</a>
     </div>
-    <p style="margin-bottom: 25px;">Vous pouvez aussi copier/coller ce lien dans votre navigateur :<br/> <a style="color: <%= theme.primaryColor %>; word-wrap: break-word;" href="<%= acceptInviteURL %>"><%= acceptInviteURL %></a></p>
+    <p style="margin-bottom: 25px;">Vous pouvez aussi copier/coller ce lien dans votre navigateur :<br/> <a style="color: <%= theme.primaryColor %>; word-wrap: break-word;" target="_blank" href="<%= acceptInviteURL %>"><%= acceptInviteURL %></a></p>
 
     <div style="margin-top: 40px;">
         <p style="margin-bottom: 5px; font-style: italic; text-align: right;">Cordialement,</p>

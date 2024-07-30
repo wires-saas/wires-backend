@@ -13,7 +13,7 @@ export default () => {
     },
 
     urls: {
-      acceptInviteURL: `${appUrl}/auth/accept-invite?token=123`,
+      acceptInviteURL: `${appUrl}/auth/accept-invite`,
       helpURL: `${appUrl}/help`,
       tosURL: `${appUrl}/tos`,
       faqURL: `${appUrl}/faq`,

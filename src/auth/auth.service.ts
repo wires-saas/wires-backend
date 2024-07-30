@@ -1,5 +1,6 @@
 import {
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -8,11 +9,14 @@ import { HashService } from '../commons/hash.service';
 import { JwtService } from '@nestjs/jwt';
 import { EncryptService } from '../commons/encrypt.service';
 import { User } from '../users/schemas/user.schema';
+import { OrganizationsService } from '../organizations/organizations.service';
+import { Organization } from '../organizations/schemas/organization.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private organizationsService: OrganizationsService,
     private hashService: HashService,
     private jwtService: JwtService,
     private encryptService: EncryptService,
@@ -56,15 +60,27 @@ export class AuthService {
     };
   }
 
-  async checkInviteToken(token: string): Promise<boolean> {
+  async checkInviteToken(
+    token: string,
+  ): Promise<{ organization: string; firstName: string }> {
     const userWithToken = await this.usersService.findOneByPasswordToken(token);
-
-    if (!userWithToken) throw new NotFoundException();
 
     if (userWithToken.passwordResetTokenExpiresAt < Date.now())
       throw new UnauthorizedException();
 
-    return true;
+    if (!userWithToken?.organizations?.length) {
+      throw new InternalServerErrorException(
+        'User has no organization assigned',
+      );
+    }
+
+    const organizationOfUser: Organization =
+      await this.organizationsService.findOne(userWithToken.organizations[0]);
+
+    return {
+      organization: organizationOfUser.name,
+      firstName: userWithToken.firstName,
+    };
   }
 
   signOut() {

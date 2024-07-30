@@ -27,7 +27,6 @@ export type UserDocument = HydratedDocument<User>;
       delete ret.passwordResetTokenExpiresAt;
       delete ret.emailVerificationToken;
       delete ret.emailVerificationTokenExpiresAt;
-      ret.toString = () => 'User';
       return ret;
     },
   },

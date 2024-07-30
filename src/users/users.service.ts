@@ -173,7 +173,22 @@ export class UsersService {
 
   async findOneByPasswordToken(token: string): Promise<User> {
     // TODO add token expiration check
-    return this.userModel.findOne({ passwordResetToken: token }).exec();
+    return this.userModel
+      .findOne({ passwordResetToken: token })
+      .exec()
+      .then(async (user) => {
+        if (!user) throw new NotFoundException('User not found');
+
+        const roles: UserRole[] = await this.userRoleModel
+          .find({ user: user._id })
+          .populate('role')
+          .exec()
+          .catch(() => []);
+
+        if (roles) user.roles = roles;
+
+        return user;
+      });
   }
 
   // As email is encrypted, we need to decrypt it all users base before finding a match

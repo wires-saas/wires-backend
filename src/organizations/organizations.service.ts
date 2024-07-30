@@ -33,18 +33,16 @@ export class OrganizationsService {
       .exec();
   }
 
-  async findOne(ability: MongoAbility, id: string): Promise<Organization> {
+  async findOne(id: string): Promise<Organization> {
     return this.organizationModel
-      .find({
-        $and: [{ _id: id }, accessibleBy(ability, 'read').ofType(Organization)],
-      })
+      .findById(id)
       .populate(['adminContact', 'billingContact'])
       .exec()
       .then((res) => {
-        if (!res || res.length === 0) {
+        if (!res) {
           throw new NotFoundException(`Organization with id ${id} not found`);
         } else {
-          return res[0];
+          return res;
         }
       });
   }
