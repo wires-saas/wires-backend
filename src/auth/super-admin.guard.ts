@@ -2,15 +2,16 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/schemas/user.schema';
+import { AuthGuard } from './auth.guard';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class SuperAdminGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
@@ -36,16 +37,18 @@ export class AuthGuard implements CanActivate {
         payload.email,
       );
 
+      if (!userFromDatabase?.isSuperAdmin) {
+        console.error('User is not a super admin');
+        throw new UnauthorizedException();
+      }
+
       request['user'] = userFromDatabase;
       request['jwt'] = payload;
     } catch {
-      throw new UnauthorizedException();
+      // obfuscate the error message
+      throw new NotFoundException();
     }
-    return true;
-  }
 
-  public static extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    return true;
   }
 }

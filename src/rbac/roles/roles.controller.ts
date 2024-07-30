@@ -6,13 +6,16 @@ import {
   Param,
   Delete,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { RoleDto } from './dto/role.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { SuperAdminGuard } from '../../auth/super-admin.guard';
 
 @ApiTags('Access Control')
 @Controller('roles')
+@UseGuards(SuperAdminGuard)
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 

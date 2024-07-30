@@ -26,7 +26,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  @ApiOperation({ summary: 'Sign in and get JWT' })
+  @ApiOperation({ summary: 'Sign in' })
   @ApiOkResponse({
     description: 'Valid access token for 30 days and user data',
   })

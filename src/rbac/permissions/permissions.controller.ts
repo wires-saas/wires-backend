@@ -1,10 +1,20 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { SuperAdminGuard } from '../../auth/super-admin.guard';
 
 @ApiTags('Access Control')
 @Controller('permissions')
+@UseGuards(SuperAdminGuard)
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
