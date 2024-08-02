@@ -1,49 +1,32 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { UsersService } from '../users/users.service';
-import { EncryptService } from '../services/security/encrypt.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from '../users/schemas/user.schema';
-import { HashService } from '../services/security/hash.service';
 import { JwtModule } from '@nestjs/jwt';
 import { config as readEnvFile } from 'dotenv';
-import {
-  UserRoleColl,
-  UserRoleSchema,
-} from '../users/schemas/user-role.schema';
-import { MailService } from './mail/mail.service';
-import { MailController } from './mail/mail.controller';
-import { OrganizationsService } from '../organizations/organizations.service';
-import {
-  Organization,
-  OrganizationSchema,
-} from '../organizations/schemas/organization.schema';
+import { MailController } from '../mail/mail.controller';
 import { UserRolesModule } from '../users/user-roles/user-roles.module';
+import allModels from '../shared/mongoose-models';
+import { SecurityModule } from '../services/security/security.module';
+import { UsersModule } from '../users/users.module';
+import { OrganizationsModule } from '../organizations/organizations.module';
 
 readEnvFile();
 const jwtSecret = process.env.JWT_SECRET;
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      { name: Organization.name, schema: OrganizationSchema },
-    ]),
+    MongooseModule.forFeature(allModels),
     JwtModule.register({
       global: true,
       secret: jwtSecret,
       signOptions: { expiresIn: '30d' },
     }),
     UserRolesModule,
+    SecurityModule,
+    UsersModule,
+    OrganizationsModule,
   ],
   controllers: [AuthController, MailController],
-  providers: [
-    AuthService,
-    UsersService,
-    OrganizationsService,
-    EncryptService,
-    HashService,
-    MailService,
-  ],
+  providers: [AuthService],
 })
 export class AuthModule {}

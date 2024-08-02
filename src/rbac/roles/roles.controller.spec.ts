@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestingModule } from '@nestjs/testing';
 import { RolesController } from './roles.controller';
 import { RolesService } from './roles.service';
-import { SuperAdminGuard } from '../../auth/super-admin.guard';
+import { TestUtils } from '../../shared/utils/test.utils';
 
 const mockRolesService = {
   create: jest.fn(),
@@ -11,28 +11,20 @@ const mockRolesService = {
   remove: jest.fn(),
 };
 
-const mockSuperAdminGuard = {
-  canActivate: jest.fn(),
-};
-
 describe('RolesController', () => {
   let controller: RolesController;
   let service: typeof mockRolesService;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module: TestingModule = await TestUtils.createTestingModule({
       controllers: [RolesController],
       providers: [
         {
           provide: RolesService,
           useValue: mockRolesService,
         },
-        {
-          provide: SuperAdminGuard,
-          useValue: mockSuperAdminGuard,
-        },
       ],
-    }).compile();
+    });
 
     controller = module.get<RolesController>(RolesController);
     service = module.get<typeof mockRolesService>(RolesService);

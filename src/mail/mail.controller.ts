@@ -1,8 +1,8 @@
 import { Controller, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from '../../users/users.service';
-import { SuperAdminGuard } from '../super-admin.guard';
+import { UsersService } from '../users/users.service';
+import { SuperAdminGuard } from '../auth/super-admin.guard';
 
 // This controller is mainly used for debugging
 // Hence why SuperAdminGuard is used

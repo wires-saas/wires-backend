@@ -1,6 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestingModule } from '@nestjs/testing';
 import { PermissionsController } from './permissions.controller';
 import { PermissionsService } from './permissions.service';
+import { TestUtils } from '../../shared/utils/test.utils';
 
 const mockPermissionsService = {
   create: jest.fn(),
@@ -13,7 +14,7 @@ describe('PermissionsController', () => {
   let service: typeof mockPermissionsService;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module: TestingModule = await TestUtils.createTestingModule({
       controllers: [PermissionsController],
       providers: [
         {
@@ -21,7 +22,7 @@ describe('PermissionsController', () => {
           useValue: mockPermissionsService,
         },
       ],
-    }).compile();
+    });
 
     controller = module.get<PermissionsController>(PermissionsController);
     service = module.get<typeof mockPermissionsService>(PermissionsService);
