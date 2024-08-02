@@ -22,7 +22,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { Organization } from './schemas/organization.schema';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { AuthenticatedRequest } from '../commons/types/authentication.types';
+import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 import { Action } from '../rbac/permissions/entities/action.entity';
 

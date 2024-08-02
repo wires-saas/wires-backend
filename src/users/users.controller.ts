@@ -25,11 +25,12 @@ import {
 import { User } from './schemas/user.schema';
 import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 import { Action } from '../rbac/permissions/entities/action.entity';
-import { AuthenticatedRequest } from '../commons/types/authentication.types';
+import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { AuthGuard } from '../auth/auth.guard';
 import { Organization } from '../organizations/schemas/organization.schema';
-import { RbacUtils } from '../commons/utils/rbac.utils';
+import { RbacUtils } from '../shared/utils/rbac.utils';
 import { accessibleFieldsBy } from '@casl/mongoose';
+import { EmailService } from '../services/email/email.service';
 
 @ApiTags('Users')
 @UseGuards(AuthGuard)
@@ -37,6 +38,7 @@ import { accessibleFieldsBy } from '@casl/mongoose';
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
+    private readonly emailService: EmailService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
@@ -55,7 +57,12 @@ export class UsersController {
       throw new UnauthorizedException();
     }
 
-    return this.usersService.create(createUserDto);
+    const userCreated: User = await this.usersService.create(createUserDto);
+    if (userCreated) {
+      await this.emailService.sendTestEmail(userCreated.email, 'Invite email');
+    }
+
+    return userCreated;
   }
 
   @Get()

@@ -26,20 +26,33 @@ export class UserRolesService {
     return this.userRoleModel.insertMany(userRoles);
   }
 
-  async findAll(userId: string): Promise<UserRole[]> {
-    return this.userRoleModel
-      .find({ user: userId })
-      .populate('organization')
-      .populate('user')
-      .populate({
-        path: 'role',
-        populate: { path: 'permissions', model: 'Permission' },
-      })
-      .exec();
+  async findAll(
+    userId: string,
+    deepPopulateRole: boolean = true,
+  ): Promise<UserRole[]> {
+    if (deepPopulateRole) {
+      return this.userRoleModel
+        .find({ user: userId })
+        .populate('organization')
+        .populate('user')
+        .populate({
+          path: 'role',
+          populate: { path: 'permissions', model: 'Permission' },
+        })
+        .exec();
+    } else {
+      return this.userRoleModel.find({ user: userId }).populate('role').exec();
+    }
   }
 
   removeAll(userId: string) {
     return this.userRoleModel.deleteMany({ user: userId }).exec();
+  }
+
+  removeAllByOrganization(userId: string, organizationId: string) {
+    return this.userRoleModel
+      .deleteMany({ user: userId, organization: organizationId })
+      .exec();
   }
 
   async removeOne(userId: string, dto: UserRoleDto) {

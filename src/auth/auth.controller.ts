@@ -10,6 +10,7 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import {
+  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -18,7 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { SignInDto } from './signin.dto';
 import { User } from '../users/schemas/user.schema';
-import { AuthenticatedRequest } from '../commons/types/authentication.types';
+import { AuthenticatedRequest } from '../shared/types/authentication.types';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -82,5 +83,14 @@ export class AuthController {
     @Param('token') token: string,
   ): Promise<{ organization: string; firstName: string }> {
     return this.authService.checkInviteToken(token);
+  }
+
+  @Post('invite/:token')
+  @ApiOperation({ summary: 'Consumes invite token and set user password' })
+  async useInviteToken(
+    @Param('token') token: string,
+    @Body('password') password: string,
+  ): Promise<User> {
+    return this.authService.useInviteToken(token, password);
   }
 }

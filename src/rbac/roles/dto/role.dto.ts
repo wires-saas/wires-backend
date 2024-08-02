@@ -1,5 +1,5 @@
 import { Permission } from '../../permissions/schemas/permission.schema';
-import { RoleName } from '../../../commons/types/authentication.types';
+import { RoleName } from '../../../shared/types/authentication.types';
 
 export class RoleDto {
   name: RoleName;

@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
-import { EncryptService } from '../commons/encrypt.service';
+import { EncryptService } from '../services/security/encrypt.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../users/schemas/user.schema';
-import { HashService } from '../commons/hash.service';
+import { HashService } from '../services/security/hash.service';
 import { JwtModule } from '@nestjs/jwt';
 import { config as readEnvFile } from 'dotenv';
 import {
@@ -19,6 +19,7 @@ import {
   Organization,
   OrganizationSchema,
 } from '../organizations/schemas/organization.schema';
+import { UserRolesModule } from '../users/user-roles/user-roles.module';
 
 readEnvFile();
 const jwtSecret = process.env.JWT_SECRET;
@@ -26,7 +27,6 @@ const jwtSecret = process.env.JWT_SECRET;
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
-      { name: UserRoleColl, schema: UserRoleSchema },
       { name: Organization.name, schema: OrganizationSchema },
     ]),
     JwtModule.register({
@@ -34,6 +34,7 @@ const jwtSecret = process.env.JWT_SECRET;
       secret: jwtSecret,
       signOptions: { expiresIn: '30d' },
     }),
+    UserRolesModule,
   ],
   controllers: [AuthController, MailController],
   providers: [

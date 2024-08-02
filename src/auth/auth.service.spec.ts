@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
-import { HashService } from '../commons/hash.service';
+import { HashService } from '../services/security/hash.service';
 import { JwtService } from '@nestjs/jwt';
-import { EncryptService } from '../commons/encrypt.service';
+import { EncryptService } from '../services/security/encrypt.service';
 
 // mock of users service
 const mockUsersService = {

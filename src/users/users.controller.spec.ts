@@ -4,12 +4,22 @@ import { UsersService } from './users.service';
 import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 import { AuthGuard } from '../auth/auth.guard';
 import { JwtService } from '@nestjs/jwt';
+import { EmailService } from '../services/email/email.service';
+import { UserRolesService } from './user-roles/user-roles.service';
 
 const mockUsersService = {
   create: jest.fn(),
   findAll: jest.fn(),
   findOne: jest.fn(),
   findOneByEmail: jest.fn(),
+  update: jest.fn(),
+  remove: jest.fn(),
+};
+
+const mockUserRolesService = {
+  create: jest.fn(),
+  findAll: jest.fn(),
+  findOne: jest.fn(),
   update: jest.fn(),
   remove: jest.fn(),
 };
@@ -27,6 +37,10 @@ const mockJwtService = {
   verify: jest.fn(),
 };
 
+const mockEmailService = {
+  sendTestEmail: jest.fn(),
+};
+
 describe('UsersController', () => {
   let controller: UsersController;
   let service: typeof mockUsersService;
@@ -37,6 +51,8 @@ describe('UsersController', () => {
       controllers: [UsersController],
       providers: [
         { provide: UsersService, useValue: mockUsersService },
+        { provide: UserRolesService, useValue: mockUserRolesService },
+        { provide: EmailService, useValue: mockEmailService },
         { provide: CaslAbilityFactory, useValue: mockCaslAbilityFactory },
         { provide: AuthGuard, useValue: authGuardMock },
         { provide: JwtService, useValue: mockJwtService },

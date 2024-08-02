@@ -11,8 +11,9 @@ import {
   UserRoleColl,
   UserRoleSchema,
 } from '../../users/schemas/user-role.schema';
-import { EncryptService } from '../../commons/encrypt.service';
-import { HashService } from '../../commons/hash.service';
+import { EncryptService } from '../../services/security/encrypt.service';
+import { HashService } from '../../services/security/hash.service';
+import { UserRolesModule } from '../../users/user-roles/user-roles.module';
 
 @Module({
   imports: [
@@ -21,9 +22,9 @@ import { HashService } from '../../commons/hash.service';
 
       // For SuperAdminGuard
       { name: User.name, schema: UserSchema },
-      { name: UserRoleColl, schema: UserRoleSchema },
     ]),
     AuthModule,
+    UserRolesModule,
   ],
   controllers: [RolesController],
   providers: [

@@ -11,19 +11,21 @@ import * as crypto from 'crypto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
 import { User } from './schemas/user.schema';
-import { EncryptService } from '../commons/encrypt.service';
-import { HashService } from '../commons/hash.service';
+import { EncryptService } from '../services/security/encrypt.service';
+import { HashService } from '../services/security/hash.service';
 import { UserRole, UserRoleColl } from './schemas/user-role.schema';
 import { MongoAbility } from '@casl/ability';
 import { Action } from '../rbac/permissions/entities/action.entity';
 import { CaslUtils } from '../rbac/casl/casl.utils';
-import { RoleName } from '../commons/types/authentication.types';
+import { RoleName } from '../shared/types/authentication.types';
+import { UserRolesService } from './user-roles/user-roles.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(UserRoleColl) private userRoleModel: Model<UserRole>,
+    // @InjectModel(UserRoleColl) private userRoleModel: Model<UserRole>,
+    private userRoleService: UserRolesService,
     private encryptService: EncryptService,
     private hashService: HashService,
   ) {}
@@ -57,13 +59,14 @@ export class UsersService {
 
     const userCreated = await new this.userModel(user).save();
 
-    const userRole = new UserRole({
-      organization: createUserDto.organization,
-      role: RoleName.USER,
-      user: userCreated._id,
-    });
+    await this.userRoleService.createOrUpdate(userCreated._id, [
+      {
+        organization: createUserDto.organization,
+        role: RoleName.USER,
+      },
+    ]);
 
-    await new this.userRoleModel(userRole).save();
+    // await new this.userRoleModel(userRole).save();
 
     return userCreated;
   }
@@ -158,11 +161,10 @@ export class UsersService {
         user.email = this.encryptService.decrypt(user.email);
 
         if (withRoles) {
-          const roles: UserRole[] = await this.userRoleModel
-            .find({ user: user._id })
-            .populate('role')
-            .exec()
-            .catch(() => []);
+          const roles: UserRole[] = await this.userRoleService.findAll(
+            id,
+            false,
+          );
 
           if (roles) user.roles = roles;
         }
@@ -179,10 +181,8 @@ export class UsersService {
       .then(async (user) => {
         if (!user) throw new NotFoundException('User not found');
 
-        const roles: UserRole[] = await this.userRoleModel
-          .find({ user: user._id })
-          .populate('role')
-          .exec()
+        const roles: UserRole[] = await this.userRoleService
+          .findAll(user._id, false)
           .catch(() => []);
 
         if (roles) user.roles = roles;
@@ -204,10 +204,8 @@ export class UsersService {
         if (!user) throw new NotFoundException('User not found');
 
         // adding roles
-        const roles: UserRole[] = await this.userRoleModel
-          .find({ user: user._id })
-          .populate('role')
-          .exec()
+        const roles: UserRole[] = await this.userRoleService
+          .findAll(user._id, false)
           .catch(() => []);
 
         if (roles?.length) user.roles = roles;
@@ -240,17 +238,28 @@ export class UsersService {
     );
   }
 
+  async verifyInviteOfUser(id: string, password: string): Promise<User> {
+    return this.userModel.findByIdAndUpdate(
+      id,
+      new User({
+        status: UserStatus.ACTIVE,
+        password: await this.hashService.hash(password),
+        passwordResetTokenExpiresAt: undefined,
+        passwordResetToken: undefined,
+      }),
+      { returnOriginal: false },
+    );
+  }
+
   async remove(id: string, organization: string) {
-    const userRoles = await this.userRoleModel.find({ user: id }).exec();
+    const userRoles = await this.userRoleService.findAll(id);
 
     if (userRoles?.length) {
       // removing all roles in the organization
-      await this.userRoleModel.deleteMany({ user: id, organization }).exec();
+      await this.userRoleService.removeAllByOrganization(id, organization);
     }
 
-    const userRolesPostDelete = await this.userRoleModel
-      .find({ user: id })
-      .exec();
+    const userRolesPostDelete = await this.userRoleService.findAll(id);
 
     if (!userRolesPostDelete?.length) {
       // user has no role in any organization, deleting user

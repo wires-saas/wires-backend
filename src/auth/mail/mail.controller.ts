@@ -1,14 +1,21 @@
-import { Controller, Get, Param, Post, Res } from '@nestjs/common';
+import { Controller, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../../users/users.service';
+import { SuperAdminGuard } from '../super-admin.guard';
+
+// This controller is mainly used for debugging
+// Hence why SuperAdminGuard is used
+// It allows to preview email templates
 
 @Controller('mail')
+@UseGuards(SuperAdminGuard)
 export class MailController {
   constructor(
     private configService: ConfigService,
     private usersService: UsersService,
   ) {}
+
   @Get('invitation')
   async getInvitationEmail(@Res() res: Response) {
     const file = 'email-invitation.ejs';

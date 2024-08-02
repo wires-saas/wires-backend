@@ -5,12 +5,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
-import { HashService } from '../commons/hash.service';
+import { HashService } from '../services/security/hash.service';
 import { JwtService } from '@nestjs/jwt';
-import { EncryptService } from '../commons/encrypt.service';
+import { EncryptService } from '../services/security/encrypt.service';
 import { User } from '../users/schemas/user.schema';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { Organization } from '../organizations/schemas/organization.schema';
+import { UserStatus } from '../users/entities/user-status.entity';
 
 @Injectable()
 export class AuthService {
@@ -65,12 +66,22 @@ export class AuthService {
   ): Promise<{ organization: string; firstName: string }> {
     const userWithToken = await this.usersService.findOneByPasswordToken(token);
 
+    if (!userWithToken) {
+      throw new NotFoundException('Token not found');
+    }
+
     if (userWithToken.passwordResetTokenExpiresAt < Date.now())
       throw new UnauthorizedException();
 
     if (!userWithToken?.organizations?.length) {
       throw new InternalServerErrorException(
         'User has no organization assigned',
+      );
+    }
+
+    if (userWithToken.status !== UserStatus.PENDING) {
+      throw new InternalServerErrorException(
+        'User has already accepted invite',
       );
     }
 
@@ -81,6 +92,38 @@ export class AuthService {
       organization: organizationOfUser.name,
       firstName: userWithToken.firstName,
     };
+  }
+
+  async useInviteToken(token: string, password: string): Promise<User> {
+    const userWithToken = await this.usersService.findOneByPasswordToken(token);
+
+    if (!userWithToken) {
+      throw new NotFoundException('Token not found');
+    }
+
+    if (userWithToken.passwordResetTokenExpiresAt < Date.now())
+      throw new UnauthorizedException();
+
+    if (!userWithToken?.organizations?.length) {
+      throw new InternalServerErrorException(
+        'User has no organization assigned',
+      );
+    }
+
+    if (userWithToken.status !== UserStatus.PENDING) {
+      throw new InternalServerErrorException(
+        'User has already accepted invite',
+      );
+    }
+
+    // TODO ensure password is strong enough
+
+    const userActivated = await this.usersService.verifyInviteOfUser(
+      userWithToken._id,
+      password,
+    );
+
+    if (userActivated) return userActivated;
   }
 
   signOut() {

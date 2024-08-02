@@ -8,21 +8,18 @@ import {
 } from './schemas/organization.schema';
 import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 import { UsersService } from '../users/users.service';
-import { EncryptService } from '../commons/encrypt.service';
-import { HashService } from '../commons/hash.service';
+import { EncryptService } from '../services/security/encrypt.service';
+import { HashService } from '../services/security/hash.service';
 import { User, UserSchema } from '../users/schemas/user.schema';
-import {
-  UserRoleColl,
-  UserRoleSchema,
-} from '../users/schemas/user-role.schema';
+import { UserRolesModule } from '../users/user-roles/user-roles.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Organization.name, schema: OrganizationSchema },
       { name: User.name, schema: UserSchema },
-      { name: UserRoleColl, schema: UserRoleSchema },
     ]),
+    UserRolesModule,
   ],
   providers: [
     OrganizationsService,
