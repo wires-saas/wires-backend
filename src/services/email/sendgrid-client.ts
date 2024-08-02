@@ -13,7 +13,6 @@ export class SendGridClient {
 
     readEnvFile();
     const sendgridApiKey = process.env.SENDGRID_API_KEY;
-    console.log(sendgridApiKey);
     Sendgrid.setApiKey(sendgridApiKey);
   }
 

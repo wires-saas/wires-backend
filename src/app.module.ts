@@ -11,8 +11,15 @@ import { config as readEnvFile } from 'dotenv';
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './rbac/roles/roles.module';
 import { PermissionsModule } from './rbac/permissions/permissions.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from '../environments/environment.local';
+import {
+  AcceptLanguageResolver,
+  HeaderResolver,
+  I18nModule,
+  QueryResolver,
+} from 'nestjs-i18n';
+import { join } from 'path';
 
 readEnvFile();
 const connectionString = process.env.MONGO_URI;
@@ -30,6 +37,29 @@ const connectionString = process.env.MONGO_URI;
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true,
+    }),
+    I18nModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        fallbackLanguage: configService.getOrThrow('fallbackLanguage'),
+        loaderOptions: {
+          path: join(__dirname, 'i18n/'),
+          watch: true,
+        },
+        formatter: (template: string, args) => {
+          // Custom formatter as the default wasn't working...
+          return Object.keys(args).reduce((res, key) => {
+            const doubleSpace = res.replaceAll('{ ' + key + ' }', args[key]);
+            return doubleSpace.replaceAll('{' + key + '}', args[key]);
+          }, template);
+        },
+        // typesOutputPath: join(__dirname, '../i18n/generated/i18n.generated.ts'),
+      }),
+      resolvers: [
+        { use: QueryResolver, options: ['lang'] },
+        AcceptLanguageResolver,
+        new HeaderResolver(['x-lang']),
+      ],
+      inject: [ConfigService],
     }),
   ],
   controllers: [AppController],

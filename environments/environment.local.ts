@@ -2,6 +2,8 @@ export default () => {
   const appUrl = 'http://localhost:4200';
 
   return {
+    fallbackLanguage: 'fr',
+
     appName: 'Wires',
     appUrl: appUrl,
 

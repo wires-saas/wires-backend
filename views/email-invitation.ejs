@@ -4,36 +4,36 @@
 </style>
 </head>
 <body style="margin: 0;">
-<span style="display: none;">Invitation pour <%= fullName %></span>
+<span style="display: none;"><%= userInvite.title %> <%= orgName %></span>
 <div style="background-color: <%= theme.highlightBg %>; width: 100%; min-height: 100%; font-family: 'Poppins', 'Arial', 'Helvetica Neue', 'Helvetica', sans-serif;box-sizing: border-box; padding-bottom: 25px; margin: 0;">
   <div style="background: transparent; padding-top: 30px; padding-bottom: 20px; text-align: center;">
     <img style="display: inline-block; height: 50px; width: auto; margin-left: auto; margin-right: auto;" alt="Logo" src="http://via.placeholder.com/400x120/fafafa/000?text=Logo"/>
   </div>
   <div style="background-color: #fff; color: #000; font-size: 1em; border-top: 2px solid <%= theme.primaryDarkerColor %>; border-bottom: 1px solid #E6E6E6; box-sizing: border-box; padding: 25px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
 
-    <p style="margin-bottom: 25px; font-weight: bold;">Bienvenue, <%= fullName %></p>
-    <p style="margin-bottom: 25px;">Vous avez été invité à rejoindre <b><%= orgName %></b>,</p>
-    <p style="margin-bottom: 25px;">En cliquant sur le bouton ci-dessous, vous serez invité à définir votre mot de passe :</p>
+    <p style="margin-bottom: 25px; font-weight: bold;"><%= userInvite.welcome %> <%= fullName %></p>
+    <p style="margin-bottom: 25px;"><%= userInvite.invited %> <b><%= orgName %></b>,</p>
+    <p style="margin-bottom: 25px;"><%= userInvite.process %></p>
     <div style="margin-bottom: 25px; text-align: center;">
-      <a style="background-color: <%= theme.primaryDarkerColor %>; display: inline-block; font-size: 1.1em; color: #fff; padding: 10px 35px 10px; font-weight: 500; text-decoration: none; border-radius: 7px;" target="_blank" href="<%= acceptInviteURL %>">Confirmer mon adresse email</a>
+      <a style="background-color: <%= theme.primaryDarkerColor %>; display: inline-block; font-size: 1.1em; color: #fff; padding: 10px 35px 10px; font-weight: 500; text-decoration: none; border-radius: 7px;" target="_blank" href="<%= acceptInviteURL %>"><%= userInvite.button %></a>
     </div>
-    <p style="margin-bottom: 25px;">Vous pouvez aussi copier/coller ce lien dans votre navigateur :<br/> <a style="color: <%= theme.primaryColor %>; word-wrap: break-word;" target="_blank" href="<%= acceptInviteURL %>"><%= acceptInviteURL %></a></p>
+    <p style="margin-bottom: 25px;"><%= userInvite.alternative %><br/> <a style="color: <%= theme.primaryColor %>; word-wrap: break-word;" target="_blank" href="<%= acceptInviteURL %>"><%= acceptInviteURL %></a></p>
 
     <div style="margin-top: 40px;">
-        <p style="margin-bottom: 5px; font-style: italic; text-align: right;">Cordialement,</p>
-        <p style="margin-top: 0px; font-style: italic; text-align: right;">L'équipe <%= appName %></p>
+        <p style="margin-bottom: 5px; font-style: italic; text-align: right;"><%= userInvite.greets %></p>
+        <p style="margin-top: 0px; font-style: italic; text-align: right;"><%= userInvite.team %> <%= appName %></p>
     </div>
 
   </div>
   <div style="text-align: center; padding-top: 15px; margin-bottom: 15px; font-size: 12px;">
-    <a style="color: <%= theme.primaryDarkerColor %>;" href="<%= helpURL %>">Help</a>
+    <a style="color: <%= theme.primaryDarkerColor %>;" href="<%= helpURL %>"><%= footer.help %></a>
     <span style="color: #ccc;">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
-    <a style="color: <%= theme.primaryDarkerColor %>;" href="<%= faqURL %>">FAQ</a>
+    <a style="color: <%= theme.primaryDarkerColor %>;" href="<%= faqURL %>"><%= footer.faq %></a>
     <span style="color: #ccc;">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
-    <a style="color: <%= theme.primaryDarkerColor %>;" href="<%= tosURL %>">Terms of Service</a>
+    <a style="color: <%= theme.primaryDarkerColor %>;" href="<%= tosURL %>"><%= footer.terms %></a>
     <span style="color: #ccc;">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
-    <a style="color: <%= theme.primaryDarkerColor %>;" href="<%= privacyURL %>">Privacy Policy</a>
+    <a style="color: <%= theme.primaryDarkerColor %>;" href="<%= privacyURL %>"><%= footer.privacy %></a>
   </div>
-  <p style="color: #777777; padding: 0 25px; max-width: 400px; box-sizing: border-box; margin-left: auto; margin-right: auto; font-size: 10px; text-align: center;">Merci de ne pas répondre à cet email. Une question ? Contactez-nous <a style="color: <%= theme.primaryColor %>;" href="<%= contactURL %>">en cliquant ici</a></p>
+  <p style="color: #777777; padding: 0 25px; max-width: 400px; box-sizing: border-box; margin-left: auto; margin-right: auto; font-size: 10px; text-align: center;"><%= footer.contact %> <a style="color: <%= theme.primaryColor %>;" href="<%= contactURL %>"><%= footer.contactLink %></a></p>
 </div>
 </body>

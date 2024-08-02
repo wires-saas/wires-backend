@@ -1,0 +1,22 @@
+{
+  "userInvite": {
+    "subject": "Invitation à rejoindre { organization }",
+    "title": "Invitation de",
+    "welcome": "Bienvenue,",
+    "invited": "Vous avez été invité à rejoindre",
+    "process": "Il ne reste plus qu'à cliquer ci-dessous pour finaliser votre inscription",
+    "button": "Définir le mot de passe",
+    "alternative": "Si vous ne pouvez pas cliquer sur le bouton, copiez et collez le lien suivant dans votre navigateur :",
+    "greets": "Cordialement,",
+    "team": "L'équipe"
+  },
+  "footer": {
+    "help": "Aide",
+    "contact": "Merci de ne pas répondre à cet email. Une question ? Contactez-nous",
+    "contactLink": "en cliquant ici",
+    "terms": "Conditions d'utilisation",
+    "privacy": "Politique de confidentialité",
+    "unsubscribe": "Se désabonner",
+    "faq": "FAQ"
+  }
+}

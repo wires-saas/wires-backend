@@ -11,6 +11,7 @@ import {
   UseGuards,
   Query,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -36,11 +37,14 @@ import { EmailService } from '../services/email/email.service';
 @UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController {
+  private logger: Logger;
   constructor(
     private readonly usersService: UsersService,
     private readonly emailService: EmailService,
     private caslAbilityFactory: CaslAbilityFactory,
-  ) {}
+  ) {
+    this.logger = new Logger(UsersController.name);
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create new user' })
@@ -58,9 +62,9 @@ export class UsersController {
     }
 
     const userCreated: User = await this.usersService.create(createUserDto);
-    if (userCreated) {
-      await this.emailService.sendTestEmail(userCreated.email, 'Invite email');
-    }
+    this.logger.log('New user created with id #' + userCreated._id);
+
+    if (userCreated) await this.emailService.sendUserInviteEmail(userCreated);
 
     return userCreated;
   }
