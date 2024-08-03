@@ -16,6 +16,7 @@ export default () => {
 
     urls: {
       acceptInviteURL: `${appUrl}/auth/accept-invite`,
+      passwordResetURL: `${appUrl}/auth/reset-password`,
       helpURL: `${appUrl}/help`,
       tosURL: `${appUrl}/tos`,
       faqURL: `${appUrl}/faq`,

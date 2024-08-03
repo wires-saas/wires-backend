@@ -10,6 +10,16 @@
     "greets": "Cordialement,",
     "team": "L'équipe"
   },
+  "userPasswordReset": {
+    "subject": "Réinitialisation de votre mot de passe",
+    "title": "Réinitialisation de votre mot de passe",
+    "intro": "Bonjour,",
+    "process": "Vous avez demandé la réinitialisation de votre mot de passe. Cliquez ci-dessous pour choisir un nouveau mot de passe",
+    "button": "Réinitialiser le mot de passe",
+    "alternative": "Si cela ne fonctionne pas, copiez et collez le lien suivant dans votre navigateur :",
+    "greets": "Cordialement,",
+    "team": "L'équipe"
+  },
   "footer": {
     "help": "Aide",
     "contact": "Merci de ne pas répondre à cet email. Une question ? Contactez-nous",

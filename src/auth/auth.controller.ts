@@ -10,7 +10,6 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import {
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,

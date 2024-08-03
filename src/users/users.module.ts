@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -7,6 +7,7 @@ import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 import { EmailModule } from '../services/email/email.module';
 import { SecurityModule } from '../services/security/security.module';
 import allModels from '../shared/mongoose-models';
+import { OrganizationsModule } from '../organizations/organizations.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import allModels from '../shared/mongoose-models';
     UserRolesModule,
     EmailModule,
     SecurityModule,
+    forwardRef(() => OrganizationsModule), // circular dependency
   ],
   controllers: [UsersController],
   providers: [UsersService, CaslAbilityFactory],

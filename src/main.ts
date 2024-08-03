@@ -37,7 +37,10 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('ejs');
 
-  app.enableCors({ origin: '*' });
+  app.enableCors({
+    origin: ['localhost:4200', 'localhost:3000', 'dev.wires.fr', 'wires.fr'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   await app.listen(3000);
 }

@@ -3,7 +3,7 @@ import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { SuperAdminGuard } from '../auth/super-admin.guard';
-import { I18nContext, I18nService } from 'nestjs-i18n';
+import { I18nService } from 'nestjs-i18n';
 
 // This controller is mainly used for debugging
 // Hence why SuperAdminGuard is used
@@ -43,7 +43,4 @@ export class MailController {
 
     return res.render(file, options);
   }
-
-  @Post('invitation/:token')
-  async validateInvitation(@Param('token') token: string) {}
 }

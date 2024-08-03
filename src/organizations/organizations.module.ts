@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { OrganizationsController } from './organizations.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -11,7 +11,7 @@ import { CaslModule } from '../rbac/casl/casl.module';
 @Module({
   imports: [
     MongooseModule.forFeature(allModels),
-    UsersModule,
+    forwardRef(() => UsersModule), // circular dependency
     UserRolesModule,
     SecurityModule,
     CaslModule,

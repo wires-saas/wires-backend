@@ -68,7 +68,10 @@ export class UsersService {
 
     // await new this.userRoleModel(userRole).save();
 
-    return userCreated;
+    // return this.findOne(userCreated._id, true);
+    const userWithRoles = await this.findOne(userCreated._id, true);
+    console.log(userWithRoles);
+    return userWithRoles;
   }
 
   async findAll(ability: MongoAbility, orgs?: string[]): Promise<User[]> {

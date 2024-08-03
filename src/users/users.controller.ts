@@ -32,6 +32,7 @@ import { Organization } from '../organizations/schemas/organization.schema';
 import { RbacUtils } from '../shared/utils/rbac.utils';
 import { accessibleFieldsBy } from '@casl/mongoose';
 import { EmailService } from '../services/email/email.service';
+import { OrganizationsService } from '../organizations/organizations.service';
 
 @ApiTags('Users')
 @UseGuards(AuthGuard)
@@ -39,8 +40,9 @@ import { EmailService } from '../services/email/email.service';
 export class UsersController {
   private logger: Logger;
   constructor(
-    private readonly usersService: UsersService,
-    private readonly emailService: EmailService,
+    private usersService: UsersService,
+    private organizationsService: OrganizationsService,
+    private emailService: EmailService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {
     this.logger = new Logger(UsersController.name);
@@ -61,10 +63,20 @@ export class UsersController {
       throw new UnauthorizedException();
     }
 
+    const organization = await this.organizationsService.findOne(
+      createUserDto.organization,
+    );
+
+    if (!organization) {
+      throw new BadRequestException('Organization not found');
+    }
+
     const userCreated: User = await this.usersService.create(createUserDto);
     this.logger.log('New user created with id #' + userCreated._id);
+    console.log(userCreated.organizations);
 
-    if (userCreated) await this.emailService.sendUserInviteEmail(userCreated);
+    if (userCreated)
+      await this.emailService.sendUserInviteEmail(userCreated, organization);
 
     return userCreated;
   }
