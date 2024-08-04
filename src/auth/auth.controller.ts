@@ -6,6 +6,7 @@ import {
   UseGuards,
   Request,
   Param,
+  Logger,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
@@ -25,7 +26,10 @@ import { AuthenticatedRequest } from '../shared/types/authentication.types';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  private logger: Logger;
+  constructor(private authService: AuthService) {
+    this.logger = new Logger(AuthController.name);
+  }
 
   @Post('login')
   @ApiOperation({ summary: 'Sign in' })
@@ -36,6 +40,7 @@ export class AuthController {
   signIn(
     @Body() signInDto: SignInDto,
   ): Promise<{ access_token: string; user: User }> {
+    this.logger.log(`Sign in attempt for ${signInDto.email}`);
     return this.authService.signIn(signInDto.email, signInDto.password);
   }
 
