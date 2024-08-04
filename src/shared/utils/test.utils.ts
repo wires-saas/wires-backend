@@ -9,9 +9,15 @@ import { EncryptService } from '../../services/security/encrypt.service';
 import { HashService } from '../../services/security/hash.service';
 import { OrganizationsService } from '../../organizations/organizations.service';
 import { EmailService } from '../../services/email/email.service';
+import { ConfigService } from '@nestjs/config';
 
 export class TestUtils {
   static createTestingModule(metadata: ModuleMetadata): Promise<TestingModule> {
+    const mockConfigService = {
+      get: jest.fn(),
+      getOrThrow: jest.fn(),
+    };
+
     const mockJwtService = {
       sign: jest.fn(),
       verify: jest.fn(),
@@ -58,6 +64,7 @@ export class TestUtils {
     return Test.createTestingModule({
       controllers: [...metadata.controllers],
       providers: [
+        { provide: ConfigService, useValue: mockConfigService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: UsersService, useValue: mockUsersService },
         { provide: OrganizationsService, useValue: mockOrganizationsService },

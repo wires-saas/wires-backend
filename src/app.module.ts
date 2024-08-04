@@ -12,7 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './rbac/roles/roles.module';
 import { PermissionsModule } from './rbac/permissions/permissions.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import configuration from '../environments/environment.local';
+import configuration from '../environments/environment';
 import {
   AcceptLanguageResolver,
   HeaderResolver,

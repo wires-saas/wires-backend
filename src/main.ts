@@ -5,6 +5,7 @@ import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import * as compression from 'compression';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { config as readEnvFile } from 'dotenv';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -37,8 +38,11 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('ejs');
 
+  readEnvFile();
+  const appUrl = process.env.APP_URL;
+
   app.enableCors({
-    origin: ['localhost:4200', 'localhost:3000', 'dev.wires.fr', 'wires.fr'],
+    origin: [appUrl],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 

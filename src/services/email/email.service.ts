@@ -33,7 +33,12 @@ export class EmailService {
       subject: 'Test email',
       content: [{ type: 'text/plain', value: body }],
     };
-    await this.sendGridClient.send(mail);
+
+    if (this.configService.getOrThrow('enableEmails')) {
+      await this.sendGridClient.send(mail);
+    } else {
+      this.logger.warn('Emails are disabled, not sending email');
+    }
   }
 
   private async sendEmail(
@@ -52,7 +57,12 @@ export class EmailService {
         },
       ],
     };
-    await this.sendGridClient.send(mail);
+
+    if (this.configService.getOrThrow('enableEmails')) {
+      await this.sendGridClient.send(mail);
+    } else {
+      this.logger.warn('Emails are disabled, not sending email');
+    }
   }
 
   async sendUserInviteEmail(
@@ -78,11 +88,11 @@ export class EmailService {
     const footer = this.i18n.t('email.footer');
 
     const options = {
-      appName: this.configService.get('appName'),
-      theme: this.configService.get('theme'),
-      ...this.configService.get('urls'),
+      appName: this.configService.getOrThrow('appName'),
+      theme: this.configService.getOrThrow('theme'),
+      ...this.configService.getOrThrow('urls'),
 
-      acceptInviteURL: `${this.configService.get('urls.acceptInviteURL')}?token=${encodeURIComponent(token)}`,
+      acceptInviteURL: `${this.configService.getOrThrow('urls.acceptInviteURL')}?token=${encodeURIComponent(token)}`,
       fullName: user.firstName,
       orgName: organization.name,
 
@@ -132,11 +142,11 @@ export class EmailService {
     const footer = this.i18n.t('email.footer');
 
     const options = {
-      appName: this.configService.get('appName'),
-      theme: this.configService.get('theme'),
-      ...this.configService.get('urls'),
+      appName: this.configService.getOrThrow('appName'),
+      theme: this.configService.getOrThrow('theme'),
+      ...this.configService.getOrThrow('urls'),
 
-      passwordResetURL: `${this.configService.get('urls.passwordResetURL')}?token=${encodeURIComponent(token)}`,
+      passwordResetURL: `${this.configService.getOrThrow('urls.passwordResetURL')}?token=${encodeURIComponent(token)}`,
       fullName: user.firstName,
       expiration: expiration,
       userPasswordReset,

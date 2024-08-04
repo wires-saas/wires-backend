@@ -1,11 +1,18 @@
+import { config as readEnvFile } from 'dotenv';
+
 export default () => {
-  const appUrl = 'http://localhost:4200';
+  readEnvFile();
+
+  const appUrl = process.env.APP_URL;
 
   return {
-    fallbackLanguage: 'fr',
+    env: process.env.NODE_ENV,
 
-    appName: 'Wires',
-    appUrl: appUrl,
+    fallbackLanguage: process.env.FALLBACK_LANGUAGE,
+    enableEmails: process.env.ENABLE_EMAILS === 'true',
+
+    appName: process.env.APP_NAME,
+    appUrl: process.env.APP_URL,
 
     theme: {
       primaryColor: '#6366f1',
