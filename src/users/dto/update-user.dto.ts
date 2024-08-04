@@ -12,4 +12,12 @@ export class UpdateUserDto extends PartialType(
   @IsOptional()
   @IsNumber()
   lastSeenAt?: number;
+
+  @IsOptional()
+  @IsString()
+  passwordResetToken?: string;
+
+  @IsOptional()
+  @IsNumber()
+  passwordResetTokenExpiresAt?: number;
 }

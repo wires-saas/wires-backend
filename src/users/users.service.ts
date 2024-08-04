@@ -46,8 +46,10 @@ export class UsersService {
       emailStatus: UserEmailStatus.UNCONFIRMED,
       emailChangeCandidate: '',
       password: '',
-      passwordResetToken: crypto.randomBytes(32).toString('hex'),
-      passwordResetTokenExpiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+      passwordResetToken: '',
+      passwordResetTokenExpiresAt: 0,
+      inviteToken: crypto.randomBytes(32).toString('hex'),
+      inviteTokenExpiresAt: Date.now() + 14 * 24 * 60 * 60 * 1000,
       emailVerificationToken: '',
       emailVerificationTokenExpiresAt: 0,
       lastSeenAt: 0,
@@ -69,9 +71,7 @@ export class UsersService {
     // await new this.userRoleModel(userRole).save();
 
     // return this.findOne(userCreated._id, true);
-    const userWithRoles = await this.findOne(userCreated._id, true);
-    console.log(userWithRoles);
-    return userWithRoles;
+    return await this.findOne(userCreated._id, true);
   }
 
   async findAll(ability: MongoAbility, orgs?: string[]): Promise<User[]> {
@@ -176,7 +176,25 @@ export class UsersService {
       });
   }
 
-  async findOneByPasswordToken(token: string): Promise<User> {
+  async findOneByInviteToken(token: string): Promise<User> {
+    // TODO add token expiration check
+    return this.userModel
+      .findOne({ inviteToken: token })
+      .exec()
+      .then(async (user) => {
+        if (!user) throw new NotFoundException('User not found');
+
+        const roles: UserRole[] = await this.userRoleService
+          .findAll(user._id, false)
+          .catch(() => []);
+
+        if (roles) user.roles = roles;
+
+        return user;
+      });
+  }
+
+  async findOneByPasswordResetToken(token: string): Promise<User> {
     // TODO add token expiration check
     return this.userModel
       .findOne({ passwordResetToken: token })
@@ -246,9 +264,20 @@ export class UsersService {
       id,
       new User({
         status: UserStatus.ACTIVE,
+        emailStatus: UserEmailStatus.CONFIRMED,
         password: await this.hashService.hash(password),
-        passwordResetTokenExpiresAt: undefined,
-        passwordResetToken: undefined,
+      }),
+      { returnOriginal: false },
+    );
+  }
+
+  async resetPasswordOfUser(id: string, password: string): Promise<User> {
+    return this.userModel.findByIdAndUpdate(
+      id,
+      new User({
+        password: await this.hashService.hash(password),
+        passwordResetTokenExpiresAt: 0,
+        passwordResetToken: '',
       }),
       { returnOriginal: false },
     );

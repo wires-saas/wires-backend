@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -11,10 +12,14 @@ import { User } from '../users/schemas/user.schema';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  private logger: Logger;
+
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
-  ) {}
+  ) {
+    this.logger = new Logger(AuthGuard.name);
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -28,7 +33,7 @@ export class AuthGuard implements CanActivate {
       });
 
       if (payload.expiracy < Date.now()) {
-        console.error('Token expired');
+        this.logger.debug('Token expired');
         throw new UnauthorizedException();
       }
 

@@ -7,7 +7,6 @@ import { EncryptService } from '../security/encrypt.service';
 import * as ejs from 'ejs';
 import { join } from 'path';
 import { I18nService } from 'nestjs-i18n';
-import { OrganizationsService } from '../../organizations/organizations.service';
 import { Organization } from '../../organizations/schemas/organization.schema';
 
 @Injectable()
@@ -60,6 +59,8 @@ export class EmailService {
     user: User,
     organization: Organization,
   ): Promise<void> {
+    this.logger.log('Sending user invite email to user #' + user._id);
+
     const userEmail = user.email;
     try {
       this.encryptService.decrypt(user.email);
@@ -71,9 +72,7 @@ export class EmailService {
       );
     }
 
-    this.logger.log('User invite email sent to user #' + user._id);
-
-    const token = user.passwordResetToken;
+    const token = user.inviteToken;
 
     const userInvite = this.i18n.t('email.userInvite');
     const footer = this.i18n.t('email.footer');
@@ -111,7 +110,13 @@ export class EmailService {
     );
   }
 
-  async sendUserPasswordResetEmail(user: User): Promise<void> {
+  async sendUserPasswordResetEmail(
+    user: User,
+    token: string,
+    expiration: number,
+  ): Promise<void> {
+    this.logger.log('Sending password reset email to user #' + user._id);
+
     const userEmail = user.email;
     try {
       this.encryptService.decrypt(user.email);
@@ -123,10 +128,6 @@ export class EmailService {
       );
     }
 
-    this.logger.log('Password reset email sent to user #' + user._id);
-
-    const token = user.passwordResetToken;
-
     const userPasswordReset = this.i18n.t('email.userPasswordReset');
     const footer = this.i18n.t('email.footer');
 
@@ -137,6 +138,7 @@ export class EmailService {
 
       passwordResetURL: `${this.configService.get('urls.passwordResetURL')}?token=${encodeURIComponent(token)}`,
       fullName: user.firstName,
+      expiration: expiration,
       userPasswordReset,
       footer,
     };

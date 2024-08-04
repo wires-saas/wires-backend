@@ -5,9 +5,16 @@ import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
 export class EncryptService {
   private cipher: any;
 
+  static TOKEN_EXPIRATION_DAYS = 7;
+  static TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 7; // 7 days
+
   constructor() {
     const keyParsed = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
     this.cipher = this.aes256gcm(keyParsed);
+  }
+
+  generateRandomToken(): string {
+    return randomBytes(32).toString('hex');
   }
 
   encrypt(str: string): string {

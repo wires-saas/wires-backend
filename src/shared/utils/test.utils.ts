@@ -8,6 +8,7 @@ import { CaslAbilityFactory } from '../../rbac/casl/casl-ability.factory';
 import { EncryptService } from '../../services/security/encrypt.service';
 import { HashService } from '../../services/security/hash.service';
 import { OrganizationsService } from '../../organizations/organizations.service';
+import { EmailService } from '../../services/email/email.service';
 
 export class TestUtils {
   static createTestingModule(metadata: ModuleMetadata): Promise<TestingModule> {
@@ -50,6 +51,10 @@ export class TestUtils {
       remove: jest.fn(),
     };
 
+    const mockEmailService = {
+      sendEmail: jest.fn(),
+    };
+
     return Test.createTestingModule({
       controllers: [...metadata.controllers],
       providers: [
@@ -65,6 +70,8 @@ export class TestUtils {
 
         { provide: EncryptService, useValue: mockEncryptService },
         { provide: HashService, useValue: mockHashService },
+
+        { provide: EmailService, useValue: mockEmailService },
 
         ...metadata.providers,
       ],

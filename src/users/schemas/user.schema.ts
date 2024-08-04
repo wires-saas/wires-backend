@@ -23,6 +23,8 @@ export type UserDocument = HydratedDocument<User>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
       // delete ret.password;
+      delete ret.inviteToken;
+      delete ret.inviteTokenExpiresAt;
       delete ret.passwordResetToken;
       delete ret.passwordResetTokenExpiresAt;
       delete ret.emailVerificationToken;
@@ -38,6 +40,8 @@ export type UserDocument = HydratedDocument<User>;
       delete ret.password;
       delete ret.passwordResetToken;
       delete ret.passwordResetTokenExpiresAt;
+      delete ret.inviteToken;
+      delete ret.inviteTokenExpiresAt;
       delete ret.emailVerificationToken;
       delete ret.emailVerificationTokenExpiresAt;
       return ret;
@@ -71,29 +75,35 @@ export class User {
   @Prop()
   country: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   email: string;
 
   @Prop()
   emailStatus: UserEmailStatus;
 
   @Prop()
-  emailChangeCandidate?: string;
+  emailChangeCandidate: string;
+
+  @Prop()
+  inviteToken: string;
+
+  @Prop()
+  inviteTokenExpiresAt: number;
 
   @Prop()
   password: string;
 
   @Prop()
-  passwordResetToken?: string;
+  passwordResetToken: string;
 
   @Prop()
-  passwordResetTokenExpiresAt?: number;
+  passwordResetTokenExpiresAt: number;
 
   @Prop()
-  emailVerificationToken?: string;
+  emailVerificationToken: string;
 
   @Prop()
-  emailVerificationTokenExpiresAt?: number;
+  emailVerificationTokenExpiresAt: number;
 
   @Prop()
   lastSeenAt?: number;

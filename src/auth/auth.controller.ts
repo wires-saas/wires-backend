@@ -10,6 +10,8 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import {
+  ApiForbiddenResponse,
+  ApiGoneResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -76,8 +78,9 @@ export class AuthController {
   @Get('invite/:token')
   @ApiOperation({ summary: 'Check if invite token is valid' })
   @ApiOkResponse({ description: 'Invite token is valid' })
-  @ApiNotFoundResponse({ description: 'Invite token is invalid' })
-  @ApiUnauthorizedResponse({ description: 'Invite token is expired' })
+  @ApiGoneResponse({ description: 'Invite token already used' })
+  @ApiNotFoundResponse({ description: 'Invite token does not exist' })
+  @ApiForbiddenResponse({ description: 'Invite token is expired' })
   async checkInviteToken(
     @Param('token') token: string,
   ): Promise<{ organization: string; firstName: string }> {
@@ -85,11 +88,47 @@ export class AuthController {
   }
 
   @Post('invite/:token')
-  @ApiOperation({ summary: 'Consumes invite token and set user password' })
+  @ApiOperation({ summary: 'Consumes invite token, setting password' })
+  @ApiOkResponse({ description: 'Invite token is valid' })
+  @ApiGoneResponse({ description: 'Invite token already used' })
+  @ApiNotFoundResponse({ description: 'Invite token does not exist' })
+  @ApiForbiddenResponse({ description: 'Invite token is expired' })
   async useInviteToken(
     @Param('token') token: string,
     @Body('password') password: string,
   ): Promise<User> {
     return this.authService.useInviteToken(token, password);
+  }
+
+  @Post('password')
+  @ApiOperation({ summary: 'Request password reset' })
+  @ApiOkResponse({ description: 'Password reset email sent' })
+  async requestPasswordReset(@Body('email') email: string): Promise<void> {
+    return this.authService.requestPasswordReset(email);
+  }
+
+  @Get('password/:token')
+  @ApiOperation({ summary: 'Check if password reset token is valid' })
+  @ApiOkResponse({ description: 'Password reset token is valid' })
+  @ApiNotFoundResponse({ description: 'Password reset token is invalid' })
+  @ApiForbiddenResponse({ description: 'Password reset token is expired' })
+  async checkPasswordResetToken(
+    @Param('token') token: string,
+  ): Promise<{ firstName: string }> {
+    return this.authService.checkPasswordResetToken(token);
+  }
+
+  @Post('password/:token')
+  @ApiOperation({
+    summary: 'Consumes password reset token, setting password',
+  })
+  @ApiOkResponse({ description: 'Password reset token is valid' })
+  @ApiNotFoundResponse({ description: 'Password reset token is invalid' })
+  @ApiForbiddenResponse({ description: 'Password reset token is expired' })
+  async usePasswordResetToken(
+    @Param('token') token: string,
+    @Body('password') password: string,
+  ): Promise<User> {
+    return this.authService.usePasswordResetToken(token, password);
   }
 }

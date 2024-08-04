@@ -1,7 +1,9 @@
 import {
+  ForbiddenException,
+  GoneException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
@@ -12,16 +14,23 @@ import { User } from '../users/schemas/user.schema';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { Organization } from '../organizations/schemas/organization.schema';
 import { UserStatus } from '../users/entities/user-status.entity';
+import { UserEmailStatus } from '../users/entities/user-email-status.entity';
+import { EmailService } from '../services/email/email.service';
 
 @Injectable()
 export class AuthService {
+  private logger: Logger;
+
   constructor(
     private usersService: UsersService,
     private organizationsService: OrganizationsService,
     private hashService: HashService,
     private jwtService: JwtService,
     private encryptService: EncryptService,
-  ) {}
+    private emailService: EmailService,
+  ) {
+    this.logger = new Logger(AuthService.name);
+  }
 
   async signIn(
     email: string,
@@ -31,6 +40,11 @@ export class AuthService {
       // obfuscate the error message
       throw new UnauthorizedException();
     });
+
+    if (user.emailStatus === UserEmailStatus.UNCONFIRMED) {
+      throw new ForbiddenException('Email not confirmed');
+    }
+
     const passwordMatches = await this.hashService.compare(pass, user.password);
 
     if (!passwordMatches) {
@@ -64,24 +78,19 @@ export class AuthService {
   async checkInviteToken(
     token: string,
   ): Promise<{ organization: string; firstName: string }> {
-    const userWithToken = await this.usersService.findOneByPasswordToken(token);
+    const userWithToken: User =
+      await this.usersService.findOneByInviteToken(token);
 
-    if (!userWithToken) {
-      throw new NotFoundException('Token not found');
+    if (userWithToken.status !== UserStatus.PENDING) {
+      throw new GoneException('Token already used');
     }
 
-    if (userWithToken.passwordResetTokenExpiresAt < Date.now())
-      throw new UnauthorizedException();
+    if (userWithToken.inviteTokenExpiresAt < Date.now())
+      throw new ForbiddenException('Token expired');
 
     if (!userWithToken?.organizations?.length) {
       throw new InternalServerErrorException(
         'User has no organization assigned',
-      );
-    }
-
-    if (userWithToken.status !== UserStatus.PENDING) {
-      throw new InternalServerErrorException(
-        'User has already accepted invite',
       );
     }
 
@@ -95,14 +104,15 @@ export class AuthService {
   }
 
   async useInviteToken(token: string, password: string): Promise<User> {
-    const userWithToken = await this.usersService.findOneByPasswordToken(token);
+    const userWithToken: User =
+      await this.usersService.findOneByInviteToken(token);
 
-    if (!userWithToken) {
-      throw new NotFoundException('Token not found');
+    if (userWithToken.status !== UserStatus.PENDING) {
+      throw new GoneException('Token already used');
     }
 
-    if (userWithToken.passwordResetTokenExpiresAt < Date.now())
-      throw new UnauthorizedException();
+    if (userWithToken.inviteTokenExpiresAt < Date.now())
+      throw new ForbiddenException('Token expired');
 
     if (!userWithToken?.organizations?.length) {
       throw new InternalServerErrorException(
@@ -110,15 +120,61 @@ export class AuthService {
       );
     }
 
-    if (userWithToken.status !== UserStatus.PENDING) {
-      throw new InternalServerErrorException(
-        'User has already accepted invite',
-      );
-    }
-
     // TODO ensure password is strong enough
 
     const userActivated = await this.usersService.verifyInviteOfUser(
+      userWithToken._id,
+      password,
+    );
+
+    if (userActivated) return userActivated;
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    try {
+      const user = await this.usersService.findOneByEmail(email);
+
+      const token = this.encryptService.generateRandomToken();
+
+      await this.usersService.update(user._id, {
+        passwordResetToken: token,
+        passwordResetTokenExpiresAt:
+          Date.now() + EncryptService.TOKEN_EXPIRATION_TIME,
+      });
+
+      await this.emailService.sendUserPasswordResetEmail(
+        user,
+        token,
+        EncryptService.TOKEN_EXPIRATION_DAYS,
+      );
+    } catch (err) {
+      this.logger.warn('Password reset request failed', err);
+      // failing silently
+    }
+  }
+
+  async checkPasswordResetToken(token: string): Promise<{ firstName: string }> {
+    const userWithToken: User =
+      await this.usersService.findOneByPasswordResetToken(token);
+
+    if (userWithToken.passwordResetTokenExpiresAt < Date.now())
+      throw new ForbiddenException('Token expired');
+
+    return {
+      firstName: userWithToken.firstName,
+    };
+  }
+
+  async usePasswordResetToken(token: string, password: string): Promise<User> {
+    const userWithToken: User =
+      await this.usersService.findOneByPasswordResetToken(token);
+
+    if (userWithToken.passwordResetTokenExpiresAt < Date.now())
+      throw new ForbiddenException('Token expired');
+
+    // TODO ensure password is strong enough
+
+    const userActivated = await this.usersService.resetPasswordOfUser(
       userWithToken._id,
       password,
     );

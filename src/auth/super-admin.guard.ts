@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -12,10 +13,14 @@ import { AuthGuard } from './auth.guard';
 
 @Injectable()
 export class SuperAdminGuard implements CanActivate {
+  private logger: Logger;
+
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
-  ) {}
+  ) {
+    this.logger = new Logger(SuperAdminGuard.name);
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -29,7 +34,7 @@ export class SuperAdminGuard implements CanActivate {
       });
 
       if (payload.expiracy < Date.now()) {
-        console.error('Token expired');
+        this.logger.warn('Token expired');
         throw new UnauthorizedException();
       }
 
@@ -38,7 +43,7 @@ export class SuperAdminGuard implements CanActivate {
       );
 
       if (!userFromDatabase?.isSuperAdmin) {
-        console.error('User is not a super admin');
+        this.logger.debug('User is not a super admin');
         throw new UnauthorizedException();
       }
 
