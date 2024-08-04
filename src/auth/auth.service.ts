@@ -52,7 +52,7 @@ export class AuthService {
     const passwordMatches = await this.hashService
       .compare(pass, user.password)
       .catch((err) => {
-        this.logger.warn('Password comparison failed', err);
+        this.logger.error('Error occurred while comparing password', err);
         throw new InternalServerErrorException();
       });
 

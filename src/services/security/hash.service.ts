@@ -22,14 +22,6 @@ export class HashService {
     this.logger.log(str);
     this.logger.log(this.salt + str);
     this.logger.log(hash);
-    bcrypt.compare(this.salt + str, hash, (err, same) => {
-      if (err) {
-        this.logger.error(err);
-        return false;
-      }
-      return same;
-    });
-
-    return new Promise((res, _) => res(true));
+    return bcrypt.compareSync(this.salt + str, hash);
   }
 }
