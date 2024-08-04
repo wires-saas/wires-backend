@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { config as readEnvFile } from 'dotenv';
 
 @Injectable()
 export class HashService {
@@ -10,7 +9,6 @@ export class HashService {
 
   constructor() {
     this.logger = new Logger(HashService.name);
-    readEnvFile();
     this.salt = process.env.HASH_SALT;
     console.log(this.salt);
   }
@@ -24,6 +22,14 @@ export class HashService {
     this.logger.log(str);
     this.logger.log(this.salt + str);
     this.logger.log(hash);
-    return bcrypt.compare(this.salt + str, hash);
+    bcrypt.compare(this.salt + str, hash, (err, same) => {
+      if (err) {
+        this.logger.error(err);
+        return false;
+      }
+      return same;
+    });
+
+    return new Promise((res, _) => res(true));
   }
 }
