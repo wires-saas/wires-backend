@@ -20,4 +20,8 @@ export class UpdateUserDto extends PartialType(
   @IsOptional()
   @IsNumber()
   passwordResetTokenExpiresAt?: number;
+
+  @IsOptional()
+  @IsNumber()
+  inviteTokenExpiresAt?: number;
 }

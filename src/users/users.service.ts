@@ -266,6 +266,7 @@ export class UsersService {
         status: UserStatus.ACTIVE,
         emailStatus: UserEmailStatus.CONFIRMED,
         password: await this.hashService.hash(password),
+        inviteTokenExpiresAt: 0,
       }),
       { returnOriginal: false },
     );

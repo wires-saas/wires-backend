@@ -115,7 +115,7 @@ export class EmailService {
           );
         }
 
-        if (html) await this.sendEmail(userEmail, subject, html);
+        if (html) return await this.sendEmail(userEmail, subject, html);
       },
     );
   }

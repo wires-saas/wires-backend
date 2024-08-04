@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { SuperAdminGuard } from '../auth/super-admin.guard';
 import { I18nService } from 'nestjs-i18n';
+import { EncryptService } from '../services/security/encrypt.service';
 
 // This controller is mainly used for debugging
 // Hence why SuperAdminGuard is used
@@ -27,7 +28,7 @@ export class MailController {
     const userInvite = this.i18n.t('email.userInvite');
     const footer = this.i18n.t('email.footer');
 
-    const token = user.passwordResetToken;
+    const token = user.inviteToken;
 
     const options = {
       appName: this.configService.getOrThrow('appName'),
@@ -38,6 +39,33 @@ export class MailController {
       fullName: user.firstName,
       orgName: 'Alphabet Corporation',
       userInvite,
+      footer,
+    };
+
+    return res.render(file, options);
+  }
+
+  @Get('password-reset')
+  async getPasswordResetEmail(@Res() res: Response) {
+    const file = 'email-password-reset.ejs';
+
+    const user = await this.usersService.findOneByEmail('cross-admin@mail.com');
+
+    const userPasswordReset = this.i18n.t('email.userPasswordReset');
+    const footer = this.i18n.t('email.footer');
+
+    const token = user.passwordResetToken;
+
+    const options = {
+      appName: this.configService.getOrThrow('appName'),
+      theme: this.configService.getOrThrow('theme'),
+      ...this.configService.getOrThrow('urls'),
+
+      acceptInviteURL: `${this.configService.getOrThrow('urls.passwordResetURL')}?token=${encodeURIComponent(token)}`,
+      fullName: user.firstName,
+      orgName: 'Alphabet Corporation',
+      expiration: EncryptService.TOKEN_EXPIRATION_DAYS,
+      userPasswordReset,
       footer,
     };
 
