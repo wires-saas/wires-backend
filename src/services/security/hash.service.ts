@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { config as readEnvFile } from 'dotenv';
 
 @Injectable()
 export class HashService {
@@ -7,6 +8,7 @@ export class HashService {
   private salt: string;
 
   constructor() {
+    readEnvFile();
     this.salt = process.env.HASH_SALT;
   }
 

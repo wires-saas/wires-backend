@@ -49,7 +49,12 @@ export class AuthService {
 
     this.logger.log(`User email status: ${user.emailStatus}`);
 
-    const passwordMatches = await this.hashService.compare(pass, user.password);
+    const passwordMatches = await this.hashService
+      .compare(pass, user.password)
+      .catch((err) => {
+        this.logger.warn('Password comparison failed', err);
+        throw new InternalServerErrorException();
+      });
 
     this.logger.log(`Password matches: ${passwordMatches}`);
 
