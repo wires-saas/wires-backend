@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Build Deploy Test
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
       - develop
 
 jobs:
-  package:
+  ship:
     runs-on: [self-hosted, 8GB]
     env:
       DEPLOY_WEBHOOK_URL_PROD: ${{ secrets.DEPLOY_WEBHOOK_URL_PROD }}
@@ -98,3 +98,11 @@ jobs:
         run: |
           curl --fail -H "Authorization: ${DEPLOY_WEBHOOK_TOKEN_PROD}" -XGET "${DEPLOY_WEBHOOK_URL_PROD}/backend?&version=${GITHUB_SHA}"
         continue-on-error: true
+  test:
+    needs: ship
+    runs-on: [ self-hosted, 8GB ]
+    env:
+      BACKEND_URL_DEV: ${{ vars.BACKEND_URL_DEV }}
+    steps:
+      - name: Checking status of backend
+        run: curl -XGET "${BACKEND_URL_DEV}/status"
