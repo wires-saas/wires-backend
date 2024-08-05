@@ -36,18 +36,14 @@ export class AuthService {
     email: string,
     pass: string,
   ): Promise<{ access_token: string; user: User }> {
-    this.logger.log(`Sign in attempt for ${email}`);
     const user = await this.usersService.findOneByEmail(email).catch(() => {
       // obfuscate the error message
       throw new UnauthorizedException();
     });
 
-    this.logger.log(`User found: ${user}`);
     if (user.emailStatus === UserEmailStatus.UNCONFIRMED) {
       throw new ForbiddenException('Email not confirmed');
     }
-
-    this.logger.log(`User email status: ${user.emailStatus}`);
 
     const passwordMatches = await this.hashService
       .compare(pass, user.password)
@@ -56,15 +52,11 @@ export class AuthService {
         throw new InternalServerErrorException();
       });
 
-    this.logger.log(`Password matches: ${passwordMatches}`);
-
     if (!passwordMatches) {
       throw new UnauthorizedException();
     }
 
     const clearEmail = this.encryptService.decrypt(user.email);
-
-    this.logger.log(`Email decrypted: ${clearEmail}`);
 
     const payload = { sub: user._id.toString(), email: clearEmail };
 
@@ -73,8 +65,6 @@ export class AuthService {
       user: userRole.user,
       role: userRole.role._id,
     }));
-
-    this.logger.log(`User roles: ${user.roles}`);
 
     await this.usersService
       .update(user._id, {

@@ -43,10 +43,11 @@ jobs:
       - name: Compile Typescript
         run: npm run build
 
-      - name: Create .env file containing secrets
-        env:
-          ENV_SECRETS: ${{ secrets.ENV_SECRETS }}
-        run: echo $ENV_SECRETS > .env
+      # Env file now created from Ansible
+      # - name: Create .env file containing secrets
+      #   env:
+      #     ENV_SECRETS: ${{ secrets.ENV_SECRETS }}
+      #   run: echo $ENV_SECRETS > .env
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -67,9 +68,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-
-      - name: Echo files
-        run: ls -la
 
       - name: Build and push
         uses: docker/build-push-action@v6

@@ -3,6 +3,7 @@
 .eslintrc.js
 .github
 .git
+.env
 README.md
 tsconfig.json
 tsconfig.build.json
