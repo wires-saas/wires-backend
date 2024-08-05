@@ -1,4 +1,5 @@
-FROM node:lts-alpine
+FROM node:latest
+# node:lts-alpine causing problems with node-gyp
 
 RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 

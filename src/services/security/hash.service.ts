@@ -10,7 +10,6 @@ export class HashService {
   constructor() {
     this.logger = new Logger(HashService.name);
     this.salt = process.env.HASH_SALT;
-    console.log(this.salt);
   }
 
   async hash(str: string): Promise<string> {
