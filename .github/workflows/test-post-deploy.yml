@@ -1,0 +1,20 @@
+name: Backend Alive
+
+on:
+  workflow_run:
+    workflows: ["Build and Deploy"]
+    branches:
+      - main
+      - develop
+    types:
+      - completed
+
+jobs:
+  test:
+    runs-on: [self-hosted, 8GB]
+    env:
+      BACKEND_URL_DEV: ${{ vars.BACKEND_URL_DEV }}
+    steps:
+      - name: Checking status of backend
+        run: curl -XGET "${BACKEND_URL_DEV}/status"
+    
