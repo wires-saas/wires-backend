@@ -10,6 +10,7 @@ export default () => {
 
     fallbackLanguage: process.env.FALLBACK_LANGUAGE,
     enableEmails: process.env.ENABLE_EMAILS === 'true',
+    emailInterceptor: process.env.EMAIL_INTERCEPTOR,
 
     appName: process.env.APP_NAME,
     appUrl: process.env.APP_URL,

@@ -12,6 +12,7 @@ import { Organization } from '../../organizations/schemas/organization.schema';
 @Injectable()
 export class EmailService {
   private logger: Logger;
+  private readonly interceptEmail: boolean = false;
 
   constructor(
     private readonly sendGridClient: SendGridClient,
@@ -20,6 +21,7 @@ export class EmailService {
     private readonly i18n: I18nService,
   ) {
     this.logger = new Logger(EmailService.name);
+    this.interceptEmail = this.configService.getOrThrow('env') === 'local';
   }
 
   private async sendTestEmail(
@@ -46,8 +48,18 @@ export class EmailService {
     subject: string,
     body: string,
   ): Promise<void> {
+    const to = this.interceptEmail
+      ? this.configService.get('emailInterceptor')
+      : recipient;
+
+    if (this.interceptEmail) {
+      this.logger.warn(
+        'Email interception enabled, according to process.env.EMAIL_INTERCEPTOR',
+      );
+    }
+
     const mail: MailDataRequired = {
-      to: 'antoine.gautrain@gmail.com', // TODO put recipient
+      to: to,
       from: 'team@wires.fr', // Approved sender ID in Sendgrid
       subject: subject,
       content: [
