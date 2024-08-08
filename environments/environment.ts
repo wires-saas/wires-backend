@@ -4,6 +4,7 @@ export default () => {
   readEnvFile();
 
   const appUrl = process.env.APP_URL;
+  const fallbackLanguage = process.env.FALLBACK_LANGUAGE;
 
   return {
     env: process.env.NODE_ENV,
@@ -23,13 +24,13 @@ export default () => {
     },
 
     urls: {
-      acceptInviteURL: `${appUrl}/auth/accept-invite`,
-      passwordResetURL: `${appUrl}/auth/reset-password`,
-      helpURL: `${appUrl}/help`,
-      tosURL: `${appUrl}/tos`,
-      faqURL: `${appUrl}/faq`,
-      privacyURL: `${appUrl}/privacy`,
-      contactURL: `${appUrl}/contact`,
+      acceptInviteURL: `${appUrl}/${fallbackLanguage}/auth/accept-invite`,
+      passwordResetURL: `${appUrl}/${fallbackLanguage}/auth/reset-password`,
+      helpURL: `${appUrl}/${fallbackLanguage}/help`,
+      tosURL: `${appUrl}/${fallbackLanguage}/tos`,
+      faqURL: `${appUrl}/${fallbackLanguage}/faq`,
+      privacyURL: `${appUrl}/${fallbackLanguage}/privacy`,
+      contactURL: `${appUrl}/${fallbackLanguage}/contact`,
     },
   };
 };
