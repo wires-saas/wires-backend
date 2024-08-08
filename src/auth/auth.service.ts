@@ -140,6 +140,17 @@ export class AuthService {
     try {
       const user = await this.usersService.findOneByEmail(email);
 
+      if (user.passwordResetTokenExpiresAt) {
+        const lastReset =
+          user.passwordResetTokenExpiresAt -
+          EncryptService.TOKEN_EXPIRATION_TIME;
+        if (lastReset > Date.now() - 60 * 60 * 1000 && lastReset < Date.now()) {
+          throw new ForbiddenException(
+            'Password reset already requested less than 1 hour ago',
+          );
+        }
+      }
+
       const token = this.encryptService.generateRandomToken();
 
       await this.usersService.update(user._id, {

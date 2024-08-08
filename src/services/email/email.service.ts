@@ -68,6 +68,7 @@ export class EmailService {
   async sendUserInviteEmail(
     user: User,
     organization: Organization,
+    expiration: number,
   ): Promise<void> {
     this.logger.log('Sending user invite email to user #' + user._id);
 
@@ -89,6 +90,7 @@ export class EmailService {
 
     const options = {
       appName: this.configService.getOrThrow('appName'),
+      appUrl: this.configService.getOrThrow('appUrl'),
       theme: this.configService.getOrThrow('theme'),
       ...this.configService.getOrThrow('urls'),
 
@@ -96,6 +98,7 @@ export class EmailService {
       fullName: user.firstName,
       orgName: organization.name,
 
+      expiration: expiration,
       userInvite,
       footer,
     };
@@ -143,6 +146,7 @@ export class EmailService {
 
     const options = {
       appName: this.configService.getOrThrow('appName'),
+      appUrl: this.configService.getOrThrow('appUrl'),
       theme: this.configService.getOrThrow('theme'),
       ...this.configService.getOrThrow('urls'),
 

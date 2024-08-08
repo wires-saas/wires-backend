@@ -32,12 +32,14 @@ export class MailController {
 
     const options = {
       appName: this.configService.getOrThrow('appName'),
+      appUrl: this.configService.getOrThrow('appUrl'),
       theme: this.configService.getOrThrow('theme'),
       ...this.configService.getOrThrow('urls'),
 
       acceptInviteURL: `${this.configService.getOrThrow('urls.acceptInviteURL')}?token=${encodeURIComponent(token)}`,
       fullName: user.firstName,
       orgName: 'Alphabet Corporation',
+      expiration: EncryptService.TOKEN_EXPIRATION_DAYS,
       userInvite,
       footer,
     };
@@ -58,6 +60,7 @@ export class MailController {
 
     const options = {
       appName: this.configService.getOrThrow('appName'),
+      appUrl: this.configService.getOrThrow('appUrl'),
       theme: this.configService.getOrThrow('theme'),
       ...this.configService.getOrThrow('urls'),
 

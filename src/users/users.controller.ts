@@ -79,7 +79,11 @@ export class UsersController {
     this.logger.log('New user created with id #' + userCreated._id);
 
     if (userCreated)
-      await this.emailService.sendUserInviteEmail(userCreated, organization);
+      await this.emailService.sendUserInviteEmail(
+        userCreated,
+        organization,
+        EncryptService.TOKEN_EXPIRATION_DAYS,
+      );
 
     return userCreated;
   }
@@ -115,7 +119,11 @@ export class UsersController {
     const organization =
       await this.organizationsService.findOne(organizationSlug);
 
-    await this.emailService.sendUserInviteEmail(user, organization);
+    await this.emailService.sendUserInviteEmail(
+      user,
+      organization,
+      EncryptService.TOKEN_EXPIRATION_DAYS,
+    );
   }
 
   @Get()

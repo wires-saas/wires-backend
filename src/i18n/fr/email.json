@@ -2,6 +2,8 @@
   "userInvite": {
     "subject": "Invitation à rejoindre { organization }",
     "title": "Invitation de",
+    "expiration": "Ce lien expirera d'ici ",
+    "expiration_unit": " jours",
     "welcome": "Bienvenue,",
     "invited": "Vous avez été invité à rejoindre",
     "process": "Il ne reste plus qu'à cliquer ci-dessous pour finaliser votre inscription",
