@@ -11,6 +11,7 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import {
+  ApiBadRequestResponse,
   ApiForbiddenResponse,
   ApiGoneResponse,
   ApiNotFoundResponse,
@@ -95,6 +96,7 @@ export class AuthController {
   @Post('invite/:token')
   @ApiOperation({ summary: 'Consumes invite token, setting password' })
   @ApiOkResponse({ description: 'Invite token is valid' })
+  @ApiBadRequestResponse({ description: 'Password is too weak' })
   @ApiGoneResponse({ description: 'Invite token already used' })
   @ApiNotFoundResponse({ description: 'Invite token does not exist' })
   @ApiForbiddenResponse({ description: 'Invite token is expired' })
@@ -128,6 +130,7 @@ export class AuthController {
     summary: 'Consumes password reset token, setting password',
   })
   @ApiOkResponse({ description: 'Password reset token is valid' })
+  @ApiBadRequestResponse({ description: 'Password is too weak' })
   @ApiNotFoundResponse({ description: 'Password reset token is invalid' })
   @ApiForbiddenResponse({ description: 'Password reset token is expired' })
   async usePasswordResetToken(

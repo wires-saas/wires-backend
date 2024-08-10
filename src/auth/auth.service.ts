@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   GoneException,
   Injectable,
@@ -16,6 +17,7 @@ import { Organization } from '../organizations/schemas/organization.schema';
 import { UserStatus } from '../users/entities/user-status.entity';
 import { UserEmailStatus } from '../users/entities/user-email-status.entity';
 import { EmailService } from '../services/email/email.service';
+import { PasswordUtils } from '../shared/utils/password.utils';
 
 @Injectable()
 export class AuthService {
@@ -126,7 +128,9 @@ export class AuthService {
       );
     }
 
-    // TODO ensure password is strong enough
+    if (!password || !PasswordUtils.STRENGTH_REGEX.test(password)) {
+      throw new BadRequestException('Password is too weak');
+    }
 
     const userActivated = await this.usersService.verifyInviteOfUser(
       userWithToken._id,
@@ -189,7 +193,9 @@ export class AuthService {
     if (userWithToken.passwordResetTokenExpiresAt < Date.now())
       throw new ForbiddenException('Token expired');
 
-    // TODO ensure password is strong enough
+    if (!password || !PasswordUtils.STRENGTH_REGEX.test(password)) {
+      throw new BadRequestException('Password is too weak');
+    }
 
     const userActivated = await this.usersService.resetPasswordOfUser(
       userWithToken._id,
