@@ -4,11 +4,23 @@ import { User } from '../../users/schemas/user.schema';
 export class UpdateOrganizationDto {
   @IsOptional()
   @IsString()
-  name: string;
+  name?: string;
 
   @IsOptional()
   @IsString()
-  slug: string;
+  legalName?: string;
+
+  @IsOptional()
+  @IsString()
+  legalId?: string;
+
+  @IsOptional()
+  @IsString()
+  website?: string;
+
+  @IsOptional()
+  @IsString()
+  slug?: string;
 
   @IsOptional()
   @IsString()

@@ -34,13 +34,22 @@ export class Organization {
   @Prop({ required: true }) // not specify it will throw, resulting in error 500
   name: string;
 
+  @Prop({ default: '' })
+  legalName: string;
+
   slug: string;
 
-  @Prop()
+  @Prop({ default: '' })
   logo: string;
 
-  @Prop()
+  @Prop({ default: '' })
   activity: string;
+
+  @Prop({ default: '' })
+  website: string;
+
+  @Prop({ default: '' })
+  legalId: string;
 
   @Prop(
     raw({

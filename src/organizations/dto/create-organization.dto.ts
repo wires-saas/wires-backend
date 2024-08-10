@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class CreateOrganizationDto {
   @IsNotEmpty()
@@ -8,4 +8,13 @@ export class CreateOrganizationDto {
   @IsNotEmpty()
   @IsString()
   slug: string;
+
+  @IsObject()
+  @IsOptional()
+  address: {
+    street: string;
+    city: string;
+    zip: string;
+    country: string;
+  };
 }
