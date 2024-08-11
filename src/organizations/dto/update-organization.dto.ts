@@ -1,5 +1,5 @@
 import { IsObject, IsOptional, IsString } from 'class-validator';
-import { User } from '../../users/schemas/user.schema';
+import { Contact } from '../schemas/organization.schema';
 
 export class UpdateOrganizationDto {
   @IsOptional()
@@ -39,12 +39,12 @@ export class UpdateOrganizationDto {
   subscription?: { type: string };
 
   @IsOptional()
-  @IsString()
-  adminContact?: User;
+  @IsObject()
+  adminContact?: Contact;
 
   @IsOptional()
-  @IsString()
-  billingContact?: User;
+  @IsObject()
+  billingContact?: Contact;
 
   @IsOptional()
   @IsObject()

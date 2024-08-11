@@ -1,8 +1,15 @@
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { User } from '../../users/schemas/user.schema';
 
 export type OrganizationDocument = HydratedDocument<Organization>;
+
+export interface Contact {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  consent: boolean;
+}
 
 @Schema({
   timestamps: true,
@@ -61,11 +68,27 @@ export class Organization {
   )
   address: Record<string, string>;
 
-  @Prop({ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  adminContact: User;
+  @Prop(
+    raw({
+      firstName: { type: String },
+      lastName: { type: String },
+      email: { type: String },
+      phone: { type: String },
+      consent: { type: Boolean, default: false },
+    }),
+  )
+  adminContact: Contact;
 
-  @Prop({ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  billingContact: User;
+  @Prop(
+    raw({
+      firstName: { type: String },
+      lastName: { type: String },
+      email: { type: String },
+      phone: { type: String },
+      consent: { type: Boolean, default: false },
+    }),
+  )
+  billingContact: Contact;
 
   @Prop(
     raw({
