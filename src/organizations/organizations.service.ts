@@ -35,14 +35,12 @@ export class OrganizationsService {
   async findAll(ability: MongoAbility): Promise<Organization[]> {
     return this.organizationModel
       .find(accessibleBy(ability, 'read').ofType(Organization))
-      .populate(['adminContact', 'billingContact'])
       .exec();
   }
 
   async findOne(id: string): Promise<Organization> {
     return this.organizationModel
       .findById(id)
-      .populate(['adminContact', 'billingContact'])
       .exec()
       .then((res) => {
         if (!res) {
