@@ -60,10 +60,10 @@ export class Organization {
 
   @Prop(
     raw({
-      street: { type: String },
-      city: { type: String },
-      zip: { type: String },
-      country: { type: String },
+      street: { type: String, default: '' },
+      city: { type: String, default: '' },
+      zip: { type: String, default: '' },
+      country: { type: String, default: '' },
     }),
   )
   address: Record<string, string>;

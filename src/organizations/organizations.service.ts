@@ -19,10 +19,10 @@ export class OrganizationsService {
       _id: createOrganizationDto.slug.toLowerCase().replace(/ /g, '-'),
       name: createOrganizationDto.name,
       address: {
-        street: createOrganizationDto.address?.street || '',
-        city: createOrganizationDto.address?.city || '',
-        zip: createOrganizationDto.address?.zip || '',
-        country: createOrganizationDto.address?.country || '',
+        street: '',
+        city: '',
+        zip: '',
+        country: createOrganizationDto.country || '',
       },
     });
   }

@@ -125,6 +125,8 @@ export class OrganizationsController {
       throw new UnauthorizedException();
     }
 
+    // TODO remove all user roles for this organization
+
     return this.organizationsService.remove(ability, id);
   }
 }

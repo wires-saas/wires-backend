@@ -9,12 +9,7 @@ export class CreateOrganizationDto {
   @IsString()
   slug: string;
 
-  @IsObject()
   @IsOptional()
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    country: string;
-  };
+  @IsString()
+  country: string;
 }
