@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UnauthorizedException,
+  Request,
+  UseGuards,
+  Logger,
+} from '@nestjs/common';
 import { UserRolesService } from './user-roles.service';
 import {
   ApiNotFoundResponse,
@@ -9,35 +20,125 @@ import {
 } from '@nestjs/swagger';
 import { UserRole } from '../schemas/user-role.schema';
 import { UserRoleDto } from '../dto/user-role.dto';
+import { Action } from '../../rbac/permissions/entities/action.entity';
+import { User } from '../schemas/user.schema';
+import { CaslAbilityFactory } from '../../rbac/casl/casl-ability.factory';
+import { AuthenticatedRequest } from '../../shared/types/authentication.types';
+import { AuthGuard } from '../../auth/auth.guard';
 
 @ApiTags('Users (Roles)')
+@UseGuards(AuthGuard)
 @Controller('users')
 @ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @ApiNotFoundResponse({ description: 'User not found' })
 export class UserRolesController {
-  constructor(private readonly userRolesService: UserRolesService) {}
+  private logger: Logger;
+
+  constructor(
+    private readonly userRolesService: UserRolesService,
+    private caslAbilityFactory: CaslAbilityFactory,
+  ) {
+    this.logger = new Logger(UserRolesController.name);
+  }
 
   @Post(':userId/roles')
   @ApiOperation({ summary: 'Add new roles for user' })
   @ApiOkResponse({ description: 'Roles added' })
   async create(
+    @Request() req: AuthenticatedRequest,
     @Body() userRoles: UserRoleDto[],
     @Param('userId') userId: string,
   ): Promise<UserRole[]> {
-    return this.userRolesService.createOrUpdate(userId, userRoles);
+    const ability = this.caslAbilityFactory.createForUser(req.user);
+
+    const createdUserRoles: UserRole[] = userRoles.map(
+      (dto) =>
+        new UserRole({
+          user: userId,
+          organization: dto.organization,
+          role: dto.role,
+        }),
+    );
+
+    if (
+      createdUserRoles.find((userRole) =>
+        ability.cannot(Action.Create, userRole),
+      )
+    ) {
+      throw new UnauthorizedException('Cannot update user roles');
+    }
+
+    const existingRoles = await this.userRolesService.findAllNoPopulate(userId); // TODO filter by ability ?
+
+    // Avoiding duplicates
+    const userRolesRelevant = userRoles.filter((userRole) => {
+      return !existingRoles.some(
+        (existingRole) =>
+          existingRole.organization === userRole.organization &&
+          existingRole.role === userRole.role,
+      );
+    });
+
+    return this.userRolesService
+      .createOrUpdate(userId, userRolesRelevant)
+      .then((userRoles) => {
+        this.logger.log(`User roles updated for user ${userId}`);
+
+        userRoles.forEach(async (userRole) => {
+          // Considering user roles mutually exclusive
+          // One user cannot have two roles on the same organization
+          // Hence why we remove the existing role if it exists
+          const roleObsolete = existingRoles.find(
+            (existingRole) =>
+              existingRole.organization === userRole.organization,
+          );
+
+          if (roleObsolete) {
+            this.logger.debug(
+              `Removing obsolete role "${roleObsolete.role}" on organization "${roleObsolete.organization}"`,
+            );
+
+            await this.userRolesService.removeOneById(roleObsolete._id);
+          }
+        });
+
+        return userRoles;
+      });
   }
 
   @Get(':userId/roles')
   @ApiOperation({ summary: 'Get all roles of user' })
   @ApiOkResponse({ description: 'Roles returned' })
-  async findAll(@Param('userId') userId: string): Promise<UserRole[]> {
-    return this.userRolesService.findAll(userId);
+  async findAll(
+    @Request() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+  ): Promise<UserRole[]> {
+    const ability = this.caslAbilityFactory.createForUser(req.user);
+    if (ability.cannot(Action.Read, User)) {
+      throw new UnauthorizedException('Cannot read users');
+    }
+
+    if (ability.cannot(Action.Read, UserRole)) {
+      throw new UnauthorizedException('Cannot read user roles');
+    }
+
+    return this.userRolesService.findAll(userId); // TODO filter by ability ?
   }
 
   @Delete(':userId/roles/all')
   @ApiOperation({ summary: 'Remove all roles from user' })
   @ApiOkResponse({ description: 'All roles removed' })
-  remove(@Param('userId') userId: string) {
+  remove(
+    @Request() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+  ) {
+    const ability = this.caslAbilityFactory.createForUser(req.user);
+    if (ability.cannot(Action.Delete, UserRole)) {
+      throw new UnauthorizedException('Cannot delete user roles');
+    }
+
+    // TODO filter by ability / remove only roles that can be deleted
+
     return this.userRolesService.removeAll(userId);
   }
 
@@ -45,9 +146,17 @@ export class UserRolesController {
   @ApiOperation({ summary: 'Remove specific role from user' })
   @ApiOkResponse({ description: 'Role removed' })
   removeOne(
+    @Request() req: AuthenticatedRequest,
     @Body() userRoleToDelete: UserRoleDto,
     @Param('userId') userId: string,
   ) {
+    const ability = this.caslAbilityFactory.createForUser(req.user);
+    if (ability.cannot(Action.Delete, UserRole)) {
+      throw new UnauthorizedException('Cannot delete user role');
+    }
+
+    // TODO filter by ability / 401 if not allowed to delete this role
+
     return this.userRolesService.removeOne(userId, userRoleToDelete);
   }
 }

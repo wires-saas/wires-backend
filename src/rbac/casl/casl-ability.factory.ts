@@ -12,6 +12,7 @@ import { UserRoleWithPermissions } from '../../shared/types/authentication.types
 import { Permission } from '../permissions/schemas/permission.schema';
 import { Subject } from '../permissions/entities/subject.entity';
 import { Organization } from '../../organizations/schemas/organization.schema';
+import { UserRole } from '../../users/schemas/user-role.schema';
 
 type Subjects = InferSubjects<typeof Organization | typeof User> | 'all';
 
@@ -58,6 +59,11 @@ export class CaslAbilityFactory {
             case Subject.Organization:
               can(permission.action, Organization, {
                 _id: userRole.organization,
+              });
+              break;
+            case Subject.UserRole:
+              can(permission.action, UserRole, {
+                organization: userRole.organization,
               });
               break;
             case Subject.User:
@@ -122,6 +128,7 @@ export class CaslAbilityFactory {
         let subjectType;
         if (item.email) subjectType = User;
         else if (item.slug) subjectType = Organization;
+        else if (item.role) subjectType = UserRole;
 
         return subjectType as ExtractSubjectType<Subjects>;
       },

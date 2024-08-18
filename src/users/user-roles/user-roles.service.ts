@@ -45,6 +45,10 @@ export class UserRolesService {
     }
   }
 
+  async findAllNoPopulate(userId: string): Promise<UserRole[]> {
+    return this.userRoleModel.find({ user: userId }).exec();
+  }
+
   removeAll(userId: string) {
     return this.userRoleModel.deleteMany({ user: userId }).exec();
   }
@@ -63,5 +67,9 @@ export class UserRolesService {
         organization: dto.organization,
       })
       .exec();
+  }
+
+  async removeOneById(id: string) {
+    return this.userRoleModel.deleteOne({ _id: id }).exec();
   }
 }
