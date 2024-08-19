@@ -13,11 +13,16 @@ import {
   UserRoleColl,
   UserRoleSchema,
 } from '../users/schemas/user-role.schema';
+import {
+  UserNotificationColl,
+  UserNotificationSchema,
+} from '../users/schemas/user-notification.schema';
 
 const allModels: ModelDefinition[] = [
   { name: User.name, schema: UserSchema },
   { name: Organization.name, schema: OrganizationSchema },
   { name: UserRoleColl, schema: UserRoleSchema },
+  { name: UserNotificationColl, schema: UserNotificationSchema },
   { name: Role.name, schema: RoleSchema },
   { name: Permission.name, schema: PermissionSchema },
 ];

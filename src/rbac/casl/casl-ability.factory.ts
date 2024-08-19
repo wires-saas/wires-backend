@@ -13,8 +13,16 @@ import { Permission } from '../permissions/schemas/permission.schema';
 import { Subject } from '../permissions/entities/subject.entity';
 import { Organization } from '../../organizations/schemas/organization.schema';
 import { UserRole } from '../../users/schemas/user-role.schema';
+import { UserNotification } from '../../users/schemas/user-notification.schema';
 
-type Subjects = InferSubjects<typeof Organization | typeof User> | 'all';
+type Subjects =
+  | InferSubjects<
+      | typeof Organization
+      | typeof User
+      | typeof UserRole
+      | typeof UserNotification
+    >
+  | 'all';
 
 @Injectable()
 export class CaslAbilityFactory {
@@ -120,6 +128,10 @@ export class CaslAbilityFactory {
         [...CaslAbilityFactory.UpdatableUserFields, 'email', 'password'],
         { _id: user._id },
       );
+
+      // User can access and update its own notifications
+      can(Action.Read, UserNotification, { user: user._id });
+      can(Action.Update, UserNotification, { user: user._id });
     }
 
     return build({
@@ -129,6 +141,7 @@ export class CaslAbilityFactory {
         if (item.email) subjectType = User;
         else if (item.slug) subjectType = Organization;
         else if (item.role) subjectType = UserRole;
+        else if (item.scope) subjectType = UserNotification;
 
         return subjectType as ExtractSubjectType<Subjects>;
       },

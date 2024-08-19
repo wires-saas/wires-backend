@@ -8,6 +8,7 @@ import { EmailModule } from '../services/email/email.module';
 import { SecurityModule } from '../services/security/security.module';
 import allModels from '../shared/mongoose-models';
 import { OrganizationsModule } from '../organizations/organizations.module';
+import { UserNotificationsModule } from './user-notifications/user-notifications.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { OrganizationsModule } from '../organizations/organizations.module';
     UserRolesModule,
     EmailModule,
     SecurityModule,
-    forwardRef(() => OrganizationsModule), // circular dependency
+    forwardRef(() => OrganizationsModule),
+    UserNotificationsModule, // circular dependency
   ],
   controllers: [UsersController],
   providers: [UsersService, CaslAbilityFactory],
