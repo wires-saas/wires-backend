@@ -1,6 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestingModule } from '@nestjs/testing';
 import { UserRolesController } from './user-roles.controller';
 import { UserRolesService } from './user-roles.service';
+import { TestUtils } from '../../shared/utils/test.utils';
 
 const mockUserRolesService = {
   create: jest.fn(),
@@ -15,12 +16,12 @@ describe('UserRolesController', () => {
   let service: typeof mockUserRolesService;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module: TestingModule = await TestUtils.createTestingModule({
       controllers: [UserRolesController],
       providers: [
         { provide: UserRolesService, useValue: mockUserRolesService },
       ],
-    }).compile();
+    });
 
     controller = module.get<UserRolesController>(UserRolesController);
     service = module.get<typeof mockUserRolesService>(UserRolesService);

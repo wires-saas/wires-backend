@@ -11,15 +11,17 @@ import {
 import { RolesService } from './roles.service';
 import { RoleDto } from './dto/role.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '../../auth/auth.guard';
 import { SuperAdminGuard } from '../../auth/super-admin.guard';
 
 @ApiTags('Access Control')
 @Controller('roles')
-@UseGuards(SuperAdminGuard)
+@UseGuards(AuthGuard)
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Post()
+  @UseGuards(SuperAdminGuard)
   create(@Body() createRoleDto: RoleDto) {
     return this.rolesService.create(createRoleDto);
   }
@@ -35,11 +37,13 @@ export class RolesController {
   }
 
   @Put(':id')
+  @UseGuards(SuperAdminGuard)
   update(@Param('id') id: string, @Body() roleDto: RoleDto) {
     return this.rolesService.update(id, roleDto);
   }
 
   @Delete(':id')
+  @UseGuards(SuperAdminGuard)
   remove(@Param('id') id: string) {
     return this.rolesService.remove(id);
   }
