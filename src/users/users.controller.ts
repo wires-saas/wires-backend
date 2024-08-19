@@ -136,13 +136,11 @@ export class UsersController {
       throw new UnauthorizedException();
     }
 
-    // FIXME only return roles of users in the organizations the current user can manage
-
     if (organizations) {
       return this.usersService.findAll(ability, organizations.split(','));
     }
 
-    return this.usersService.findAll(ability); // filter here users that the user can read organization from ?
+    return this.usersService.findAll(ability);
   }
 
   @Get(':id')

@@ -10,7 +10,7 @@ import { UserEmailStatus } from './entities/user-email-status.entity';
 import * as crypto from 'crypto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
-import { User } from './schemas/user.schema';
+import { User, UserDocument } from './schemas/user.schema';
 import { EncryptService } from '../services/security/encrypt.service';
 import { HashService } from '../services/security/hash.service';
 import { UserRole, UserRoleColl } from './schemas/user-role.schema';
@@ -74,59 +74,98 @@ export class UsersService {
     return await this.findOne(userCreated._id, true);
   }
 
-  async findAll(ability: MongoAbility, orgs?: string[]): Promise<User[]> {
-    let pipeline: PipelineStage[] = [
-      // Left join with user roles
-      {
-        $lookup: {
-          from: UserRoleColl,
-          localField: '_id',
-          foreignField: 'user',
-          as: 'roles',
-        },
-      },
+  async findAll(
+    ability: MongoAbility,
+    orgs?: string[],
+  ): Promise<UserDocument[]> {
+    // Common pipeline stages used both by regular users and super admins
 
-      // Following pipeline stages are used to calculate "organizations" field
-      {
-        $unwind: {
-          path: '$roles',
-          preserveNullAndEmptyArrays: true,
+    const lookupUserRoles = {
+      $lookup: {
+        from: UserRoleColl,
+        localField: '_id',
+        foreignField: 'user',
+        as: 'roles',
+      },
+    };
+
+    const unwindRoles = {
+      $unwind: {
+        path: '$roles',
+        preserveNullAndEmptyArrays: true,
+      },
+    };
+
+    const regroupRoles = {
+      $group: {
+        _id: '$_id',
+        document: { $first: '$$ROOT' },
+        organizations: { $addToSet: '$roles.organization' },
+        roles: { $push: '$roles' },
+      },
+    };
+
+    const mergeRoles = {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: [
+            '$document',
+            { organizations: '$organizations', roles: '$roles' },
+          ],
         },
       },
-      {
-        $group: {
-          _id: '$_id',
-          document: { $first: '$$ROOT' },
-          organizations: { $addToSet: '$roles.organization' },
-          roles: { $push: '$roles' },
-        },
-      },
-      {
-        $replaceRoot: {
-          newRoot: {
-            $mergeObjects: [
-              '$document',
-              { organizations: '$organizations', roles: '$roles' },
-            ],
-          },
-        },
-      },
-    ];
+    };
+
+    let pipeline: PipelineStage[];
 
     if (ability.cannot(Action.Manage, 'all')) {
+      const organizationRestrictions =
+        CaslUtils.getUserOrganizationsFromAbility(ability, Action.Read);
+
+      // Specific pipeline stages restricting roles and organizations
+
+      const restrictRolesToAvailableOrganizations = {
+        $set: {
+          roles: {
+            $filter: {
+              input: '$roles',
+              as: 'role',
+              cond: { $in: ['$$role.organization', organizationRestrictions] },
+            },
+          },
+        },
+      };
+
+      const filterByOrganizations = {
+        $match: {
+          organizations: {
+            $in: orgs?.length ? orgs : organizationRestrictions,
+          },
+        },
+      };
+
       pipeline = [
-        ...pipeline,
-        CaslUtils.getUserOrganizationsPipelineStageFromAbility(
-          ability,
-          Action.Read,
-          orgs?.length ? orgs : undefined,
-        ),
+        lookupUserRoles,
+        restrictRolesToAvailableOrganizations,
+
+        // Following pipeline stages are used to calculate "organizations" field
+        unwindRoles,
+        regroupRoles,
+        mergeRoles,
+
+        filterByOrganizations,
       ];
     } else {
       // Applying organization filter if provided
       if (orgs?.length) {
         pipeline = [
-          ...pipeline,
+          lookupUserRoles,
+
+          // Following pipeline stages are used to calculate "organizations" field
+          unwindRoles,
+          regroupRoles,
+          mergeRoles,
+
           {
             $match: {
               organizations: {

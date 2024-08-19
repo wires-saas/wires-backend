@@ -22,9 +22,8 @@ export type UserDocument = HydratedDocument<User>;
     versionKey: false,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
-      // delete ret.password;
+      delete ret.password;
       delete ret.inviteToken;
-      // delete ret.inviteTokenExpiresAt;
       delete ret.passwordResetToken;
       delete ret.passwordResetTokenExpiresAt;
       delete ret.emailVerificationToken;
@@ -41,7 +40,6 @@ export type UserDocument = HydratedDocument<User>;
       delete ret.passwordResetToken;
       delete ret.passwordResetTokenExpiresAt;
       delete ret.inviteToken;
-      // delete ret.inviteTokenExpiresAt;
       delete ret.emailVerificationToken;
       delete ret.emailVerificationTokenExpiresAt;
       return ret;

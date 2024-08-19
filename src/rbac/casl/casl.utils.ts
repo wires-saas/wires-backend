@@ -1,44 +1,30 @@
 import { MongoAbility } from '@casl/ability';
 import { Action } from '../permissions/entities/action.entity';
 import { accessibleBy } from '@casl/mongoose';
-import { PipelineStage } from 'mongoose';
 import { User } from '../../users/schemas/user.schema';
+import { Organization } from '../../organizations/schemas/organization.schema';
 
 export class CaslUtils {
-  static getUserOrganizationsPipelineStageFromAbility(
+  static getUserOrganizationsFromAbility(
     ability: MongoAbility,
     action: Action,
-    orgsToKeep?: string[],
-  ): PipelineStage {
-    // This CASL/Mongoose utility generate smth like this:
-    // { '$or': [ { organizations: { $in: [org1, org2] } } ] }
-    // We want to flatten it to ['org1', 'org2']
-    const readableUsersPipeline = accessibleBy(ability, action).ofType(User);
+  ): Array<Organization['slug']> {
+    // This CASL/Mongoose utility generate some complex pipeline stages like
+    // { '$or': [ { organizations: { $in: [org1] } }, { organizations: { $in: [org2] } } ] }
+    // We want to extract the org1, org2, etc. from the pipeline stage
+    // Allowing for reusing and simplification
+    const readableUsersPipeline: Record<string, any> = accessibleBy(
+      ability,
+      action,
+    ).ofType(User);
 
-    const filters: Array<Record<string, any>> = readableUsersPipeline[
-      '$or'
-    ] as Array<Record<string, any>>;
-
-    const readableOrgs: string[] = filters.find(
-      (filter) => !!filter.organizations,
-    )?.organizations?.$in;
-
-    if (orgsToKeep?.length > 0) {
-      return {
-        $match: {
-          organizations: {
-            $in: readableOrgs.filter((org) => orgsToKeep.includes(org)),
-          },
-        },
-      };
-    }
-
-    return {
-      $match: {
-        organizations: {
-          $in: readableOrgs,
-        },
+    const allSlugs = readableUsersPipeline['$or'].reduce(
+      (slugs: string[], orSubPart: { organizations: { $in: string[] } }) => {
+        return [...slugs, ...orSubPart.organizations.$in];
       },
-    };
+      [],
+    );
+
+    return [...new Set(allSlugs)] as string[];
   }
 }
