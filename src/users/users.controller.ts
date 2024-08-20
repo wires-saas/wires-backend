@@ -164,6 +164,12 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     const ability = this.caslAbilityFactory.createForUser(req.user);
+
+    // Not applying any authorization/field filtering if user can manage all
+    if (ability.can(Action.Manage, 'all')) {
+      return this.usersService.update(id, updateUserDto);
+    }
+
     if (ability.cannot(Action.Update, User)) {
       throw new UnauthorizedException('Cannot update other users');
     }

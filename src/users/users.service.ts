@@ -269,6 +269,7 @@ export class UsersService {
           .catch(() => []);
 
         if (roles?.length) user.roles = roles;
+        user.email = this.encryptService.decrypt(user.email);
 
         return user;
       });

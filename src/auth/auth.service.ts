@@ -58,9 +58,7 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const clearEmail = this.encryptService.decrypt(user.email);
-
-    const payload = { sub: user._id.toString(), email: clearEmail };
+    const payload = { sub: user._id.toString(), email: user.email };
 
     user.roles = user.roles.map((userRole) => ({
       organization: userRole.organization,
