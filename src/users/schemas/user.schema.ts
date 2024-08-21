@@ -16,10 +16,17 @@ export type UserDocument = HydratedDocument<User>;
         ] as string[];
       },
     },
+    avatar: {
+      get(): string {
+        // TODO variable for the URL
+        return 'http://localhost:3000/v1/users/' + this._id + '/avatar';
+      },
+    },
   },
   toObject: {
     //delete __v from output object
     versionKey: false,
+    virtuals: ['avatar'],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
       delete ret.password;
@@ -34,6 +41,7 @@ export type UserDocument = HydratedDocument<User>;
   toJSON: {
     //delete __v from output JSON
     versionKey: false,
+    virtuals: ['avatar'],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
       delete ret.password;
@@ -57,6 +65,8 @@ export class User {
 
   @Prop()
   isSuperAdmin: boolean;
+
+  // TODO integrate avatar as part of the user schema, with default avatar
 
   @Prop()
   status: UserStatus;

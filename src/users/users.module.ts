@@ -9,18 +9,20 @@ import { SecurityModule } from '../services/security/security.module';
 import allModels from '../shared/mongoose-models';
 import { OrganizationsModule } from '../organizations/organizations.module';
 import { UserNotificationsModule } from './user-notifications/user-notifications.module';
+import { UserAvatarsModule } from './user-avatars/user-avatars.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature(allModels),
-    UserRolesModule,
     EmailModule,
     SecurityModule,
     forwardRef(() => OrganizationsModule),
-    UserNotificationsModule, // circular dependency
+    forwardRef(() => UserRolesModule),
+    forwardRef(() => UserNotificationsModule),
+    forwardRef(() => UserAvatarsModule),
   ],
   controllers: [UsersController],
   providers: [UsersService, CaslAbilityFactory],
-  exports: [UsersService],
+  exports: [UsersService, CaslAbilityFactory],
 })
 export class UsersModule {}
