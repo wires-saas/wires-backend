@@ -12,11 +12,11 @@ export class FileUploadService {
     this.logger.log('FileUploadService initialized');
 
     this.client = new Minio.Client({
-      endPoint: this.configService.getOrThrow('s3').url,
-      port: parseInt(this.configService.getOrThrow('s3').port, 10),
+      endPoint: this.configService.getOrThrow('S3_url'),
+      port: parseInt(this.configService.getOrThrow('S3_port'), 10),
       useSSL: false,
-      accessKey: this.configService.getOrThrow('s3').accessKey,
-      secretKey: this.configService.getOrThrow('s3').secretKey,
+      accessKey: this.configService.getOrThrow('S3_accessKey'),
+      secretKey: this.configService.getOrThrow('S3_secretKey'),
     });
   }
 

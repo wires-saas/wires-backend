@@ -11,7 +11,7 @@ export class UserAvatarsService {
     private fileUploadService: FileUploadService,
     private configService: ConfigService,
   ) {
-    this.avatarBucket = this.configService.getOrThrow('s3').publicBucket;
+    this.avatarBucket = this.configService.getOrThrow('S3_publicBucket');
   }
 
   async create(userId: string, avatar: Express.Multer.File) {

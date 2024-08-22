@@ -10,6 +10,7 @@ import { HashService } from '../../services/security/hash.service';
 import { OrganizationsService } from '../../organizations/organizations.service';
 import { EmailService } from '../../services/email/email.service';
 import { ConfigService } from '@nestjs/config';
+import { FileUploadService } from '../../services/file-upload/file-upload.service';
 
 export class TestUtils {
   static createTestingModule(metadata: ModuleMetadata): Promise<TestingModule> {
@@ -61,6 +62,12 @@ export class TestUtils {
       sendEmail: jest.fn(),
     };
 
+    const mockFileUploadService = {
+      uploadFile: jest.fn(),
+      getFile: jest.fn(),
+      removeFile: jest.fn(),
+    };
+
     return Test.createTestingModule({
       controllers: [...metadata.controllers],
       providers: [
@@ -79,6 +86,8 @@ export class TestUtils {
         { provide: HashService, useValue: mockHashService },
 
         { provide: EmailService, useValue: mockEmailService },
+
+        { provide: FileUploadService, useValue: mockFileUploadService },
 
         ...metadata.providers,
       ],
