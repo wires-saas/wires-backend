@@ -42,6 +42,8 @@ export class UsersService {
       zipCode: createUserDto.zipCode || '',
       country: createUserDto.country || '',
 
+      avatarName: 'avatar.png',
+
       email: this.encryptService.encrypt(createUserDto.email),
       emailStatus: UserEmailStatus.UNCONFIRMED,
       emailChangeCandidate: '',
@@ -174,6 +176,15 @@ export class UsersService {
             },
           },
         ];
+      } else {
+        pipeline = [
+          lookupUserRoles,
+
+          // Following pipeline stages are used to calculate "organizations" field
+          unwindRoles,
+          regroupRoles,
+          mergeRoles,
+        ];
       }
     }
 
@@ -294,6 +305,18 @@ export class UsersService {
       id,
       new User({
         ...updateUserDto,
+      }),
+      { returnOriginal: false },
+    );
+  }
+
+  // Expect avatarName to be the name of the file
+  // And file to be available in S3
+  async updateAvatar(id: string, avatarName: string) {
+    return this.userModel.findByIdAndUpdate(
+      id,
+      new User({
+        avatarName,
       }),
       { returnOriginal: false },
     );
