@@ -15,6 +15,7 @@ import {
   Logger,
   StreamableFile,
   Header,
+  NotFoundException,
 } from '@nestjs/common';
 import { UserAvatarsService } from './user-avatars.service';
 import {
@@ -64,18 +65,19 @@ export class UserAvatarsController {
       throw new UnauthorizedException('Cannot update user avatar');
     }
 
-    this.logger.debug(file.size);
-
     return this.userAvatarsService.create(userId, file);
   }
 
   @Get(':userId/avatar')
-  @Header('Cache-Control', 'public, max-age=2592000')
+  @Header('Cache-Control', 'public, max-age=31536000')
   async findOne(
     @Request() req: AuthenticatedRequest,
     @Param('userId') userId: string,
   ): Promise<StreamableFile> {
-    const file = await this.userAvatarsService.findOne(userId);
+    const file = await this.userAvatarsService.findOne(userId).catch((err) => {
+      this.logger.error('User avatar not found', err);
+      throw new NotFoundException('User avatar not found');
+    });
 
     const contentType =
       file.headers['content-type'] ||
@@ -87,7 +89,7 @@ export class UserAvatarsController {
 
   @Delete(':userId/avatar')
   @UseGuards(AuthGuard)
-  remove(@Param('id') id: string) {
-    return this.userAvatarsService.remove(+id);
+  remove(@Param('userId') userId: string) {
+    return this.userAvatarsService.remove(userId);
   }
 }

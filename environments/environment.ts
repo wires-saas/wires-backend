@@ -16,6 +16,14 @@ export default () => {
     appName: process.env.APP_NAME,
     appUrl: process.env.APP_URL,
 
+    s3: {
+      url: process.env.S3_URL,
+      port: process.env.S3_PORT,
+      accessKey: process.env.S3_USER,
+      secretKey: process.env.S3_PASSWORD,
+      publicBucket: process.env.S3_PUBLIC_BUCKET,
+    },
+
     theme: {
       primaryColor: '#6366f1',
       primaryLighterColor: '#c7d2fe',

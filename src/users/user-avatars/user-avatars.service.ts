@@ -1,24 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { UpdateUserAvatarDto } from '../dto/update-user-avatar.dto';
 import { FileUploadService } from '../../services/file-upload/file-upload.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserAvatarsService {
-  constructor(private fileUploadService: FileUploadService) {}
+  private readonly avatarBucket: string;
+  private readonly avatarPrefix: string = 'avatars/';
+
+  constructor(
+    private fileUploadService: FileUploadService,
+    private configService: ConfigService,
+  ) {
+    this.avatarBucket = this.configService.getOrThrow('s3').publicBucket;
+  }
 
   async create(userId: string, avatar: Express.Multer.File) {
-    console.log(this.fileUploadService.test());
+    const fileName = `${this.avatarPrefix}${userId}`;
 
-    await this.fileUploadService.uploadFile('avatars', userId, avatar);
+    await this.fileUploadService.uploadFile(
+      this.avatarBucket,
+      fileName,
+      avatar,
+    );
 
-    return 'This action adds a new userAvatar to ' + userId;
+    return 'Avatar uploaded';
   }
 
   async findOne(userId: string) {
-    return this.fileUploadService.getFile('avatars', userId);
+    const fileName = `${this.avatarPrefix}${userId}`;
+    return this.fileUploadService.getFile(this.avatarBucket, fileName);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} userAvatar`;
+  remove(userId: string) {
+    const fileName = `${this.avatarPrefix}${userId}`;
+    return this.fileUploadService.removeFile(this.avatarBucket, fileName);
   }
 }
