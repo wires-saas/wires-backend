@@ -48,7 +48,7 @@ export class UserAvatarsController {
 
   @Post(':userId/avatar')
   @UseGuards(AuthGuard)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('avatar'))
   async create(
     @Request() req: AuthenticatedRequest,
     @Param('userId') userId: string,
@@ -61,7 +61,7 @@ export class UserAvatarsController {
       }),
     )
     file: Express.Multer.File,
-  ) {
+  ): Promise<{ fileName: string }> {
     const ability = this.caslAbilityFactory.createForUser(req.user);
 
     if (ability.cannot(Action.Update, User)) {
@@ -93,7 +93,9 @@ export class UserAvatarsController {
 
     await this.usersService.updateAvatar(userId, fileName);
 
-    return this.userAvatarsService.create(userId, fileName, file);
+    await this.userAvatarsService.create(userId, fileName, file);
+
+    return { fileName };
   }
 
   @Get(':userId/avatar/:avatarName')
