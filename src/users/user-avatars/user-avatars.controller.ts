@@ -55,7 +55,7 @@ export class UserAvatarsController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 1000000 }), // put in env variable
+          new MaxFileSizeValidator({ maxSize: 2621440 }), // 2.5 MB
           new FileTypeValidator({ fileType: /png|jpeg|jpg/i }),
         ],
       }),
