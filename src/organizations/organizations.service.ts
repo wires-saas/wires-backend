@@ -6,6 +6,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { accessibleBy } from '@casl/mongoose';
 import { MongoAbility } from '@casl/ability';
+import { Action } from '../rbac/permissions/entities/action.entity';
 
 @Injectable()
 export class OrganizationsService {
@@ -41,6 +42,27 @@ export class OrganizationsService {
   async findOne(id: string): Promise<Organization> {
     return this.organizationModel
       .findById(id)
+      .exec()
+      .then((res) => {
+        if (!res) {
+          throw new NotFoundException(`Organization with id ${id} not found`);
+        } else {
+          return res;
+        }
+      });
+  }
+
+  async findOneWithAbility(
+    id: string,
+    ability: MongoAbility,
+  ): Promise<Organization> {
+    return this.organizationModel
+      .findOne({
+        $and: [
+          accessibleBy(ability, Action.Read).ofType(Organization),
+          { _id: id },
+        ],
+      })
       .exec()
       .then((res) => {
         if (!res) {

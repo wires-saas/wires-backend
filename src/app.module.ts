@@ -20,6 +20,7 @@ import {
   QueryResolver,
 } from 'nestjs-i18n';
 import { join } from 'path';
+import { FeedsModule } from './feeds/feeds.module';
 
 readEnvFile();
 const connectionString = process.env.MONGO_URI;
@@ -61,6 +62,7 @@ const connectionString = process.env.MONGO_URI;
       ],
       inject: [ConfigService],
     }),
+    FeedsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

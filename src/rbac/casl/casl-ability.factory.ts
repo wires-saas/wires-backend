@@ -14,6 +14,7 @@ import { Subject } from '../permissions/entities/subject.entity';
 import { Organization } from '../../organizations/schemas/organization.schema';
 import { UserRole } from '../../users/schemas/user-role.schema';
 import { UserNotification } from '../../users/schemas/user-notification.schema';
+import { Feed } from '../../feeds/schemas/feed.schema';
 
 type Subjects =
   | InferSubjects<
@@ -21,6 +22,7 @@ type Subjects =
       | typeof User
       | typeof UserRole
       | typeof UserNotification
+      | typeof Feed
     >
   | 'all';
 
@@ -65,12 +67,18 @@ export class CaslAbilityFactory {
           );
           switch (permission.subject) {
             case Subject.Organization:
+              // For DBs access, we need to use the _id
               can(permission.action, Organization, {
                 _id: userRole.organization,
               });
               break;
             case Subject.UserRole:
               can(permission.action, UserRole, {
+                organization: userRole.organization,
+              });
+              break;
+            case Subject.Feed:
+              can(permission.action, Feed, {
                 organization: userRole.organization,
               });
               break;
@@ -142,6 +150,7 @@ export class CaslAbilityFactory {
         else if (item.slug) subjectType = Organization;
         else if (item.role) subjectType = UserRole;
         else if (item.scope) subjectType = UserNotification;
+        else if (item.urls) subjectType = Feed;
 
         return subjectType as ExtractSubjectType<Subjects>;
       },

@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/schemas/user.schema';
+import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -17,6 +18,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
+    private caslAbilityFactory: CaslAbilityFactory,
   ) {
     this.logger = new Logger(AuthGuard.name);
   }
@@ -43,6 +45,8 @@ export class AuthGuard implements CanActivate {
 
       request['user'] = userFromDatabase;
       request['jwt'] = payload;
+      request['ability'] =
+        this.caslAbilityFactory.createForUser(userFromDatabase);
     } catch {
       throw new UnauthorizedException();
     }

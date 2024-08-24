@@ -18,6 +18,7 @@ export default () => {
 
     S3_url: process.env.S3_URL,
     S3_port: process.env.S3_PORT,
+    S3_protocol: process.env.S3_PROTOCOL,
     S3_accessKey: process.env.S3_USER,
     S3_secretKey: process.env.S3_PASSWORD,
     S3_publicBucket: process.env.S3_PUBLIC_BUCKET,
