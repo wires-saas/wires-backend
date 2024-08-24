@@ -34,8 +34,22 @@ export class FeedsController {
   }
 
   @Post()
-  create(@Body() createFeedDto: CreateFeedDto) {
-    return this.feedsService.create(createFeedDto);
+  async create(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+    @Body() createFeedDto: CreateFeedDto,
+  ) {
+    if (req.ability.cannot(Action.Create, Feed)) {
+      throw new UnauthorizedException('Cannot create feeds');
+    }
+
+    // Ensures organization exists and user has access to it
+    await this.organizationsService.findOneWithAbility(
+      organizationId,
+      req.ability,
+    );
+
+    return this.feedsService.create(organizationId, createFeedDto);
   }
 
   @Get()
@@ -47,26 +61,70 @@ export class FeedsController {
       throw new UnauthorizedException('Cannot read feeds');
     }
 
-    const organization = await this.organizationsService.findOneWithAbility(
+    // Ensures organization exists and user has access to it
+    await this.organizationsService.findOneWithAbility(
       organizationId,
       req.ability,
     );
 
-    return this.feedsService.findAll(organization);
+    return this.feedsService.findAll(organizationId);
   }
 
   @Get(':feedId')
-  findOne(@Param('feedId') feedId: string) {
-    return this.feedsService.findOne(feedId);
+  async findOne(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+    @Param('feedId') feedId: string,
+  ): Promise<Feed> {
+    if (req.ability.cannot(Action.Read, Feed)) {
+      throw new UnauthorizedException('Cannot read feeds');
+    }
+
+    // Ensures organization exists and user has access to it
+    await this.organizationsService.findOneWithAbility(
+      organizationId,
+      req.ability,
+    );
+
+    return this.feedsService.findOneByAbility(feedId, req.ability);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFeedDto: UpdateFeedDto) {
-    return this.feedsService.update(+id, updateFeedDto);
+  @Patch(':feedId')
+  async update(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+    @Param('feedId') feedId: string,
+    @Body() updateFeedDto: UpdateFeedDto,
+  ) {
+    if (req.ability.cannot(Action.Update, Feed)) {
+      throw new UnauthorizedException('Cannot update feeds');
+    }
+
+    // Ensures organization exists and user has access to it
+    await this.organizationsService.findOneWithAbility(
+      organizationId,
+      req.ability,
+    );
+
+    return this.feedsService.update(feedId, updateFeedDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.feedsService.remove(+id);
+  @Delete(':feedId')
+  async remove(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+    @Param('feedId') feedId: string,
+  ): Promise<Feed> {
+    if (req.ability.cannot(Action.Delete, Feed)) {
+      throw new UnauthorizedException('Cannot delete feeds');
+    }
+
+    // Ensures organization exists and user has access to it
+    await this.organizationsService.findOneWithAbility(
+      organizationId,
+      req.ability,
+    );
+
+    return this.feedsService.remove(feedId);
   }
 }

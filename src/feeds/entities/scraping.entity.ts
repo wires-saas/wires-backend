@@ -1,3 +1,8 @@
 export type ScrapingGranularity = 'day' | 'hour' | 'minute';
 
-export type ScrapingAuthorization = 'basic' | 'bearer' | 'apikey' | 'none';
+export enum ScrapingAuthorizationType {
+  BASIC = 'basic',
+  BEARER = 'bearer',
+  API_KEY = 'apikey',
+  NONE = 'none',
+}

@@ -1,36 +1,104 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateFeedDto } from './dto/create-feed.dto';
 import { UpdateFeedDto } from './dto/update-feed.dto';
 import { Feed } from './schemas/feed.schema';
 import { Organization } from '../organizations/schemas/organization.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { ScrapingAuthorizationType } from './entities/scraping.entity';
+import { HashService } from '../services/security/hash.service';
+import { MongoAbility } from '@casl/ability';
+import { accessibleBy } from '@casl/mongoose';
+import { User } from '../users/schemas/user.schema';
 
 @Injectable()
 export class FeedsService {
   private logger: Logger;
 
-  constructor() {
+  constructor(
+    @InjectModel(Feed.name) private feedModel: Model<Feed>,
+    private hashService: HashService,
+  ) {
     this.logger = new Logger(FeedsService.name);
   }
-  create(createFeedDto: CreateFeedDto) {
-    this.logger.log('Creating a new feed', createFeedDto);
-    return 'This action adds a new feed';
+
+  private async convertToEntity(
+    organizationId: string,
+    createFeedDto: CreateFeedDto,
+  ): Promise<Feed> {
+    let authorizationTokenHashed = undefined;
+    if (createFeedDto.authorizationToken) {
+      authorizationTokenHashed = await this.hashService.hash(
+        createFeedDto.authorizationToken,
+      );
+    }
+
+    return new Feed({
+      displayName: createFeedDto.displayName,
+      description: createFeedDto.description,
+      organization: organizationId,
+
+      urls: createFeedDto.urls.map((url) => url.trim()),
+
+      scrapingEnabled: true,
+      scrapingInterval: createFeedDto.scrapingInterval,
+      scrapingGranularity: createFeedDto.scrapingGranularity,
+
+      autoScrapingInterval: createFeedDto.scrapingInterval,
+      autoScrapingGranularity: createFeedDto.scrapingGranularity,
+
+      authorizationType:
+        createFeedDto.authorizationType || ScrapingAuthorizationType.NONE,
+
+      authorizationUsername: createFeedDto.authorizationUsername,
+      authorizationToken: authorizationTokenHashed,
+    });
   }
 
-  findAll(organization: Organization): Feed[] {
-    this.logger.log('Fetching all feeds for organization ' + organization._id);
-    return [];
+  async create(organizationId: string, createFeedDto: CreateFeedDto) {
+    const feed = await this.convertToEntity(organizationId, createFeedDto);
+
+    return new this.feedModel(feed).save();
   }
 
-  findOne(feedId: string) {
-    return `This action returns a #${feedId} feed`;
+  findAll(organizationId: string): Promise<Feed[]> {
+    this.logger.log('Fetching all feeds for organization ' + organizationId);
+    return this.feedModel.find({ organization: organizationId }).exec();
   }
 
-  update(id: number, updateFeedDto: UpdateFeedDto) {
-    this.logger.log('Updating feed with id ' + id, updateFeedDto);
-    return `This action updates a #${id} feed`;
+  findOne(feedId: string): Promise<Feed> {
+    return this.feedModel.findById(feedId).exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} feed`;
+  async findOneByAbility(feedId: string, ability: MongoAbility): Promise<Feed> {
+    return this.feedModel
+      .findOne({
+        $and: [{ _id: feedId }, accessibleBy(ability, 'read').ofType(Feed)],
+      })
+      .exec()
+      .then((feed) => {
+        if (!feed) throw new NotFoundException('Feed not found');
+        return feed;
+      });
+  }
+
+  async update(feedId: string, updateFeedDto: UpdateFeedDto) {
+    if (updateFeedDto.authorizationToken) {
+      updateFeedDto.authorizationToken = await this.hashService.hash(
+        updateFeedDto.authorizationToken,
+      );
+    }
+
+    return this.feedModel.findByIdAndUpdate(
+      feedId,
+      new Feed({
+        ...updateFeedDto,
+      }),
+      { returnOriginal: false },
+    );
+  }
+
+  remove(feedId: string) {
+    return this.feedModel.findByIdAndDelete(feedId).exec();
   }
 }

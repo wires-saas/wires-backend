@@ -1,7 +1,7 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import {
-  ScrapingAuthorization,
+  ScrapingAuthorizationType,
   ScrapingGranularity,
 } from '../entities/scraping.entity';
 
@@ -38,14 +38,17 @@ export class Feed {
   })
   organization: string;
 
-  @Prop({ required: true, type: String }) // not specify it will throw, resulting in error 500
+  @Prop({ required: true, type: String })
   displayName: string;
+
+  @Prop({ required: true, type: String })
+  description: string;
 
   @Prop({ required: true, type: [String] })
   urls: string[];
 
   @Prop()
-  scrapingFrequency: number;
+  scrapingInterval: number;
 
   @Prop()
   scrapingGranularity: ScrapingGranularity;
@@ -54,7 +57,7 @@ export class Feed {
   scrapingEnabled: boolean;
 
   @Prop()
-  autoScrapingFrequency: number;
+  autoScrapingInterval: number;
 
   @Prop()
   autoScrapingGranularity: ScrapingGranularity;
@@ -62,8 +65,8 @@ export class Feed {
   @Prop()
   autoScrapingEnabled: boolean;
 
-  @Prop({ default: 'none' })
-  authorization?: ScrapingAuthorization;
+  @Prop({ default: ScrapingAuthorizationType.NONE })
+  authorizationType?: ScrapingAuthorizationType;
 
   @Prop()
   authorizationUsername?: string;
