@@ -8,6 +8,7 @@ import { Feed, FeedSchema } from './schemas/feed.schema';
 import { SecurityModule } from '../services/security/security.module';
 import { FeedRunsController } from './runs/feed-runs.controller';
 import { FeedRunsService } from './runs/feed-runs.service';
+import { ScrapingModule } from '../services/scraping/scraping.module';
 
 @Module({
   imports: [
@@ -15,8 +16,9 @@ import { FeedRunsService } from './runs/feed-runs.service';
     UsersModule,
     OrganizationsModule,
     SecurityModule,
+    ScrapingModule,
   ],
-  controllers: [FeedsController, FeedRunsController],
+  controllers: [FeedRunsController, FeedsController],
   providers: [FeedsService, FeedRunsService],
 })
 export class FeedsModule {}
