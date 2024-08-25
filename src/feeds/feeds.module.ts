@@ -6,6 +6,8 @@ import { OrganizationsModule } from '../organizations/organizations.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Feed, FeedSchema } from './schemas/feed.schema';
 import { SecurityModule } from '../services/security/security.module';
+import { FeedRunsController } from './runs/feed-runs.controller';
+import { FeedRunsService } from './runs/feed-runs.service';
 
 @Module({
   imports: [
@@ -14,7 +16,7 @@ import { SecurityModule } from '../services/security/security.module';
     OrganizationsModule,
     SecurityModule,
   ],
-  controllers: [FeedsController],
-  providers: [FeedsService],
+  controllers: [FeedsController, FeedRunsController],
+  providers: [FeedsService, FeedRunsService],
 })
 export class FeedsModule {}

@@ -41,7 +41,7 @@ export class Feed {
   @Prop({ required: true, type: String })
   displayName: string;
 
-  @Prop({ required: true, type: String })
+  @Prop({ type: String })
   description: string;
 
   @Prop({ required: true, type: [String] })
