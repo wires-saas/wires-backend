@@ -40,10 +40,10 @@ export class FeedRun {
   @Prop()
   newArticles: string[];
 
-  @Prop()
+  @Prop({ default: 0 })
   scrapingDurationMs: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   articlesCreationMs: number;
 
   constructor(partial: Partial<FeedRun>) {

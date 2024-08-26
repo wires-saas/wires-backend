@@ -25,6 +25,7 @@ export class FeedRunsService {
   findAllRunsOfFeeds(feeds: Feed[]): Promise<FeedRun[]> {
     return this.feedRunModel
       .find({ feed: { $in: feeds.map((feed) => feed._id) } })
+      .populate('feed')
       .exec();
   }
 
