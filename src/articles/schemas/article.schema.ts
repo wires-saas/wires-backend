@@ -1,8 +1,8 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { FeedRunStatus } from '../entities/feed-run.entity';
+import { ArticleMetadata, ArticleStats } from '../entities/article.entity';
 
-export type FeedRunDocument = HydratedDocument<FeedRun>;
+export type ArticleDocument = HydratedDocument<Article>;
 
 @Schema({
   timestamps: true,
@@ -21,34 +21,31 @@ export type FeedRunDocument = HydratedDocument<FeedRun>;
     },
   },
 })
-export class FeedRun {
+export class Article {
   _id: string;
+
+  @Prop({ required: true, unique: true })
+  url: string;
 
   @Prop({
     required: true,
-    type: String,
+    type: [String],
     ref: 'Feed',
   })
-  feed: string;
+  feeds: string[];
 
-  @Prop({ type: String })
-  status: FeedRunStatus;
-
-  // articles & missed articles & new articles
-  // duplicate articles can be found with articles minus new articles
+  @Prop({ type: [String] })
+  tags: string[];
 
   @Prop()
-  newArticles: string[];
+  metadata: ArticleMetadata;
 
-  @Prop()
-  duplicateArticles: string[];
+  @Prop({ default: { sent: 0, displayed: 0, clicked: 0 } })
+  stats: ArticleStats;
 
-  @Prop()
-  durationMs: number;
-
-  constructor(partial: Partial<FeedRun>) {
+  constructor(partial: Partial<Article>) {
     Object.assign(this, partial);
   }
 }
 
-export const FeedRunSchema = SchemaFactory.createForClass(FeedRun);
+export const ArticleSchema = SchemaFactory.createForClass(Article);

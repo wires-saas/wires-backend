@@ -9,10 +9,14 @@ import { SecurityModule } from '../services/security/security.module';
 import { FeedRunsController } from './runs/feed-runs.controller';
 import { FeedRunsService } from './runs/feed-runs.service';
 import { ScrapingModule } from '../services/scraping/scraping.module';
+import { FeedRun, FeedRunSchema } from './schemas/feed-run.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Feed.name, schema: FeedSchema }]),
+    MongooseModule.forFeature([
+      { name: Feed.name, schema: FeedSchema },
+      { name: FeedRun.name, schema: FeedRunSchema },
+    ]),
     UsersModule,
     OrganizationsModule,
     SecurityModule,

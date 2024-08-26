@@ -3,6 +3,7 @@ import { FeedRunsService } from './feed-runs.service';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../../auth/auth.guard';
 import { FeedsService } from '../feeds.service';
+import { FeedRun } from '../schemas/feed-run.schema';
 
 @ApiTags('Feeds (Runs)')
 @UseGuards(AuthGuard)
@@ -13,15 +14,18 @@ export class FeedRunsController {
     private feedsService: FeedsService,
   ) {}
 
+  // TODO rbac / casl controls
+
   @Post(':feedId/runs')
-  async runFeed(@Param('feedId') feedId: string) {
+  async runFeed(@Param('feedId') feedId: string): Promise<FeedRun> {
     const feed = await this.feedsService.findOne(feedId);
     return this.feedRunsService.runFeed(feed);
   }
 
   @Get('runs')
-  findAllOfOrganization(@Param('organizationId') organizationId: string) {
-    return this.feedRunsService.findAllRunsOfOrganization(organizationId);
+  async findAllOfOrganization(@Param('organizationId') organizationId: string) {
+    const feeds = await this.feedsService.findAll(organizationId);
+    return this.feedRunsService.findAllRunsOfFeeds(feeds);
   }
 
   @Get(':feedId/runs')

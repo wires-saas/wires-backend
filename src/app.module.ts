@@ -21,6 +21,7 @@ import {
 } from 'nestjs-i18n';
 import { join } from 'path';
 import { FeedsModule } from './feeds/feeds.module';
+import { ArticlesModule } from './articles/articles.module';
 
 readEnvFile();
 const connectionString = process.env.MONGO_URI;
@@ -63,6 +64,7 @@ const connectionString = process.env.MONGO_URI;
       inject: [ConfigService],
     }),
     FeedsModule,
+    ArticlesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

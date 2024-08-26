@@ -3,10 +3,13 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 
 import * as xml2js from 'xml2js';
+import { Article } from '../../articles/schemas/article.schema';
+
+export type ScrapedArticle = Pick<Article, 'url' | 'metadata'>;
 
 export interface ScrapingResult {
-  articles: any[];
-  articlesMissed: any[];
+  articles: ScrapedArticle[];
+  articlesMissed: ScrapedArticle[];
   articleScore: number;
   metadataScore: number;
 }
@@ -31,7 +34,7 @@ export class ScrapingService {
     try {
       const response = await firstValueFrom(this.httpService.get(url));
 
-      let scrapingResult;
+      let scrapingResult: ScrapingResult;
 
       const type = this.guessDataType(response.data);
       switch (type) {
