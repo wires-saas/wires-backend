@@ -1,6 +1,7 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ArticleMetadata, ArticleStats } from '../entities/article.entity';
+import { ArticleMetadata } from './article-metadata.schema';
+import { ArticleStats } from './article-stats.schema';
 
 export type ArticleDocument = HydratedDocument<Article>;
 
@@ -10,6 +11,7 @@ export type ArticleDocument = HydratedDocument<Article>;
     versionKey: false,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
+      delete ret._id;
       return ret;
     },
   },
@@ -17,11 +19,13 @@ export type ArticleDocument = HydratedDocument<Article>;
     versionKey: false,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
+      delete ret._id;
       return ret;
     },
   },
 })
 export class Article {
+  @Prop({ type: String, required: true })
   _id: string;
 
   @Prop({ required: true, unique: true })
@@ -37,14 +41,20 @@ export class Article {
   @Prop({ type: [String] })
   tags: string[];
 
-  @Prop()
+  @Prop({
+    type: ArticleMetadata,
+    default: {},
+  })
   metadata: ArticleMetadata;
 
-  @Prop({ default: { sent: 0, displayed: 0, clicked: 0 } })
+  @Prop({ type: ArticleStats, default: { sent: 0, displayed: 0, clicked: 0 } })
   stats: ArticleStats;
 
   constructor(partial: Partial<Article>) {
     Object.assign(this, partial);
+    if (!partial._id) {
+      this._id = this.url;
+    }
   }
 }
 

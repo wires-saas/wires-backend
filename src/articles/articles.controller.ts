@@ -1,11 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '../auth/auth.guard';
+import { FeedsService } from '../feeds/feeds.service';
 
-@Controller('articles')
+@ApiTags('Articles')
+@UseGuards(AuthGuard)
+@Controller('organizations/:organizationId/articles')
 export class ArticlesController {
-  constructor(private readonly articlesService: ArticlesService) {}
+  constructor(
+    private readonly articlesService: ArticlesService,
+    private feedsService: FeedsService,
+  ) {}
 
   @Post()
   create(@Body() createArticleDto: CreateArticleDto) {
@@ -13,8 +30,10 @@ export class ArticlesController {
   }
 
   @Get()
-  findAll() {
-    return this.articlesService.findAll();
+  async findAll(@Param('organizationId') organizationId: string) {
+    const feeds = await this.feedsService.findAll(organizationId);
+    console.log('got feeds', feeds);
+    return this.articlesService.findAll(feeds);
   }
 
   @Get(':id')

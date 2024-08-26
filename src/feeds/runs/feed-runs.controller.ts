@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  UseGuards,
+  NotFoundException,
+} from '@nestjs/common';
 import { FeedRunsService } from './feed-runs.service';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../../auth/auth.guard';
@@ -34,10 +41,16 @@ export class FeedRunsController {
   }
 
   @Get(':feedId/runs/:runId')
-  findOneOfFeed(
+  async findOneOfFeed(
     @Param('feedId') feedId: string,
     @Param('runId') runId: string,
-  ) {
-    return this.feedRunsService.findRunOfFeed(feedId, runId);
+  ): Promise<FeedRun> {
+    const run = await this.feedRunsService.findRunOfFeed(feedId, runId);
+
+    if (!run) {
+      throw new NotFoundException('Feed run not found');
+    }
+
+    return run;
   }
 }

@@ -1,20 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
+  ScrapedArticle,
   ScrapingResultTimed,
   ScrapingService,
 } from '../../services/scraping/scraping.service';
 import { Feed } from '../schemas/feed.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FeedRun } from '../schemas/feed-run.schema';
+import { FeedRun, FeedRunColl } from '../schemas/feed-run.schema';
 import { FeedRunStatus } from '../entities/feed-run.entity';
+import { ArticlesService } from '../../articles/articles.service';
 
 @Injectable()
 export class FeedRunsService {
   private logger: Logger;
   constructor(
+    private articlesService: ArticlesService,
     private scrapingService: ScrapingService,
-    @InjectModel(FeedRun.name) private feedRunModel: Model<FeedRun>,
+    @InjectModel(FeedRunColl) private feedRunModel: Model<FeedRun>,
   ) {
     this.logger = new Logger(FeedRunsService.name);
   }
@@ -26,19 +29,15 @@ export class FeedRunsService {
   }
 
   async runFeed(feed: Feed): Promise<FeedRun> {
-    console.log(feed);
-
-    // Creation of pending feed run
+    // 1) Creation of pending feed run
     const feedRun = await new this.feedRunModel({
       feed: feed._id,
       status: FeedRunStatus.PENDING,
     }).save();
 
-    console.log(feedRun);
-
+    // 2) Setup scraping of each URL with error handling
     const scrapingRequests: Array<Promise<ScrapingResultTimed>> = feed.urls.map(
       async (url) => {
-        this.logger.log(`Scraping ${url}`);
         try {
           return await this.scrapingService.scrape(url);
         } catch (error) {
@@ -48,12 +47,15 @@ export class FeedRunsService {
       },
     );
 
+    // 3) Scraping and aggregation of results
     return Promise.all(scrapingRequests)
-      .then((results) => {
+      .then((results: ScrapingResultTimed[]) => {
+        // failed scraping requests are represented as null
         const successfulRequests: number = results.filter(
           (result) => result !== null,
         )?.length;
 
+        // generate aggregated scraping result
         const aggregatedScrapingResult: ScrapingResultTimed = results.reduce(
           (acc, result) => {
             if (result === null) return acc;
@@ -76,32 +78,83 @@ export class FeedRunsService {
           null as ScrapingResultTimed,
         );
 
-        aggregatedScrapingResult.articleScore /= successfulRequests;
-        aggregatedScrapingResult.metadataScore /= successfulRequests;
+        if (aggregatedScrapingResult && successfulRequests > 0) {
+          aggregatedScrapingResult.articleScore /= successfulRequests;
+          aggregatedScrapingResult.metadataScore /= successfulRequests;
+
+          // remove duplicates
+          aggregatedScrapingResult.articles = [
+            ...new Set(aggregatedScrapingResult.articles),
+          ];
+          aggregatedScrapingResult.articlesMissed = [
+            ...new Set(aggregatedScrapingResult.articlesMissed),
+          ];
+        }
 
         return aggregatedScrapingResult;
       })
-      .then(async (result) => {
-        this.logger.log('Scraping completed');
-        feedRun.status = FeedRunStatus.COMPLETED;
-        feedRun.newArticles = result.articles.map((article) => article.url);
-        feedRun.duplicateArticles = [];
-        feedRun.durationMs = result.duration;
+      .then(async (result: ScrapingResultTimed) => {
+        // 4) Update feed run with scraping results
+
+        if (!result) {
+          this.logger.error('Scraping failed');
+          feedRun.status = FeedRunStatus.FAILED;
+          return feedRun.save();
+        } else {
+          this.logger.log('Scraping completed');
+
+          // Add new articles to the database
+          // From articles collection, feed run is idempotent
+
+          const articleCreationStartedAt = Date.now();
+
+          const newUrls: string[] = await this.articlesService.findNewUrls(
+            result.articles.map((article) => article.url),
+          );
+          this.logger.debug(newUrls);
+
+          const newArticles: ScrapedArticle[] = result.articles.filter(
+            (article) => newUrls.includes(article.url),
+          );
+
+          const createdArticles = await this.articlesService.createMany(
+            newArticles.map((article) => ({
+              ...article,
+              feeds: [feedRun.feed],
+            })),
+          );
+
+          const articleCreationEndedAt = Date.now();
+
+          this.logger.log(`Created ${createdArticles.length} new articles`);
+
+          // TODO Update existing articles ?
+
+          feedRun.status = FeedRunStatus.COMPLETED;
+          feedRun.articles = result.articles.map((article) => article.url);
+          feedRun.newArticles = createdArticles.map((article) => article.url);
+          feedRun.scrapingDurationMs = result.duration;
+          feedRun.articlesCreationMs =
+            articleCreationEndedAt - articleCreationStartedAt;
+
+          return feedRun.save();
+        }
+      })
+      .catch((error) => {
+        this.logger.error('Error while running feed', error);
+        feedRun.status = FeedRunStatus.FAILED;
         return feedRun.save();
       });
-
-    // TODO Add the run to the database
-    // The run will contain aggregated scraping results without full articles (only keeping URLs)
-    // A run is strongly related to a feed
-
-    // The articles will be stored in a separate collection
   }
 
   findAllRunsOfFeed(feedId: string): Promise<FeedRun[]> {
     return this.feedRunModel.find({ feed: feedId }).exec();
   }
 
-  findRunOfFeed(feedId: string, runId: string): Promise<FeedRun> {
-    return this.feedRunModel.findOne({ feed: feedId, _id: runId }).exec();
+  async findRunOfFeed(feedId: string, runId: string): Promise<FeedRun> {
+    return this.feedRunModel
+      .findOne({ feed: feedId, _id: runId })
+      .populate('articles')
+      .exec();
   }
 }

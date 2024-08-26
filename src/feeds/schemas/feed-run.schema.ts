@@ -34,17 +34,17 @@ export class FeedRun {
   @Prop({ type: String })
   status: FeedRunStatus;
 
-  // articles & missed articles & new articles
-  // duplicate articles can be found with articles minus new articles
+  @Prop({ type: [{ type: String, ref: 'Article' }] })
+  articles: string[];
 
   @Prop()
   newArticles: string[];
 
   @Prop()
-  duplicateArticles: string[];
+  scrapingDurationMs: number;
 
   @Prop()
-  durationMs: number;
+  articlesCreationMs: number;
 
   constructor(partial: Partial<FeedRun>) {
     Object.assign(this, partial);
@@ -52,3 +52,5 @@ export class FeedRun {
 }
 
 export const FeedRunSchema = SchemaFactory.createForClass(FeedRun);
+
+export const FeedRunColl: string = 'feed_runs';

@@ -17,6 +17,9 @@ import {
   UserNotificationColl,
   UserNotificationSchema,
 } from '../users/schemas/user-notification.schema';
+import { Feed, FeedSchema } from '../feeds/schemas/feed.schema';
+import { FeedRunColl, FeedRunSchema } from '../feeds/schemas/feed-run.schema';
+import { Article, ArticleSchema } from '../articles/schemas/article.schema';
 
 const allModels: ModelDefinition[] = [
   { name: User.name, schema: UserSchema },
@@ -25,6 +28,12 @@ const allModels: ModelDefinition[] = [
   { name: UserNotificationColl, schema: UserNotificationSchema },
   { name: Role.name, schema: RoleSchema },
   { name: Permission.name, schema: PermissionSchema },
+];
+
+export const contentModels: ModelDefinition[] = [
+  { name: Article.name, schema: ArticleSchema },
+  { name: Feed.name, schema: FeedSchema },
+  { name: FeedRunColl, schema: FeedRunSchema },
 ];
 
 export default allModels;

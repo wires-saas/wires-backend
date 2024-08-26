@@ -74,6 +74,9 @@ export class Feed {
   @Prop()
   authorizationToken?: string;
 
+  @Prop({ default: 0 })
+  totalArticles: number;
+
   constructor(partial: Partial<Feed>) {
     Object.assign(this, partial);
   }

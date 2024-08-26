@@ -9,20 +9,20 @@ import { SecurityModule } from '../services/security/security.module';
 import { FeedRunsController } from './runs/feed-runs.controller';
 import { FeedRunsService } from './runs/feed-runs.service';
 import { ScrapingModule } from '../services/scraping/scraping.module';
-import { FeedRun, FeedRunSchema } from './schemas/feed-run.schema';
+import { contentModels } from '../shared/mongoose-models';
+import { ArticlesModule } from '../articles/articles.module';
+import { ArticlesService } from '../articles/articles.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Feed.name, schema: FeedSchema },
-      { name: FeedRun.name, schema: FeedRunSchema },
-    ]),
+    MongooseModule.forFeature(contentModels),
+    ArticlesModule,
     UsersModule,
     OrganizationsModule,
     SecurityModule,
     ScrapingModule,
   ],
   controllers: [FeedRunsController, FeedsController],
-  providers: [FeedsService, FeedRunsService],
+  providers: [FeedsService, FeedRunsService, ArticlesService],
 })
 export class FeedsModule {}

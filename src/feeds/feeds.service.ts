@@ -10,6 +10,7 @@ import { HashService } from '../services/security/hash.service';
 import { MongoAbility } from '@casl/ability';
 import { accessibleBy } from '@casl/mongoose';
 import { User } from '../users/schemas/user.schema';
+import { ArticlesService } from '../articles/articles.service';
 
 @Injectable()
 export class FeedsService {
@@ -17,6 +18,7 @@ export class FeedsService {
 
   constructor(
     @InjectModel(Feed.name) private feedModel: Model<Feed>,
+    private articlesService: ArticlesService,
     private hashService: HashService,
   ) {
     this.logger = new Logger(FeedsService.name);
@@ -61,9 +63,18 @@ export class FeedsService {
     return new this.feedModel(feed).save();
   }
 
-  findAll(organizationId: string): Promise<Feed[]> {
+  async findAll(organizationId: string): Promise<Feed[]> {
     this.logger.log('Fetching all feeds for organization ' + organizationId);
-    return this.feedModel.find({ organization: organizationId }).exec();
+    const feeds: Feed[] = await this.feedModel
+      .find({ organization: organizationId })
+      .exec();
+
+    for (const feed of feeds) {
+      const articles = await this.articlesService.findAllFromFeed(feed._id);
+      feed.totalArticles = articles.length;
+    }
+
+    return feeds;
   }
 
   findOne(feedId: string): Promise<Feed> {
