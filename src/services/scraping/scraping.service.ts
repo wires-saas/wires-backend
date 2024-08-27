@@ -112,6 +112,7 @@ export class ScrapingService {
   }
 
   private scrapeJSON(data: string): Promise<ScrapingResult> {
+    console.log(data);
     return null;
   }
 

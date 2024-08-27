@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { UpdateArticleDto } from './dto/update-article.dto';
 import { Article } from './schemas/article.schema';
 import { Feed } from '../feeds/schemas/feed.schema';
 import { Model } from 'mongoose';

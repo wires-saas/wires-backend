@@ -2,14 +2,12 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateFeedDto } from './dto/create-feed.dto';
 import { UpdateFeedDto } from './dto/update-feed.dto';
 import { Feed } from './schemas/feed.schema';
-import { Organization } from '../organizations/schemas/organization.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ScrapingAuthorizationType } from './entities/scraping.entity';
 import { HashService } from '../services/security/hash.service';
 import { MongoAbility } from '@casl/ability';
 import { accessibleBy } from '@casl/mongoose';
-import { User } from '../users/schemas/user.schema';
 import { ArticlesService } from '../articles/articles.service';
 
 @Injectable()

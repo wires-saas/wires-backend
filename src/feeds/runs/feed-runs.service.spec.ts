@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestingModule } from '@nestjs/testing';
 import { FeedRunsService } from './feed-runs.service';
 import { TestUtils } from '../../shared/utils/test.utils';
 
