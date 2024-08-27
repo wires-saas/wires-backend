@@ -1,15 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestingModule } from '@nestjs/testing';
 import { FeedRunsController } from './feed-runs.controller';
-import { FeedRunsService } from './feed-runs.service';
+import { TestUtils } from '../../shared/utils/test.utils';
 
 describe('RunsController', () => {
   let controller: FeedRunsController;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [FeedRunsController],
-      providers: [FeedRunsService],
-    }).compile();
+    const module: TestingModule =
+      await TestUtils.createTestingModuleForContents({
+        controllers: [FeedRunsController],
+        providers: [],
+      });
 
     controller = module.get<FeedRunsController>(FeedRunsController);
   });
