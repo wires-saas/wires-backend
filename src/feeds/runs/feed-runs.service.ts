@@ -121,6 +121,7 @@ export class FeedRunsService {
           const createdArticles = await this.articlesService.createMany(
             newArticles.map((article) => ({
               ...article,
+              organization: feed.organization,
               feeds: [feedRun.feed],
             })),
           );

@@ -79,7 +79,10 @@ export class FeedsService {
     return this.feedModel.findById(feedId).exec();
   }
 
-  async findOneByAbility(feedId: string, ability: MongoAbility): Promise<Feed> {
+  async findOneWithAbility(
+    feedId: string,
+    ability: MongoAbility,
+  ): Promise<Feed> {
     return this.feedModel
       .findOne({
         $and: [{ _id: feedId }, accessibleBy(ability, 'read').ofType(Feed)],

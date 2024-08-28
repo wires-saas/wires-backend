@@ -26,7 +26,6 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { User } from './schemas/user.schema';
-import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 import { Action } from '../rbac/permissions/entities/action.entity';
 import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { AuthGuard } from '../auth/auth.guard';
@@ -47,7 +46,6 @@ export class UsersController {
     private usersService: UsersService,
     private organizationsService: OrganizationsService,
     private emailService: EmailService,
-    private caslAbilityFactory: CaslAbilityFactory,
   ) {
     this.logger = new Logger(UsersController.name);
   }
@@ -62,8 +60,7 @@ export class UsersController {
     @Request() req: AuthenticatedRequest,
     @Body() createUserDto: CreateUserDto,
   ): Promise<User> {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-    if (ability.cannot(Action.Create, User)) {
+    if (req.ability.cannot(Action.Create, User)) {
       throw new UnauthorizedException();
     }
 
@@ -98,8 +95,7 @@ export class UsersController {
     @Request() req: AuthenticatedRequest,
     @Param('userId') userId: string,
   ): Promise<void> {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-    if (ability.cannot(Action.Update, User)) {
+    if (req.ability.cannot(Action.Update, User)) {
       throw new UnauthorizedException('Cannot invite user');
     }
 
@@ -131,22 +127,20 @@ export class UsersController {
     @Request() req: AuthenticatedRequest,
     @Query('organizations') organizations?: string,
   ): Promise<User[]> {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-    if (ability.cannot(Action.Read, User)) {
+    if (req.ability.cannot(Action.Read, User)) {
       throw new UnauthorizedException();
     }
 
     if (organizations) {
-      return this.usersService.findAll(ability, organizations.split(','));
+      return this.usersService.findAll(req.ability, organizations.split(','));
     }
 
-    return this.usersService.findAll(ability);
+    return this.usersService.findAll(req.ability);
   }
 
   @Get(':id')
   findOne(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-    if (ability.cannot(Action.Read, User)) {
+    if (req.ability.cannot(Action.Read, User)) {
       throw new UnauthorizedException();
     }
 
@@ -163,24 +157,24 @@ export class UsersController {
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-
     // Not applying any authorization/field filtering if user can manage all
-    if (ability.can(Action.Manage, 'all')) {
+    if (req.ability.can(Action.Manage, 'all')) {
       return this.usersService.update(id, updateUserDto);
     }
 
-    if (ability.cannot(Action.Update, User)) {
+    if (req.ability.cannot(Action.Update, User)) {
       throw new UnauthorizedException('Cannot update other users');
     }
 
     const target: User = await this.usersService.findOne(id, true);
 
-    if (ability.cannot(Action.Update, target)) {
+    if (req.ability.cannot(Action.Update, target)) {
       throw new UnauthorizedException('Cannot update target user');
     }
 
-    const fieldsToKeep = accessibleFieldsBy(ability, Action.Update).of(target);
+    const fieldsToKeep = accessibleFieldsBy(req.ability, Action.Update).of(
+      target,
+    );
 
     const safeUpdateUserDto = {};
     for (const field of fieldsToKeep) {
@@ -207,18 +201,17 @@ export class UsersController {
       throw new BadRequestException('Organization is required');
     }
 
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-    if (ability.cannot(Action.Delete, User)) {
+    if (req.ability.cannot(Action.Delete, User)) {
       throw new UnauthorizedException('Cannot delete other users');
     }
 
-    if (ability.cannot(Action.Update, Organization, organization)) {
+    if (req.ability.cannot(Action.Update, Organization, organization)) {
       throw new UnauthorizedException(
         'Cannot delete users from this organization',
       );
     }
 
-    if (ability.cannot(Action.Manage, Organization, organization)) {
+    if (req.ability.cannot(Action.Manage, Organization, organization)) {
       const target = await this.usersService.findOne(id, true);
 
       if (

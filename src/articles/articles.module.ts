@@ -7,12 +7,14 @@ import { UsersModule } from '../users/users.module';
 import { FeedsModule } from '../feeds/feeds.module';
 import { FeedsService } from '../feeds/feeds.service';
 import { SecurityModule } from '../services/security/security.module';
+import { OrganizationsModule } from '../organizations/organizations.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature(contentModels),
     SecurityModule,
     UsersModule,
+    OrganizationsModule,
     forwardRef(() => FeedsModule),
   ],
   controllers: [ArticlesController],

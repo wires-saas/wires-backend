@@ -15,6 +15,9 @@ import { Organization } from '../../organizations/schemas/organization.schema';
 import { UserRole } from '../../users/schemas/user-role.schema';
 import { UserNotification } from '../../users/schemas/user-notification.schema';
 import { Feed } from '../../feeds/schemas/feed.schema';
+import { Article } from '../../articles/schemas/article.schema';
+import { FeedRun } from '../../feeds/schemas/feed-run.schema';
+import { ScopedSubject } from './casl.utils';
 
 type Subjects =
   | InferSubjects<
@@ -23,6 +26,8 @@ type Subjects =
       | typeof UserRole
       | typeof UserNotification
       | typeof Feed
+      | typeof FeedRun
+      | typeof Article
     >
   | 'all';
 
@@ -58,6 +63,26 @@ export class CaslAbilityFactory {
       // For that we have the current user, with its roles on organizations (user roles)
       // From those roles we can extract the permissions
 
+      // 3 distinct permissions, sorted by priority:
+
+      // 1- Permission with restriction (records with specific field value)
+      // ex: can(Action.Read, Article, { organization: userRole.organization });
+
+      // 2- Permission with scope (scope is included in permission name)
+      // ex: can(Action.Read, ScopedSubject(FeedRun, userRole.organization));
+
+      // 3- Permission without restriction or scope (no restriction and no scope)
+      // ex: can(Action.Read, User);
+
+      // Restricted permission must be preferred over scoped permission
+      // As it allows to be also used in database queries
+
+      // Scoped permission exists because we need to restrict access to a specific organization
+      // But organization is not a direct field of the record
+
+      // Permission without restriction or scope is the most generic one
+      // It can create leaks if not used carefully
+
       user.roles.forEach((userRole: UserRoleWithPermissions) => {
         userRole.role.permissions.forEach((id) => {
           // forcing string cast here as we did not deep populate permissions
@@ -79,6 +104,19 @@ export class CaslAbilityFactory {
               break;
             case Subject.Feed:
               can(permission.action, Feed, {
+                organization: userRole.organization,
+              });
+              break;
+            case Subject.FeedRun:
+              can(
+                permission.action,
+                ScopedSubject(FeedRun, userRole.organization),
+              );
+
+              // it may be needed to duplicate permission without scope
+              break;
+            case Subject.Article:
+              can(permission.action, Article, {
                 organization: userRole.organization,
               });
               break;
@@ -145,12 +183,15 @@ export class CaslAbilityFactory {
     return build({
       // Read https://casl.js.org/v6/en/guide/subject-type-detection#use-classes-as-subject-types for details
       detectSubjectType: (item) => {
-        let subjectType;
+        let subjectType: Subjects;
+        console.log('detectSubjectType', item);
         if (item.email) subjectType = User;
         else if (item.slug) subjectType = Organization;
         else if (item.role) subjectType = UserRole;
         else if (item.scope) subjectType = UserNotification;
         else if (item.urls) subjectType = Feed;
+        else if (item.scrapingDurationMs) subjectType = FeedRun;
+        else if (item.metadata) subjectType = Article;
 
         return subjectType as ExtractSubjectType<Subjects>;
       },

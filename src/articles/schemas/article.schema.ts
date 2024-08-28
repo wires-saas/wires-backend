@@ -33,6 +33,13 @@ export class Article {
 
   @Prop({
     required: true,
+    type: String,
+    ref: 'Organization',
+  })
+  organization: string;
+
+  @Prop({
+    required: true,
     type: [String],
     ref: 'Feed',
   })

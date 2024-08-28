@@ -22,7 +22,6 @@ import { UserRole } from '../schemas/user-role.schema';
 import { UserRoleDto } from '../dto/user-role.dto';
 import { Action } from '../../rbac/permissions/entities/action.entity';
 import { User } from '../schemas/user.schema';
-import { CaslAbilityFactory } from '../../rbac/casl/casl-ability.factory';
 import { AuthenticatedRequest } from '../../shared/types/authentication.types';
 import { AuthGuard } from '../../auth/auth.guard';
 
@@ -34,10 +33,7 @@ import { AuthGuard } from '../../auth/auth.guard';
 export class UserRolesController {
   private logger: Logger;
 
-  constructor(
-    private readonly userRolesService: UserRolesService,
-    private caslAbilityFactory: CaslAbilityFactory,
-  ) {
+  constructor(private readonly userRolesService: UserRolesService) {
     this.logger = new Logger(UserRolesController.name);
   }
 
@@ -49,8 +45,6 @@ export class UserRolesController {
     @Body() userRoles: UserRoleDto[],
     @Param('userId') userId: string,
   ): Promise<UserRole[]> {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-
     const createdUserRoles: UserRole[] = userRoles.map(
       (dto) =>
         new UserRole({
@@ -62,7 +56,7 @@ export class UserRolesController {
 
     if (
       createdUserRoles.find((userRole) =>
-        ability.cannot(Action.Create, userRole),
+        req.ability.cannot(Action.Create, userRole),
       )
     ) {
       throw new UnauthorizedException('Cannot update user roles');
@@ -113,12 +107,11 @@ export class UserRolesController {
     @Request() req: AuthenticatedRequest,
     @Param('userId') userId: string,
   ): Promise<UserRole[]> {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-    if (ability.cannot(Action.Read, User)) {
+    if (req.ability.cannot(Action.Read, User)) {
       throw new UnauthorizedException('Cannot read users');
     }
 
-    if (ability.cannot(Action.Read, UserRole)) {
+    if (req.ability.cannot(Action.Read, UserRole)) {
       throw new UnauthorizedException('Cannot read user roles');
     }
 
@@ -132,8 +125,7 @@ export class UserRolesController {
     @Request() req: AuthenticatedRequest,
     @Param('userId') userId: string,
   ) {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-    if (ability.cannot(Action.Delete, UserRole)) {
+    if (req.ability.cannot(Action.Delete, UserRole)) {
       throw new UnauthorizedException('Cannot delete user roles');
     }
 
@@ -150,8 +142,7 @@ export class UserRolesController {
     @Body() userRoleToDelete: UserRoleDto,
     @Param('userId') userId: string,
   ) {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-    if (ability.cannot(Action.Delete, UserRole)) {
+    if (req.ability.cannot(Action.Delete, UserRole)) {
       throw new UnauthorizedException('Cannot delete user role');
     }
 

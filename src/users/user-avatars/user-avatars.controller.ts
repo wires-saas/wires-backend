@@ -26,7 +26,6 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from '../../auth/auth.guard';
 import { AuthenticatedRequest } from '../../shared/types/authentication.types';
-import { CaslAbilityFactory } from '../../rbac/casl/casl-ability.factory';
 import { Action } from '../../rbac/permissions/entities/action.entity';
 import { User } from '../schemas/user.schema';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -41,7 +40,6 @@ export class UserAvatarsController {
   constructor(
     private readonly userAvatarsService: UserAvatarsService,
     private readonly usersService: UsersService,
-    private caslAbilityFactory: CaslAbilityFactory,
   ) {
     this.logger = new Logger(UserAvatarsController.name);
   }
@@ -62,9 +60,7 @@ export class UserAvatarsController {
     )
     file: Express.Multer.File,
   ): Promise<{ fileName: string }> {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-
-    if (ability.cannot(Action.Update, User)) {
+    if (req.ability.cannot(Action.Update, User)) {
       throw new UnauthorizedException('Cannot update user avatar');
     }
 
@@ -125,11 +121,9 @@ export class UserAvatarsController {
     @Request() req: AuthenticatedRequest,
     @Param('userId') userId: string,
   ) {
-    const ability = this.caslAbilityFactory.createForUser(req.user);
-
     const user: User = await this.usersService.findOne(userId, false);
 
-    if (ability.cannot(Action.Update, user)) {
+    if (req.ability.cannot(Action.Update, user)) {
       throw new UnauthorizedException('Cannot delete user avatar');
     }
 

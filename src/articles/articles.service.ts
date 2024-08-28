@@ -48,6 +48,10 @@ export class ArticlesService {
       .exec();
   }
 
+  findAllOfOrganization(organizationId: string): Promise<Article[]> {
+    return this.articleModel.find({ organization: organizationId }).exec();
+  }
+
   findAllFromFeed(feedId: string): Promise<Article[]> {
     return this.articleModel.find({ feeds: { $in: [feedId] } }).exec();
   }

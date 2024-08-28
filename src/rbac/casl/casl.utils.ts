@@ -4,6 +4,17 @@ import { accessibleBy } from '@casl/mongoose';
 import { User } from '../../users/schemas/user.schema';
 import { Organization } from '../../organizations/schemas/organization.schema';
 
+export function ScopedSubject(subject: unknown, scope: string): string {
+  switch (typeof subject) {
+    case 'string':
+      return subject + '_' + scope;
+    case 'function':
+      return subject.name + '_of_' + scope;
+    default:
+      throw new Error('Invalid subject type, cannot scope');
+  }
+}
+
 export class CaslUtils {
   static getUserOrganizationsFromAbility(
     ability: MongoAbility,

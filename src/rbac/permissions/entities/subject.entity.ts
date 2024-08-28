@@ -3,4 +3,6 @@ export enum Subject {
   Organization = 'organization',
   UserRole = 'userRole',
   Feed = 'feed',
+  FeedRun = 'feedRun',
+  Article = 'article',
 }

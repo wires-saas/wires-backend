@@ -83,3 +83,6 @@ export class Feed {
 }
 
 export const FeedSchema = SchemaFactory.createForClass(Feed);
+
+// Disallowing two feeds with the same display name in the same organization
+FeedSchema.index({ organization: 1, displayName: 1 }, { unique: true });
