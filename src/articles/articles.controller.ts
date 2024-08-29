@@ -12,14 +12,14 @@ import {
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '../auth/auth.guard';
 import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { Action } from '../rbac/permissions/entities/action.entity';
 import { Article } from './schemas/article.schema';
+import { OrganizationGuard } from '../auth/organization.guard';
 
 @ApiTags('Articles')
-@UseGuards(AuthGuard)
+@UseGuards(OrganizationGuard)
 @Controller('organizations/:organizationId/articles')
 export class ArticlesController {
   private logger: Logger;

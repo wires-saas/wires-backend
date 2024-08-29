@@ -20,6 +20,7 @@ import {
 import { Feed, FeedSchema } from '../feeds/schemas/feed.schema';
 import { FeedRunColl, FeedRunSchema } from '../feeds/schemas/feed-run.schema';
 import { Article, ArticleSchema } from '../articles/schemas/article.schema';
+import { Tag, TagSchema } from '../tags/schemas/tag.schema';
 
 const allModels: ModelDefinition[] = [
   { name: User.name, schema: UserSchema },
@@ -34,6 +35,7 @@ export const contentModels: ModelDefinition[] = [
   { name: Article.name, schema: ArticleSchema },
   { name: Feed.name, schema: FeedSchema },
   { name: FeedRunColl, schema: FeedRunSchema },
+  { name: Tag.name, schema: TagSchema },
 ];
 
 export default allModels;
