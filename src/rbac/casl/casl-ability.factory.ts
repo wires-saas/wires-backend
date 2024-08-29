@@ -184,7 +184,6 @@ export class CaslAbilityFactory {
       // Read https://casl.js.org/v6/en/guide/subject-type-detection#use-classes-as-subject-types for details
       detectSubjectType: (item) => {
         let subjectType: Subjects;
-        console.log('detectSubjectType', item);
         if (item.email) subjectType = User;
         else if (item.slug) subjectType = Organization;
         else if (item.role) subjectType = UserRole;

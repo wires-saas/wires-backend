@@ -4,6 +4,8 @@ import {
   ScrapingAuthorizationType,
   ScrapingGranularity,
 } from '../entities/scraping.entity';
+import { ScraperType } from '../../services/scraping/scraping.entities';
+import { ScraperOptions } from './scraper-options.schema';
 
 export type FeedDocument = HydratedDocument<Feed>;
 
@@ -46,6 +48,12 @@ export class Feed {
 
   @Prop({ required: true, type: [String] })
   urls: string[];
+
+  @Prop({ default: ScraperType.DEFAULT, type: String })
+  scraperType: ScraperType;
+
+  @Prop({ default: {}, type: ScraperOptions })
+  scraperOptions: ScraperOptions;
 
   @Prop()
   scrapingInterval: number;

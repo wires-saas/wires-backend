@@ -18,9 +18,9 @@ export type UserDocument = HydratedDocument<User>;
     },
     avatarUrl: {
       get(): string {
-        // TODO variable for the URL
         return (
-          'http://localhost:3000/v1/users/' +
+          process.env.API_URL +
+          '/v1/users/' +
           this._id +
           '/avatar/' +
           this.avatarName

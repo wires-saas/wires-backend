@@ -64,6 +64,7 @@ export class AuthService {
       organization: userRole.organization,
       user: userRole.user,
       role: userRole.role._id,
+      permissions: userRole.role.permissions,
     }));
 
     await this.usersService

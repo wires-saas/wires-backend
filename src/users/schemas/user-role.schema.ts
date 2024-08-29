@@ -42,6 +42,8 @@ export class UserRole {
   @Prop({ required: true, type: String, ref: 'Role' })
   role: any;
 
+  permissions?: string[]; // For frontend use
+
   constructor(partial: Partial<UserRole>) {
     Object.assign(this, partial);
   }
