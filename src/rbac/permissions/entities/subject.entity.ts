@@ -5,4 +5,5 @@ export enum Subject {
   Feed = 'feed',
   FeedRun = 'feedRun',
   Article = 'article',
+  Billing = 'billing',
 }

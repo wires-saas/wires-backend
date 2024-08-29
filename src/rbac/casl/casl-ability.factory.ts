@@ -97,16 +97,23 @@ export class CaslAbilityFactory {
                 _id: userRole.organization,
               });
               break;
+
+            case Subject.Billing:
+              can(permission.action, Subject.Billing);
+              break;
+
             case Subject.UserRole:
               can(permission.action, UserRole, {
                 organization: userRole.organization,
               });
               break;
+
             case Subject.Feed:
               can(permission.action, Feed, {
                 organization: userRole.organization,
               });
               break;
+
             case Subject.FeedRun:
               can(
                 permission.action,
@@ -120,6 +127,7 @@ export class CaslAbilityFactory {
                 organization: userRole.organization,
               });
               break;
+
             case Subject.User:
               switch (permission.action) {
                 case Action.Update:
@@ -163,6 +171,9 @@ export class CaslAbilityFactory {
               }
 
               break;
+
+            default:
+              throw new Error('Invalid permission subject');
           }
         });
       });

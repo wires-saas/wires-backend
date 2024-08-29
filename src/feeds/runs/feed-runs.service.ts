@@ -8,7 +8,6 @@ import { FeedRunStatus } from '../entities/feed-run.entity';
 import { ArticlesService } from '../../articles/articles.service';
 import {
   ScrapedArticle,
-  ScraperType,
   ScrapingResultTimed,
 } from '../../services/scraping/scraping.entities';
 
