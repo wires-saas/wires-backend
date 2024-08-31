@@ -1,6 +1,6 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { TagDefinition } from './tag-definition.schema';
+import { TagRule } from './tag-rule.schema';
 
 export type TagDocument = HydratedDocument<Tag>;
 
@@ -27,6 +27,9 @@ export class Tag {
   @Prop({ required: true })
   displayName: string;
 
+  @Prop({ type: String })
+  description: string;
+
   @Prop({
     required: true,
     type: String,
@@ -34,11 +37,8 @@ export class Tag {
   })
   organization: string;
 
-  @Prop({
-    type: TagDefinition,
-    default: {},
-  })
-  definition: TagDefinition;
+  @Prop({ type: [TagRule] })
+  ruleset: TagRule[];
 
   constructor(partial: Partial<Tag>) {
     Object.assign(this, partial);
