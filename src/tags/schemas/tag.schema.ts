@@ -24,8 +24,11 @@ export type TagDocument = HydratedDocument<Tag>;
 export class Tag {
   _id: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   displayName: string;
+
+  @Prop({ required: true, default: '', type: String })
+  color: string;
 
   @Prop({ type: String })
   description: string;

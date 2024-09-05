@@ -11,6 +11,7 @@ import { ScrapingModule } from '../services/scraping/scraping.module';
 import { contentModels } from '../shared/mongoose-models';
 import { ArticlesModule } from '../articles/articles.module';
 import { ArticlesService } from '../articles/articles.service';
+import { TagsService } from '../tags/tags.service';
 
 @Module({
   imports: [
@@ -22,6 +23,6 @@ import { ArticlesService } from '../articles/articles.service';
     ScrapingModule,
   ],
   controllers: [FeedRunsController, FeedsController],
-  providers: [FeedsService, FeedRunsService, ArticlesService],
+  providers: [FeedsService, FeedRunsService, ArticlesService, TagsService],
 })
 export class FeedsModule {}

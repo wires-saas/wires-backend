@@ -1,8 +1,13 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema } from '@nestjs/mongoose';
 import { TagFilter } from './tag-filter.schema';
 import { HydratedDocument } from 'mongoose';
 
 export type TagRuleDocument = HydratedDocument<TagRule>;
+
+export enum TagRuleOperator {
+  AND = 'and',
+  OR = 'or',
+}
 
 @Schema({
   timestamps: false,
@@ -14,7 +19,7 @@ export class TagRule {
   field: string;
 
   @Prop({ type: String, required: true })
-  operator: string;
+  operator: TagRuleOperator;
 
   @Prop({ type: [TagFilter], required: true })
   filters: TagFilter[];
@@ -23,5 +28,3 @@ export class TagRule {
     Object.assign(this, partial);
   }
 }
-
-export const TagRuleSchema = SchemaFactory.createForClass(TagRule);

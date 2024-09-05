@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { Prop, Schema } from '@nestjs/mongoose';
+import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export enum FilterMatchMode {
   EQUALS = 'equals',
@@ -8,6 +8,12 @@ export enum FilterMatchMode {
   NOT_CONTAINS = 'notContains',
   STARTS_WITH = 'startsWith',
   ENDS_WITH = 'endsWith',
+  DATE_IS = 'dateIs',
+  DATE_IS_NOT = 'dateIsNot',
+  DATE_BEFORE = 'dateBefore',
+  DATE_AFTER = 'dateAfter',
+
+  // To verify
   GREATER_THAN = 'greaterThan',
   LESS_THAN = 'lessThan',
   IN = 'in',
@@ -21,15 +27,13 @@ export type TagFilterDocument = HydratedDocument<TagFilter>;
   _id: false,
 })
 export class TagFilter {
-  @Prop({ type: String })
+  @Prop({ type: SchemaTypes.Mixed })
   filterValue: string | boolean | number;
 
   @Prop({ type: String })
-  filterType: string;
+  filterType: FilterMatchMode;
 
   constructor(partial: Partial<TagFilter>) {
     Object.assign(this, partial);
   }
 }
-
-export const TagFilterSchema = SchemaFactory.createForClass(TagFilter);

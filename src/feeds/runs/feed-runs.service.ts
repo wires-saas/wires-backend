@@ -10,12 +10,14 @@ import {
   ScrapedArticle,
   ScrapingResultTimed,
 } from '../../services/scraping/scraping.entities';
+import { TagsService } from '../../tags/tags.service';
 
 @Injectable()
 export class FeedRunsService {
   private logger: Logger;
   constructor(
     private articlesService: ArticlesService,
+    private tagsService: TagsService,
     private scrapingService: ScrapingService,
     @InjectModel(FeedRunColl) private feedRunModel: Model<FeedRun>,
   ) {
@@ -122,6 +124,9 @@ export class FeedRunsService {
             (article) => newUrls.includes(article.url),
           );
 
+          // TODO alter tags of createdArticles outside mongo world
+          // TODO re-check tags of other articles
+
           const createdArticles = await this.articlesService.createMany(
             newArticles.map((article) => ({
               ...article,
@@ -129,6 +134,14 @@ export class FeedRunsService {
               feeds: [feedRun.feed],
             })),
           );
+
+          const tags = await this.tagsService.findAllOfOrganization(
+            feed.organization,
+          );
+
+          for (const tag of tags) {
+            await this.articlesService.updateAll(tag._id, tag.ruleset);
+          }
 
           const articleCreationEndedAt = Date.now();
 

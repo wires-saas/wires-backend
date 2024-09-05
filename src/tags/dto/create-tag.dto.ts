@@ -22,6 +22,10 @@ export class CreateOrUpdateTagDto {
 
   @IsDefined()
   @IsString()
+  color: string;
+
+  @IsDefined()
+  @IsString()
   description: string;
 
   @IsDefined()

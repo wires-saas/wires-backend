@@ -6,6 +6,7 @@ import { contentModels } from '../shared/mongoose-models';
 import { SecurityModule } from '../services/security/security.module';
 import { UsersModule } from '../users/users.module';
 import { OrganizationsModule } from '../organizations/organizations.module';
+import { ArticlesService } from '../articles/articles.service';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { OrganizationsModule } from '../organizations/organizations.module';
     OrganizationsModule,
   ],
   controllers: [TagsController],
-  providers: [TagsService],
+  providers: [TagsService, ArticlesService],
 })
 export class TagsModule {}

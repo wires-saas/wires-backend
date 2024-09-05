@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { CreateOrUpdateTagDto } from './dto/create-tag.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Tag } from './schemas/tag.schema';
+import { ArticlesService } from '../articles/articles.service';
+import { Article } from '../articles/schemas/article.schema';
 
 @Injectable()
 export class TagsService {
   constructor(
     @InjectModel(Tag.name)
     private tagModel: Model<Tag>,
+    private articleService: ArticlesService,
   ) {}
 
   createOrUpdate(tag: Tag): Promise<Tag> {
@@ -21,6 +23,10 @@ export class TagsService {
     }
   }
 
+  findAllOfOrganization(organizationId: string): Promise<Tag[]> {
+    return this.tagModel.find({ organization: organizationId }).exec();
+  }
+
   findAll(): Promise<Tag[]> {
     return this.tagModel.find().exec();
   }
@@ -31,5 +37,10 @@ export class TagsService {
 
   remove(id: string): Promise<Tag> {
     return this.tagModel.findByIdAndDelete(id);
+  }
+
+  async applyTagRules(tag: Tag): Promise<Article[]> {
+    // apply tag rules to articles
+    return await this.articleService.updateAll(tag._id, tag.ruleset);
   }
 }
