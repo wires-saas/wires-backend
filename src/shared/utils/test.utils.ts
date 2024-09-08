@@ -19,6 +19,8 @@ import { FeedRunColl } from '../../feeds/schemas/feed-run.schema';
 import { Feed } from '../../feeds/schemas/feed.schema';
 import { Article } from '../../articles/schemas/article.schema';
 import { ScrapingService } from '../../services/scraping/scraping.service';
+import { Tag } from '../../tags/schemas/tag.schema';
+import { TagsService } from '../../tags/tags.service';
 
 export class TestUtils {
   static createTestingModule(metadata: ModuleMetadata): Promise<TestingModule> {
@@ -169,6 +171,14 @@ export class TestUtils {
       remove: jest.fn(),
     };
 
+    const mockTagsService = {
+      create: jest.fn(),
+      findAll: jest.fn(),
+      findOne: jest.fn(),
+      update: jest.fn(),
+      remove: jest.fn(),
+    };
+
     const mockScrapingService = {
       scrapeFeed: jest.fn(),
     };
@@ -202,10 +212,12 @@ export class TestUtils {
         { provide: FeedRunsService, useValue: mockFeedRunService },
         { provide: ArticlesService, useValue: mockArticleService },
         { provide: ScrapingService, useValue: mockScrapingService },
+        { provide: TagsService, useValue: mockTagsService },
 
         { provide: getModelToken(Feed.name), useValue: modelFactory() },
         { provide: getModelToken(FeedRunColl), useValue: modelFactory() },
         { provide: getModelToken(Article.name), useValue: modelFactory() },
+        { provide: getModelToken(Tag.name), useValue: modelFactory() },
 
         ...metadata.providers,
       ],

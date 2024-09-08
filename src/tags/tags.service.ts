@@ -41,6 +41,10 @@ export class TagsService {
 
   async applyTagRules(tag: Tag): Promise<Article[]> {
     // apply tag rules to articles
-    return await this.articleService.updateAll(tag._id, tag.ruleset);
+    return await this.articleService.updateAllArticleTag(
+      tag.organization,
+      tag._id,
+      tag.ruleset,
+    );
   }
 }

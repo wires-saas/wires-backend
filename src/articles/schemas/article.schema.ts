@@ -2,7 +2,6 @@ import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ArticleMetadata } from './article-metadata.schema';
 import { ArticleStats } from './article-stats.schema';
-import { TagSchema } from '../../tags/schemas/tag.schema';
 
 export type ArticleDocument = HydratedDocument<Article>;
 

@@ -46,6 +46,9 @@ export class FeedRun {
   @Prop({ default: 0 })
   articlesCreationMs: number;
 
+  @Prop({ default: 0 })
+  tagsApplied: number;
+
   constructor(partial: Partial<FeedRun>) {
     Object.assign(this, partial);
   }

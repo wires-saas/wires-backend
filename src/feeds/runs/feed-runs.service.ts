@@ -125,7 +125,7 @@ export class FeedRunsService {
           );
 
           // TODO alter tags of createdArticles outside mongo world
-          // TODO re-check tags of other articles
+          // TODO re-check tags of other articles (metadata change ?)
 
           const createdArticles = await this.articlesService.createMany(
             newArticles.map((article) => ({
@@ -139,9 +139,33 @@ export class FeedRunsService {
             feed.organization,
           );
 
-          for (const tag of tags) {
-            await this.articlesService.updateAll(tag._id, tag.ruleset);
+          let tagsApplied = [];
+
+          for (const article of createdArticles) {
+            for (const tag of tags) {
+              const tagApplied = await this.articlesService.updateOneArticleTag(
+                feed.organization,
+                article._id,
+                tag._id,
+                tag.ruleset,
+              );
+
+              if (tagApplied) tagsApplied.push(tag._id);
+            }
           }
+
+          tagsApplied = [...new Set(tagsApplied)];
+
+          // Iterating through all articles to apply tags
+          /*
+          for (const tag of tags) {
+            await this.articlesService.updateAllArticleTag(
+              feed.organization,
+              tag._id,
+              tag.ruleset,
+            );
+          }
+           */
 
           const articleCreationEndedAt = Date.now();
 
@@ -155,6 +179,7 @@ export class FeedRunsService {
           feedRun.scrapingDurationMs = result.duration;
           feedRun.articlesCreationMs =
             articleCreationEndedAt - articleCreationStartedAt;
+          feedRun.tagsApplied = tagsApplied.length;
 
           return feedRun.save();
         }

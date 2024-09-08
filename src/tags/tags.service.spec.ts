@@ -1,13 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestingModule } from '@nestjs/testing';
 import { TagsService } from './tags.service';
+import { TestUtils } from '../shared/utils/test.utils';
 
 describe('TagsService', () => {
   let service: TagsService;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [TagsService],
-    }).compile();
+    const module: TestingModule =
+      await TestUtils.createTestingModuleForContents({
+        providers: [TagsService],
+      });
 
     service = module.get<TagsService>(TagsService);
   });

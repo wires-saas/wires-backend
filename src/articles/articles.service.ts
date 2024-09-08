@@ -60,13 +60,50 @@ export class ArticlesService {
     return this.articleModel.find({ feeds: { $in: [feedId] } }).exec();
   }
 
-  async updateAll(tagId: any, rules: TagRule[]): Promise<Article[]> {
-    this.logger.log('Removing tag from articles with it');
+  async updateOneArticleTag(
+    organizationId: string,
+    articleId: string,
+    tagId: any,
+    rules: TagRule[],
+  ): Promise<boolean> {
     await this.articleModel
-      .updateMany({ tags: tagId }, { $pull: { tags: tagId } })
+      .updateOne(
+        { _id: articleId, organization: organizationId },
+        { $pull: { tags: tagId } },
+      )
       .exec();
 
-    this.logger.debug(rules);
+    const query = rules.reduce((res, acc) => {
+      const subQuery = TagUtils.ruleToMongoQuery(acc);
+      return { ...res, ...subQuery };
+    }, {});
+
+    const articlePostModification = await this.articleModel
+      .findOneAndUpdate(
+        { _id: articleId, organization: organizationId, ...query },
+        { $addToSet: { tags: tagId } },
+        { returnOriginal: false },
+      )
+      .exec();
+
+    return (
+      articlePostModification && articlePostModification.tags.includes(tagId)
+    );
+  }
+
+  async updateAllArticleTag(
+    organizationId: string,
+    tagId: any,
+    rules: TagRule[],
+  ): Promise<Article[]> {
+    this.logger.log('Removing tag from articles with it');
+    await this.articleModel
+      .updateMany(
+        { tags: tagId, organization: organizationId },
+        { $pull: { tags: tagId } },
+      )
+      .exec();
+
     const query = rules.reduce((res, acc) => {
       const subQuery = TagUtils.ruleToMongoQuery(acc);
       return { ...res, ...subQuery };
@@ -75,7 +112,9 @@ export class ArticlesService {
     this.logger.debug(util.inspect(query, true, 10));
 
     this.logger.log('Finding articles matching tag rules');
-    const articles = await this.articleModel.find(query).exec();
+    const articles = await this.articleModel
+      .find({ organization: organizationId, ...query })
+      .exec();
     const articleIds = articles.map((a) => a._id);
 
     this.logger.log('Updating articles with tag');
