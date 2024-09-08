@@ -18,6 +18,7 @@ import { Feed } from '../../feeds/schemas/feed.schema';
 import { Article } from '../../articles/schemas/article.schema';
 import { FeedRun } from '../../feeds/schemas/feed-run.schema';
 import { ScopedSubject } from './casl.utils';
+import { Tag } from '../../tags/schemas/tag.schema';
 
 type Subjects =
   | InferSubjects<
@@ -28,6 +29,7 @@ type Subjects =
       | typeof Feed
       | typeof FeedRun
       | typeof Article
+      | typeof Tag
     >
   | 'all';
 
@@ -106,6 +108,13 @@ export class CaslAbilityFactory {
               can(permission.action, UserRole, {
                 organization: userRole.organization,
               });
+              break;
+
+            case Subject.Tag:
+              can(permission.action, Tag, {
+                organization: userRole.organization,
+              });
+              can(permission.action, ScopedSubject(Tag, userRole.organization));
               break;
 
             case Subject.Feed:
@@ -202,6 +211,7 @@ export class CaslAbilityFactory {
         else if (item.urls) subjectType = Feed;
         else if (item.scrapingDurationMs) subjectType = FeedRun;
         else if (item.metadata) subjectType = Article;
+        else if (item.ruleset) subjectType = Tag;
 
         return subjectType as ExtractSubjectType<Subjects>;
       },

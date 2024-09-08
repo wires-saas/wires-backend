@@ -31,10 +31,6 @@ export class TagsService {
     return this.tagModel.find().exec();
   }
 
-  findOne(id: string): Promise<Tag> {
-    return this.tagModel.findById(id);
-  }
-
   remove(id: string): Promise<Tag> {
     return this.tagModel.findByIdAndDelete(id);
   }

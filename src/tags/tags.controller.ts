@@ -7,12 +7,16 @@ import {
   UseGuards,
   Put,
   Logger,
+  Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { TagsService } from './tags.service';
 import { CreateOrUpdateTagDto } from './dto/create-tag.dto';
 import { OrganizationGuard } from '../auth/organization.guard';
 import { Tag } from './schemas/tag.schema';
-import * as util from 'util';
+import { AuthenticatedRequest } from '../shared/types/authentication.types';
+import { Action } from '../rbac/permissions/entities/action.entity';
+import { ScopedSubject } from '../rbac/casl/casl.utils';
 
 @UseGuards(OrganizationGuard)
 @Controller('organizations/:organizationId/tags')
@@ -24,13 +28,15 @@ export class TagsController {
 
   @Put()
   async create(
+    @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Body() tagDto: CreateOrUpdateTagDto,
   ): Promise<Tag> {
-    console.log(util.inspect(tagDto, true, 10));
+    if (req.ability.cannot(Action.Create, ScopedSubject(Tag, organizationId))) {
+      throw new UnauthorizedException('Cannot create tags');
+    }
 
     const tagToCreate = new Tag({ ...tagDto, organization: organizationId });
-    this.logger.log(tagToCreate);
 
     const tag = await this.tagsService.createOrUpdate(tagToCreate);
 
@@ -43,17 +49,27 @@ export class TagsController {
   }
 
   @Get()
-  findAll(): Promise<Tag[]> {
-    return this.tagsService.findAll();
-  }
+  findAll(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+  ): Promise<Tag[]> {
+    if (req.ability.cannot(Action.Read, ScopedSubject(Tag, organizationId))) {
+      throw new UnauthorizedException('Cannot read tags');
+    }
 
-  @Get(':tagId')
-  findOne(@Param('tagId') tagId: string): Promise<Tag> {
-    return this.tagsService.findOne(tagId);
+    return this.tagsService.findAllOfOrganization(organizationId);
   }
 
   @Delete(':tagId')
-  remove(@Param('tagId') tagId: string): Promise<Tag> {
+  remove(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+    @Param('tagId') tagId: string,
+  ): Promise<Tag> {
+    if (req.ability.cannot(Action.Delete, ScopedSubject(Tag, organizationId))) {
+      throw new UnauthorizedException('Cannot delete tags');
+    }
+
     return this.tagsService.remove(tagId);
   }
 }
