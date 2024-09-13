@@ -19,6 +19,8 @@ import { Article } from '../../articles/schemas/article.schema';
 import { FeedRun } from '../../feeds/schemas/feed-run.schema';
 import { ScopedSubject } from './casl.utils';
 import { Tag } from '../../tags/schemas/tag.schema';
+import { Gpt } from '../../ai/schemas/gpt.schema';
+import { GptRequest } from '../../ai/schemas/gpt-request.schema';
 
 type Subjects =
   | InferSubjects<
@@ -30,6 +32,8 @@ type Subjects =
       | typeof FeedRun
       | typeof Article
       | typeof Tag
+      | typeof Gpt
+      | typeof GptRequest
     >
   | 'all';
 
@@ -108,6 +112,20 @@ export class CaslAbilityFactory {
               can(permission.action, UserRole, {
                 organization: userRole.organization,
               });
+              break;
+
+            case Subject.Gpt:
+              can(permission.action, Gpt, {
+                organization: userRole.organization,
+              });
+              can(permission.action, ScopedSubject(Gpt, userRole.organization));
+              break;
+
+            case Subject.GptRequest:
+              can(
+                permission.action,
+                ScopedSubject(GptRequest, userRole.organization),
+              );
               break;
 
             case Subject.Tag:
@@ -212,6 +230,8 @@ export class CaslAbilityFactory {
         else if (item.scrapingDurationMs) subjectType = FeedRun;
         else if (item.metadata) subjectType = Article;
         else if (item.ruleset) subjectType = Tag;
+        else if (item.model) subjectType = Gpt;
+        else if (item.prompt) subjectType = GptRequest;
 
         return subjectType as ExtractSubjectType<Subjects>;
       },

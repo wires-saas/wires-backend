@@ -25,6 +25,8 @@ import { AuthGuard } from '../auth/auth.guard';
 import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { Action } from '../rbac/permissions/entities/action.entity';
 import { SuperAdminGuard } from '../auth/super-admin.guard';
+import { Gpt } from '../ai/schemas/gpt.schema';
+import { ScopedSubject } from '../rbac/casl/casl.utils';
 
 @ApiTags('Organizations')
 @UseGuards(AuthGuard)
@@ -94,6 +96,12 @@ export class OrganizationsController {
   ): Promise<Organization> {
     if (req.ability.cannot(Action.Update, Organization)) {
       throw new UnauthorizedException();
+    }
+
+    if (updateOrganizationDto.gpt) {
+      if (req.ability.cannot(Action.Update, ScopedSubject(Gpt, id))) {
+        throw new UnauthorizedException();
+      }
     }
 
     return this.organizationsService.update(

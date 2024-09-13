@@ -52,4 +52,8 @@ export class UpdateOrganizationDto {
     twoFactorAuthenticationEnabled: boolean;
     twoFactorAuthenticationMethods: string[];
   };
+
+  @IsOptional()
+  @IsString()
+  gpt?: string;
 }

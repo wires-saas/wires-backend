@@ -7,4 +7,6 @@ export enum Subject {
   Article = 'article',
   Billing = 'billing',
   Tag = 'tag',
+  Gpt = 'gpt',
+  GptRequest = 'gptRequest',
 }

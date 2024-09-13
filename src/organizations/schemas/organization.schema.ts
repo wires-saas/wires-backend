@@ -106,6 +106,13 @@ export class Organization {
   )
   subscription: Record<string, unknown>; // TODO subscription type
 
+  @Prop({
+    required: false,
+    type: String,
+    ref: 'Gpt',
+  })
+  gpt?: string;
+
   @Prop()
   createdAt: Date;
 

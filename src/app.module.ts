@@ -23,6 +23,7 @@ import { join } from 'path';
 import { FeedsModule } from './feeds/feeds.module';
 import { ArticlesModule } from './articles/articles.module';
 import { TagsModule } from './tags/tags.module';
+import { AiModule } from './ai/ai.module';
 
 readEnvFile();
 const connectionString = process.env.MONGO_URI;
@@ -67,6 +68,7 @@ const connectionString = process.env.MONGO_URI;
     FeedsModule,
     ArticlesModule,
     TagsModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
