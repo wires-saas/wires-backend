@@ -17,8 +17,10 @@ import { Tag } from './schemas/tag.schema';
 import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { Action } from '../rbac/permissions/entities/action.entity';
 import { ScopedSubject } from '../rbac/casl/casl.utils';
+import { ApiTags } from '@nestjs/swagger';
 
 @UseGuards(OrganizationGuard)
+@ApiTags('Tags')
 @Controller('organizations/:organizationId/tags')
 export class TagsController {
   private logger: Logger;

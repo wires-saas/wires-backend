@@ -5,7 +5,7 @@ import { Gpt } from './schemas/gpt.schema';
 import { GptRequest, GptRequestColl } from './schemas/gpt-request.schema';
 import { GptFactory } from './entities/gpt.factory';
 import { RequestGptDto } from './dto/request-gpt.dto';
-import { GptGenerationResult, GptRequestStatus } from './entities/ai.entities';
+import { GptRequestStatus } from './entities/ai.entities';
 
 // This service is responsible for handling the GPT requests.
 
