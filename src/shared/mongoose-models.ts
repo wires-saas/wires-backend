@@ -26,6 +26,7 @@ import {
   GptRequestColl,
   GptRequestSchema,
 } from '../ai/schemas/gpt-request.schema';
+import { Block, BlockSchema } from '../blocks/schemas/block.schema';
 
 const allModels: ModelDefinition[] = [
   { name: User.name, schema: UserSchema },
@@ -46,6 +47,10 @@ export const contentModels: ModelDefinition[] = [
 export const aiModels: ModelDefinition[] = [
   { name: Gpt.name, schema: GptSchema },
   { name: GptRequestColl, schema: GptRequestSchema },
+];
+
+export const studioModels: ModelDefinition[] = [
+  { name: Block.name, schema: BlockSchema },
 ];
 
 export default allModels;

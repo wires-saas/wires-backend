@@ -24,6 +24,7 @@ import { FeedsModule } from './feeds/feeds.module';
 import { ArticlesModule } from './articles/articles.module';
 import { TagsModule } from './tags/tags.module';
 import { AiModule } from './ai/ai.module';
+import { BlocksModule } from './blocks/blocks.module';
 
 readEnvFile();
 const connectionString = process.env.MONGO_URI;
@@ -69,6 +70,7 @@ const connectionString = process.env.MONGO_URI;
     ArticlesModule,
     TagsModule,
     AiModule,
+    BlocksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

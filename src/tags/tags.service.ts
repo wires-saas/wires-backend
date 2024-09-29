@@ -14,6 +14,7 @@ export class TagsService {
   ) {}
 
   createOrUpdate(tag: Tag): Promise<Tag> {
+    console.log(tag);
     if (!tag._id) {
       return new this.tagModel(tag).save();
     } else {
@@ -31,8 +32,19 @@ export class TagsService {
     return this.tagModel.find().exec();
   }
 
-  remove(id: string): Promise<Tag> {
-    return this.tagModel.findByIdAndDelete(id);
+  findOne(organizationId: string, tagId: string): Promise<Tag> {
+    return this.tagModel
+      .findOne({ _id: tagId, organization: organizationId })
+      .exec();
+  }
+
+  async remove(tag: Tag): Promise<Tag> {
+    await this.articleService.removeAllArticleTag(tag.organization, tag._id);
+
+    return this.tagModel.findOneAndDelete({
+      _id: tag._id,
+      organization: tag.organization,
+    });
   }
 
   async applyTagRules(tag: Tag): Promise<Article[]> {

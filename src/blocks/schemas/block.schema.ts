@@ -1,8 +1,8 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { TagRule } from './tag-rule.schema';
+import { BlockParameter } from './block-parameter.schema';
 
-export type TagDocument = HydratedDocument<Tag>;
+export type BlockDocument = HydratedDocument<Block>;
 
 @Schema({
   timestamps: true,
@@ -10,6 +10,7 @@ export type TagDocument = HydratedDocument<Tag>;
     versionKey: false,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
+      // delete ret._id;
       return ret;
     },
   },
@@ -17,18 +18,16 @@ export type TagDocument = HydratedDocument<Tag>;
     versionKey: false,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
+      // delete ret._id;
       return ret;
     },
   },
 })
-export class Tag {
+export class Block {
   _id: string;
 
-  @Prop({ required: true, type: String })
+  @Prop({ type: String })
   displayName: string;
-
-  @Prop({ default: '', type: String })
-  color: string;
 
   @Prop({ type: String })
   description: string;
@@ -40,14 +39,22 @@ export class Tag {
   })
   organization: string;
 
-  @Prop({ type: [TagRule] })
-  ruleset: TagRule[];
+  @Prop({
+    required: true,
+    type: [BlockParameter],
+    ref: 'BlockParameter',
+  })
+  parameters: string[];
 
-  constructor(partial: Partial<Tag>) {
+  @Prop({ type: String })
+  code: string;
+
+  @Prop({ type: Number })
+  version: number;
+
+  constructor(partial: Partial<Block>) {
     Object.assign(this, partial);
   }
 }
 
-export const TagSchema = SchemaFactory.createForClass(Tag);
-
-TagSchema.index({ organization: 1, displayName: 1 }, { unique: true });
+export const BlockSchema = SchemaFactory.createForClass(Block);

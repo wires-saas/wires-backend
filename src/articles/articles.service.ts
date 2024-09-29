@@ -91,6 +91,19 @@ export class ArticlesService {
     );
   }
 
+  async removeAllArticleTag(
+    organizationId: string,
+    tagId: string,
+  ): Promise<number> {
+    return this.articleModel
+      .updateMany(
+        { tags: tagId, organization: organizationId },
+        { $pull: { tags: tagId } },
+      )
+      .exec()
+      .then((res) => res.modifiedCount);
+  }
+
   async updateAllArticleTag(
     organizationId: string,
     tagId: any,

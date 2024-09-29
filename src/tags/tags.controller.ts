@@ -63,7 +63,7 @@ export class TagsController {
   }
 
   @Delete(':tagId')
-  remove(
+  async remove(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Param('tagId') tagId: string,
@@ -72,6 +72,8 @@ export class TagsController {
       throw new UnauthorizedException('Cannot delete tags');
     }
 
-    return this.tagsService.remove(tagId);
+    const tag = await this.tagsService.findOne(organizationId, tagId);
+
+    return this.tagsService.remove(tag);
   }
 }
