@@ -3,16 +3,11 @@ import {
   IsBoolean,
   IsDefined,
   IsNotEmpty,
-  IsOptional,
   IsString,
 } from 'class-validator';
 
-export class CreateOrUpdateBlockDto {
-  @IsOptional()
-  @IsString()
-  _id: string;
-
-  @IsDefined()
+export class CreateBlockDto {
+  @IsNotEmpty()
   @IsString()
   organization: string;
 

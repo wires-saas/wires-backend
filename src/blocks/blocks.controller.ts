@@ -7,13 +7,15 @@ import {
   Delete,
   UseGuards,
   Request,
+  Put,
 } from '@nestjs/common';
 import { BlocksService } from './blocks.service';
 import { ApiTags } from '@nestjs/swagger';
 import { OrganizationGuard } from '../auth/organization.guard';
 import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { Block } from './schemas/block.schema';
-import { CreateOrUpdateBlockDto } from './dto/create-or-update-block.dto';
+import { CreateBlockDto } from './dto/create-block.dto';
+import { UpdateBlockDto } from './dto/update-block.dto';
 
 @ApiTags('Blocks')
 @UseGuards(OrganizationGuard)
@@ -25,12 +27,19 @@ export class BlocksController {
   create(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
-    @Body() createOrUpdateBlockDto: CreateOrUpdateBlockDto,
+    @Body() createBlockDto: CreateBlockDto,
   ): Promise<Block> {
-    return this.blocksService.createOrUpdate(
-      organizationId,
-      createOrUpdateBlockDto,
-    );
+    return this.blocksService.create(organizationId, createBlockDto);
+  }
+
+  @Put(':blockId')
+  update(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+    @Param('blockId') blockId: string,
+    @Body() updateBlockDto: UpdateBlockDto,
+  ): Promise<Block> {
+    return this.blocksService.update(blockId, organizationId, updateBlockDto);
   }
 
   @Get()

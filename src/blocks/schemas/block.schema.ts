@@ -32,8 +32,6 @@ export type BlockDocument = HydratedDocument<Block>;
   toObject: {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
-      console.log('transform', ret);
-      // ret._id = ret._id.block;
       return ret;
     },
     virtuals: true,

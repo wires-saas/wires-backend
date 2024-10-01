@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { Block } from './schemas/block.schema';
-import { CreateOrUpdateBlockDto } from './dto/create-or-update-block.dto';
 import { randomId } from '../shared/utils/db.utils';
+import { CreateBlockDto } from './dto/create-block.dto';
+import { UpdateBlockDto } from './dto/update-block.dto';
 
 @Injectable()
 export class BlocksService {
@@ -13,46 +14,47 @@ export class BlocksService {
     this.logger = new Logger(BlocksService.name);
   }
 
-  createOrUpdate(
+  create(
     organizationId: string,
-    createOrUpdateBlockDto: CreateOrUpdateBlockDto,
+    createBlockDto: CreateBlockDto,
   ): Promise<Block> {
-    if (!createOrUpdateBlockDto._id) {
-      this.logger.log('Creating new block');
-      return new this.blockModel(
-        new Block({
-          _id: {
-            block: randomId(),
-            organization: organizationId,
-            timestamp: Date.now(),
-          },
-          displayName: createOrUpdateBlockDto.displayName,
-          description: createOrUpdateBlockDto.description,
-          code: createOrUpdateBlockDto.code,
-          wysiwygEnabled: createOrUpdateBlockDto.wysiwygEnabled,
-        }),
-      ).save();
-    } else {
-      this.logger.log('Updating existing block');
-      // TODO create new block with new id, to keep history
-      // and allow rollback to previous versions
+    this.logger.log('Creating new block');
 
-      // TODO version = int incremented ? not timestamp already in updatedAt ?
+    return new this.blockModel(
+      new Block({
+        _id: {
+          block: randomId(),
+          organization: organizationId,
+          timestamp: Date.now(),
+        },
+        displayName: createBlockDto.displayName,
+        description: createBlockDto.description,
+        code: createBlockDto.code,
+        wysiwygEnabled: createBlockDto.wysiwygEnabled,
+      }),
+    ).save();
+  }
 
-      return new this.blockModel(
-        new Block({
-          _id: {
-            block: createOrUpdateBlockDto._id,
-            organization: organizationId,
-            timestamp: Date.now(),
-          },
-          displayName: createOrUpdateBlockDto.displayName,
-          description: createOrUpdateBlockDto.description,
-          code: createOrUpdateBlockDto.code,
-          wysiwygEnabled: createOrUpdateBlockDto.wysiwygEnabled,
-        }),
-      ).save();
-    }
+  update(
+    blockId: string,
+    organizationId: string,
+    updateBlockDto: UpdateBlockDto,
+  ): Promise<Block> {
+    this.logger.log('Updating existing block');
+
+    return new this.blockModel(
+      new Block({
+        _id: {
+          block: blockId,
+          organization: organizationId,
+          timestamp: Date.now(),
+        },
+        displayName: updateBlockDto.displayName,
+        description: updateBlockDto.description,
+        code: updateBlockDto.code,
+        wysiwygEnabled: updateBlockDto.wysiwygEnabled,
+      }),
+    ).save();
   }
 
   findAllOfOrganization(organizationId: string): Promise<Block[]> {
@@ -63,32 +65,21 @@ export class BlocksService {
         { $group: { _id: '$block', doc: { $first: '$$ROOT' } } },
         { $replaceRoot: { newRoot: '$doc' } },
       ])
-      .then((blocks) => {
-        console.log(blocks);
-        const t = blocks.map((block) => new this.blockModel(block));
-        console.log(t);
-        return t;
-        // return blocks.map((block) => new Block({ ...block }));
-      });
+      .then((blocks) => blocks.map((block) => new this.blockModel(block)));
   }
 
   findOne(organizationId: string, blockId: string): Promise<Block> {
     return this.blockModel.findOne({
-      organization: organizationId,
-      _id: blockId,
+      '_id.block': blockId,
+      '_id.organization': organizationId,
     });
   }
 
-  update(block: Block) {
-    return this.blockModel
-      .findOneAndUpdate({ _id: block._id }, block, { new: true })
-      .exec();
-  }
-
   remove(organizationId: string, blockId: string) {
-    return this.blockModel.deleteOne({
-      organization: organizationId,
-      _id: blockId,
+    this.logger.log('Deleting block');
+    return this.blockModel.deleteMany({
+      '_id.block': blockId,
+      '_id.organization': organizationId,
     });
   }
 }
