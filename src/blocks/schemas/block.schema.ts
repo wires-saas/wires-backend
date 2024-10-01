@@ -1,30 +1,55 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { BlockParameter } from './block-parameter.schema';
+import { BlockId } from './block-id.schema';
 
 export type BlockDocument = HydratedDocument<Block>;
 
+// Using virtuals to explode compound _id into separate fields
+
 @Schema({
   timestamps: true,
-  toObject: {
-    versionKey: false,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    transform: function (_, ret, __) {
-      // delete ret._id;
-      return ret;
+  versionKey: false,
+  id: true,
+  virtuals: {
+    id: {
+      get() {
+        console.log('_id', this._id);
+        return this._id.block;
+      },
+    },
+    organization: {
+      get() {
+        return this._id.organization;
+      },
+    },
+    version: {
+      get() {
+        return this._id.timestamp;
+      },
     },
   },
-  toJSON: {
-    versionKey: false,
+  toObject: {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
-      // delete ret._id;
+      console.log('transform', ret);
+      // ret._id = ret._id.block;
       return ret;
     },
+    virtuals: true,
+  },
+  toJSON: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    transform: function (_, ret, __) {
+      delete ret._id;
+      return ret;
+    },
+    virtuals: true,
   },
 })
 export class Block {
-  _id: string;
+  @Prop({ type: BlockId })
+  _id: BlockId;
 
   @Prop({ type: String })
   displayName: string;
@@ -34,22 +59,20 @@ export class Block {
 
   @Prop({
     required: true,
-    type: String,
-    ref: 'Organization',
-  })
-  organization: string;
-
-  @Prop({
-    required: true,
     type: [BlockParameter],
     ref: 'BlockParameter',
   })
   parameters: string[];
 
-  @Prop({ type: String })
+  @Prop({ type: String, required: true })
   code: string;
 
-  @Prop({ type: Number })
+  @Prop({ type: Boolean, required: true })
+  wysiwygEnabled: boolean;
+
+  // virtuals
+  id: string;
+  organization: string;
   version: number;
 
   constructor(partial: Partial<Block>) {

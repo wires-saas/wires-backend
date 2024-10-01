@@ -50,7 +50,7 @@ export class BlocksController {
     return this.blocksService.findOne(organizationId, blockId);
   }
 
-  @Delete(':id')
+  @Delete(':blockId')
   remove(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,

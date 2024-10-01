@@ -3,7 +3,6 @@ import {
   IsBoolean,
   IsDefined,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -36,10 +35,6 @@ export class CreateOrUpdateBlockDto {
   @IsDefined()
   @IsBoolean()
   wysiwygEnabled: boolean;
-
-  @IsDefined()
-  @IsNumber()
-  version: number;
 
   @IsDefined()
   @IsArray()
