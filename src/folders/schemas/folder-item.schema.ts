@@ -1,12 +1,12 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ResourceId } from './resource-id.schema';
-import { ResourceType } from '../entities/resource-type';
+import { FolderItemId } from './folder-item-id.schema';
+import { FolderItemType } from '../entities/folder-item-type';
 
-export type ResourceDocument = HydratedDocument<Resource>;
+export type FolderItemDocument = HydratedDocument<FolderItem>;
 
-// Represents an association between a resource and a folder
-// To avoid "folder" attribute on resources
+// Represents an association between a folder and an item
+// To avoid "folder" attribute on items
 
 @Schema({
   timestamps: true,
@@ -23,9 +23,9 @@ export type ResourceDocument = HydratedDocument<Resource>;
         return this._id.folder;
       },
     },
-    resource: {
+    item: {
       get() {
-        return this._id.resource;
+        return this._id.item;
       },
     },
   },
@@ -45,22 +45,22 @@ export type ResourceDocument = HydratedDocument<Resource>;
     virtuals: true,
   },
 })
-export class Resource {
-  @Prop({ type: ResourceId })
-  _id: ResourceId;
+export class FolderItem {
+  @Prop({ type: FolderItemId })
+  _id: FolderItemId;
 
   @Prop({ type: String })
-  type: ResourceType;
+  type: FolderItemType;
 
   // virtuals
   id: string;
   organization: string;
   folder: string;
-  resource: string;
+  item: string;
 
-  constructor(partial: Partial<Resource>) {
+  constructor(partial: Partial<FolderItem>) {
     Object.assign(this, partial);
   }
 }
 
-export const ResourceSchema = SchemaFactory.createForClass(Resource);
+export const FolderItemSchema = SchemaFactory.createForClass(FolderItem);

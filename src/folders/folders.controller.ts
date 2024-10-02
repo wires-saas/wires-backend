@@ -11,6 +11,8 @@ import {
   NotFoundException,
   BadRequestException,
   Put,
+  Logger,
+  Query,
 } from '@nestjs/common';
 import { FoldersService } from './folders.service';
 import { CreateFolderDto } from './dto/create-folder.dto';
@@ -19,17 +21,23 @@ import { ApiTags } from '@nestjs/swagger';
 import { OrganizationGuard } from '../auth/organization.guard';
 import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { Folder } from './schemas/folder.schema';
-import { ResourcesService } from './resources.service';
-import { Resource } from './schemas/resource.schema';
-import { ResourceDto } from './dto/resource.dto';
+import { FolderItemsService } from './folder-items.service';
+import { FolderItemDto } from './dto/folder-item.dto';
+import { BlocksService } from '../blocks/blocks.service';
+import { Block } from '../blocks/schemas/block.schema';
+import { FolderItem } from './schemas/folder-item.schema';
+import { FolderItemType } from './entities/folder-item-type';
 
 @ApiTags('Folders')
 @UseGuards(OrganizationGuard)
 @Controller('organizations/:organizationId/folders')
 export class FoldersController {
+  private logger = new Logger(FoldersController.name);
+
   constructor(
     private readonly foldersService: FoldersService,
-    private readonly resourcesService: ResourcesService,
+    private readonly folderItemsService: FolderItemsService,
+    private readonly blocksService: BlocksService,
   ) {}
 
   @Post()
@@ -101,35 +109,78 @@ export class FoldersController {
 
   // Resources
 
-  @Put(':folderId/resources/:resourceId')
-  async addResource(
+  @Put(':folderId/items/:itemId')
+  async addFolderItem(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Param('folderId') folderId: string,
-    @Param('resourceId') resourceId: string,
-    @Body() resourceDto: ResourceDto,
-  ): Promise<Resource> {
-    resourceDto.folder = folderId;
-    resourceDto.organization = organizationId;
-    resourceDto.resource = resourceId;
+    @Param('itemId') itemId: string,
+    @Body() itemDto: FolderItemDto,
+  ): Promise<FolderItem> {
+    itemDto.folder = folderId;
+    itemDto.organization = organizationId;
+    itemDto.item = itemId;
 
-    const resource = await this.resourcesService.findOne(
+    const item = await this.folderItemsService.findOne(
       organizationId,
       folderId,
-      resourceId,
+      itemId,
     );
 
-    if (!resource)
-      return this.resourcesService.create(organizationId, resourceDto);
-    else return resource;
+    if (!item) return this.folderItemsService.create(organizationId, itemDto);
+    else return item;
   }
 
-  @Get(':folderId/resources')
-  async getResources(
+  @Get(':folderId/items')
+  async getFolderItems(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Param('folderId') folderId: string,
-  ): Promise<Resource[]> {
-    return this.resourcesService.findAllOfFolder(organizationId, folderId);
+    @Query('type') type?: FolderItemType,
+  ): Promise<Array<Block>> {
+    let items = await this.folderItemsService.findAllOfFolder(
+      organizationId,
+      folderId,
+    );
+
+    if (type) items = items.filter((i) => i.type === type);
+
+    const itemsPopulated = [];
+
+    for (const item of items) {
+      switch (item.type) {
+        case FolderItemType.Block:
+          const block: Block = await this.blocksService.findOne(
+            item._id.organization,
+            item._id.item,
+          );
+
+          itemsPopulated.push(block);
+          break;
+        default:
+          this.logger.error('Item type not supported', item.type);
+          throw new BadRequestException('Item type not supported');
+      }
+    }
+
+    return itemsPopulated;
+  }
+
+  @Delete(':folderId/items/:itemId')
+  async removeFolderItem(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+    @Param('folderId') folderId: string,
+    @Param('itemId') itemId: string,
+  ) {
+    const item = await this.folderItemsService.findOne(
+      organizationId,
+      folderId,
+      itemId,
+    );
+
+    if (!item) throw new NotFoundException('Item not found');
+
+    return this.folderItemsService.remove(organizationId, folderId, itemId);
   }
 }

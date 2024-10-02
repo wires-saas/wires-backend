@@ -1,7 +1,7 @@
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { ResourceType } from '../entities/resource-type';
+import { FolderItemType } from '../entities/folder-item-type';
 
-export class ResourceDto {
+export class FolderItemDto {
   @IsNotEmpty()
   @IsString()
   organization: string;
@@ -12,9 +12,9 @@ export class ResourceDto {
 
   @IsNotEmpty()
   @IsString()
-  resource: string;
+  item: string;
 
   @IsNotEmpty()
-  @IsEnum(ResourceType)
-  type: ResourceType;
+  @IsEnum(FolderItemType)
+  type: FolderItemType;
 }

@@ -28,7 +28,10 @@ import {
 } from '../ai/schemas/gpt-request.schema';
 import { Block, BlockSchema } from '../blocks/schemas/block.schema';
 import { Folder, FolderSchema } from '../folders/schemas/folder.schema';
-import { Resource, ResourceSchema } from '../folders/schemas/resource.schema';
+import {
+  FolderItem,
+  FolderItemSchema,
+} from '../folders/schemas/folder-item.schema';
 
 const allModels: ModelDefinition[] = [
   { name: User.name, schema: UserSchema },
@@ -54,7 +57,7 @@ export const aiModels: ModelDefinition[] = [
 export const studioModels: ModelDefinition[] = [
   { name: Block.name, schema: BlockSchema },
   { name: Folder.name, schema: FolderSchema },
-  { name: Resource.name, schema: ResourceSchema },
+  { name: FolderItem.name, schema: FolderItemSchema },
 ];
 
 export default allModels;

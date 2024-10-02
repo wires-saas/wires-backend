@@ -14,7 +14,6 @@ export class TagsService {
   ) {}
 
   createOrUpdate(tag: Tag): Promise<Tag> {
-    console.log(tag);
     if (!tag._id) {
       return new this.tagModel(tag).save();
     } else {

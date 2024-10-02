@@ -6,7 +6,8 @@ import { studioModels } from '../shared/mongoose-models';
 import { SecurityModule } from '../services/security/security.module';
 import { UsersModule } from '../users/users.module';
 import { OrganizationsModule } from '../organizations/organizations.module';
-import { ResourcesService } from './resources.service';
+import { FolderItemsService } from './folder-items.service';
+import { BlocksService } from '../blocks/blocks.service';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { ResourcesService } from './resources.service';
     OrganizationsModule,
   ],
   controllers: [FoldersController],
-  providers: [FoldersService, ResourcesService],
+  providers: [FoldersService, FolderItemsService, BlocksService],
 })
 export class FoldersModule {}
