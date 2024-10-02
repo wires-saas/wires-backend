@@ -41,14 +41,12 @@ import { EncryptService } from '../services/security/encrypt.service';
 @UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController {
-  private logger: Logger;
+  private logger: Logger = new Logger(UsersController.name);
   constructor(
     private usersService: UsersService,
     private organizationsService: OrganizationsService,
     private emailService: EmailService,
-  ) {
-    this.logger = new Logger(UsersController.name);
-  }
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create new user' })

@@ -1,9 +1,8 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { BlockParameter } from './block-parameter.schema';
-import { BlockId } from './block-id.schema';
+import { FolderId } from './folder-id.schema';
 
-export type BlockDocument = HydratedDocument<Block>;
+export type FolderDocument = HydratedDocument<Folder>;
 
 // Using virtuals to explode compound _id into separate fields
 
@@ -14,17 +13,12 @@ export type BlockDocument = HydratedDocument<Block>;
   virtuals: {
     id: {
       get() {
-        return this._id.block;
+        return this._id.folder;
       },
     },
     organization: {
       get() {
         return this._id.organization;
-      },
-    },
-    version: {
-      get() {
-        return this._id.timestamp;
       },
     },
   },
@@ -44,37 +38,26 @@ export type BlockDocument = HydratedDocument<Block>;
     virtuals: true,
   },
 })
-export class Block {
-  @Prop({ type: BlockId })
-  _id: BlockId;
+export class Folder {
+  @Prop({ type: FolderId })
+  _id: FolderId;
 
   @Prop({ type: String })
   displayName: string;
 
-  @Prop({ type: String })
+  @Prop({ type: String, default: '' })
   description: string;
 
-  @Prop({
-    required: true,
-    type: [BlockParameter],
-    ref: 'BlockParameter',
-  })
-  parameters: string[];
-
-  @Prop({ type: String, required: true })
-  code: string;
-
-  @Prop({ type: Boolean, required: true })
-  wysiwygEnabled: boolean;
+  @Prop({ type: String, default: null })
+  parentFolder: string;
 
   // virtuals
   id: string;
   organization: string;
-  version: number;
 
-  constructor(partial: Partial<Block>) {
+  constructor(partial: Partial<Folder>) {
     Object.assign(this, partial);
   }
 }
 
-export const BlockSchema = SchemaFactory.createForClass(Block);
+export const FolderSchema = SchemaFactory.createForClass(Folder);

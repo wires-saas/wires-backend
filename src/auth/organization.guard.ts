@@ -19,16 +19,14 @@ import { OrganizationsService } from '../organizations/organizations.service';
  */
 @Injectable()
 export class OrganizationGuard implements CanActivate {
-  private logger: Logger;
+  private logger: Logger = new Logger(OrganizationGuard.name);
 
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
     private organizationsService: OrganizationsService,
     private caslAbilityFactory: CaslAbilityFactory,
-  ) {
-    this.logger = new Logger(OrganizationGuard.name);
-  }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();

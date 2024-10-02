@@ -14,15 +14,13 @@ import { TagsService } from '../../tags/tags.service';
 
 @Injectable()
 export class FeedRunsService {
-  private logger: Logger;
+  private logger: Logger = new Logger(FeedRunsService.name);
   constructor(
     private articlesService: ArticlesService,
     private tagsService: TagsService,
     private scrapingService: ScrapingService,
     @InjectModel(FeedRunColl) private feedRunModel: Model<FeedRun>,
-  ) {
-    this.logger = new Logger(FeedRunsService.name);
-  }
+  ) {}
 
   findAllRunsOfFeeds(feeds: Feed[]): Promise<FeedRun[]> {
     return this.feedRunModel

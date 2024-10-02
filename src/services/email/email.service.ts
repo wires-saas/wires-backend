@@ -11,7 +11,7 @@ import { Organization } from '../../organizations/schemas/organization.schema';
 
 @Injectable()
 export class EmailService {
-  private logger: Logger;
+  private logger: Logger = new Logger(EmailService.name);
   private readonly interceptEmail: boolean = false;
 
   constructor(
@@ -20,7 +20,6 @@ export class EmailService {
     private encryptService: EncryptService,
     private readonly i18n: I18nService,
   ) {
-    this.logger = new Logger(EmailService.name);
     this.interceptEmail = this.configService.getOrThrow('env') === 'local';
   }
 

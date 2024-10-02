@@ -23,10 +23,8 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('Tags')
 @Controller('organizations/:organizationId/tags')
 export class TagsController {
-  private logger: Logger;
-  constructor(private readonly tagsService: TagsService) {
-    this.logger = new Logger(TagsController.name);
-  }
+  private logger: Logger = new Logger(TagsController.name);
+  constructor(private readonly tagsService: TagsService) {}
 
   @Put()
   async create(

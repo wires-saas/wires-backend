@@ -21,7 +21,7 @@ import { PasswordUtils } from '../shared/utils/password.utils';
 
 @Injectable()
 export class AuthService {
-  private logger: Logger;
+  private logger: Logger = new Logger(AuthService.name);
 
   constructor(
     private usersService: UsersService,
@@ -30,9 +30,7 @@ export class AuthService {
     private jwtService: JwtService,
     private encryptService: EncryptService,
     private emailService: EmailService,
-  ) {
-    this.logger = new Logger(AuthService.name);
-  }
+  ) {}
 
   async signIn(
     email: string,

@@ -31,11 +31,9 @@ import { AuthGuard } from '../../auth/auth.guard';
 @ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @ApiNotFoundResponse({ description: 'User not found' })
 export class UserRolesController {
-  private logger: Logger;
+  private logger: Logger = new Logger(UserRolesController.name);
 
-  constructor(private readonly userRolesService: UserRolesService) {
-    this.logger = new Logger(UserRolesController.name);
-  }
+  constructor(private readonly userRolesService: UserRolesService) {}
 
   @Post(':userId/roles')
   @ApiOperation({ summary: 'Add new roles for user' })

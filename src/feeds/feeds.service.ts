@@ -12,15 +12,13 @@ import { ArticlesService } from '../articles/articles.service';
 
 @Injectable()
 export class FeedsService {
-  private logger: Logger;
+  private logger: Logger = new Logger(FeedsService.name);
 
   constructor(
     @InjectModel(Feed.name) private feedModel: Model<Feed>,
     private articlesService: ArticlesService,
     private hashService: HashService,
-  ) {
-    this.logger = new Logger(FeedsService.name);
-  }
+  ) {}
 
   private async convertToEntity(
     organizationId: string,

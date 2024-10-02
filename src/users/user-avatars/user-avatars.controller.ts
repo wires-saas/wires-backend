@@ -36,13 +36,11 @@ import { UsersService } from '../users.service';
 @ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @ApiNotFoundResponse({ description: 'User not found' })
 export class UserAvatarsController {
-  private logger: Logger;
+  private logger: Logger = new Logger(UserAvatarsController.name);
   constructor(
     private readonly userAvatarsService: UserAvatarsService,
     private readonly usersService: UsersService,
-  ) {
-    this.logger = new Logger(UserAvatarsController.name);
-  }
+  ) {}
 
   @Post(':userId/avatar')
   @UseGuards(AuthGuard)

@@ -4,11 +4,10 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class FileUploadService {
-  private logger: Logger;
+  private logger: Logger = new Logger(FileUploadService.name);
   private client: Minio.Client;
 
   constructor(private configService: ConfigService) {
-    this.logger = new Logger(FileUploadService.name);
     this.logger.log('FileUploadService initialized');
 
     this.client = new Minio.Client({

@@ -5,12 +5,8 @@ import { MailDataRequired } from '@sendgrid/mail';
 
 @Injectable()
 export class SendGridClient {
-  private logger: Logger;
+  private logger: Logger = new Logger(SendGridClient.name);
   constructor() {
-    //Initialize the logger. This is done for simplicity. You can use a logger service instead
-    this.logger = new Logger(SendGridClient.name);
-    //Get the API key from config service or environment variable
-
     readEnvFile();
     const sendgridApiKey = process.env.SENDGRID_API_KEY;
     Sendgrid.setApiKey(sendgridApiKey);

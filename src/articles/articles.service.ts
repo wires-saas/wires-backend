@@ -10,10 +10,10 @@ import * as util from 'util';
 
 @Injectable()
 export class ArticlesService {
-  private logger: Logger;
-  constructor(@InjectModel(Article.name) private articleModel: Model<Article>) {
-    this.logger = new Logger(ArticlesService.name);
-  }
+  private logger: Logger = new Logger(ArticlesService.name);
+  constructor(
+    @InjectModel(Article.name) private articleModel: Model<Article>,
+  ) {}
 
   create(createArticleDto: CreateArticleDto) {
     return new this.articleModel(

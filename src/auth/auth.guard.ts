@@ -13,15 +13,13 @@ import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  private logger: Logger;
+  private logger: Logger = new Logger(AuthGuard.name);
 
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
     private caslAbilityFactory: CaslAbilityFactory,
-  ) {
-    this.logger = new Logger(AuthGuard.name);
-  }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();

@@ -22,13 +22,11 @@ import { ScopedSubject } from '../../rbac/casl/casl.utils';
 @UseGuards(OrganizationGuard)
 @Controller('organizations/:organizationId/feeds')
 export class FeedRunsController {
-  private logger: Logger;
+  private logger: Logger = new Logger(FeedRunsController.name);
   constructor(
     private readonly feedRunsService: FeedRunsService,
     private feedsService: FeedsService,
-  ) {
-    this.logger = new Logger(FeedRunsController.name);
-  }
+  ) {}
 
   @Post(':feedId/runs')
   async runFeed(

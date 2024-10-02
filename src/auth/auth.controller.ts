@@ -27,10 +27,8 @@ import { AuthenticatedRequest } from '../shared/types/authentication.types';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  private logger: Logger;
-  constructor(private authService: AuthService) {
-    this.logger = new Logger(AuthController.name);
-  }
+  private logger: Logger = new Logger(AuthController.name);
+  constructor(private authService: AuthService) {}
 
   @Post('login')
   @ApiOperation({ summary: 'Sign in' })

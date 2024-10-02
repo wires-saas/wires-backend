@@ -22,13 +22,11 @@ import { OrganizationGuard } from '../auth/organization.guard';
 @UseGuards(OrganizationGuard)
 @Controller('organizations/:organizationId/articles')
 export class ArticlesController {
-  private logger: Logger;
+  private logger: Logger = new Logger(ArticlesController.name);
   constructor(
     private readonly articlesService: ArticlesService,
     private organizationsService: OrganizationsService,
-  ) {
-    this.logger = new Logger(ArticlesController.name);
-  }
+  ) {}
 
   @Post()
   create(@Body() createArticleDto: CreateArticleDto) {

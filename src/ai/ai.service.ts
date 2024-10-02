@@ -12,14 +12,12 @@ import { AuthenticationType } from './entities/ai.entities';
 
 @Injectable()
 export class AiService {
-  private logger: Logger;
+  private logger: Logger = new Logger(AiService.name);
 
   constructor(
     @InjectModel(Gpt.name) private gptModel: Model<Gpt>,
     private encryptService: EncryptService,
-  ) {
-    this.logger = new Logger(AiService.name);
-  }
+  ) {}
 
   private convertToEntity(createGptDto: CreateGptDto): Gpt {
     return new Gpt({

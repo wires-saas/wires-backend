@@ -8,11 +8,9 @@ import { UpdateBlockDto } from './dto/update-block.dto';
 
 @Injectable()
 export class BlocksService {
-  private logger: Logger;
+  private logger: Logger = new Logger(BlocksService.name);
 
-  constructor(@InjectModel(Block.name) private blockModel: Model<Block>) {
-    this.logger = new Logger(BlocksService.name);
-  }
+  constructor(@InjectModel(Block.name) private blockModel: Model<Block>) {}
 
   create(
     organizationId: string,

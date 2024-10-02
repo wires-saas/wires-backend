@@ -13,14 +13,12 @@ import { AuthGuard } from './auth.guard';
 
 @Injectable()
 export class SuperAdminGuard implements CanActivate {
-  private logger: Logger;
+  private logger: Logger = new Logger(SuperAdminGuard.name);
 
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
-  ) {
-    this.logger = new Logger(SuperAdminGuard.name);
-  }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();

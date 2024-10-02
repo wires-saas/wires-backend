@@ -24,10 +24,8 @@ import { OrganizationGuard } from '../auth/organization.guard';
 @UseGuards(OrganizationGuard)
 @Controller('organizations/:organizationId/feeds')
 export class FeedsController {
-  private logger: Logger;
-  constructor(private readonly feedsService: FeedsService) {
-    this.logger = new Logger(FeedsController.name);
-  }
+  private logger: Logger = new Logger(FeedsController.name);
+  constructor(private readonly feedsService: FeedsService) {}
 
   @Post()
   async create(
