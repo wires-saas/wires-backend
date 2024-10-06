@@ -18,8 +18,8 @@ export class FoldersService {
     return new this.folderModel(
       new Folder({
         _id: {
-          folder: randomId(),
           organization: organizationId,
+          folder: randomId(),
         },
         displayName: createFolderDto.displayName,
         description: createFolderDto.description,
@@ -40,8 +40,8 @@ export class FoldersService {
 
   findOne(organizationId: string, folderId: string): Promise<Folder> {
     return this.folderModel.findOne({
-      '_id.folder': folderId,
       '_id.organization': organizationId,
+      '_id.folder': folderId,
     });
   }
 
@@ -54,8 +54,8 @@ export class FoldersService {
 
     return this.folderModel.findOneAndUpdate(
       {
-        '_id.folder': folderId,
         '_id.organization': organizationId,
+        '_id.folder': folderId,
       },
       {
         displayName: updateFolderDto.displayName,
@@ -66,8 +66,12 @@ export class FoldersService {
     );
   }
 
-  remove(id: number, recursive: boolean) {
+  remove(organizationId: string, folderId: string, recursive: boolean) {
     // TODO delete all sub folders too
-    return `This action removes a #${id} folder ${recursive ? 'recursively' : ''}`;
+    this.logger.log('recursive', recursive);
+    return this.folderModel.deleteOne({
+      '_id.organization': organizationId,
+      '_id.folder': folderId,
+    });
   }
 }

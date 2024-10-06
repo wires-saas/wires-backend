@@ -1,4 +1,4 @@
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type UserRoleDocument = HydratedDocument<UserRole>;
@@ -36,13 +36,11 @@ export class UserRole {
   })
   organization: string;
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
   user: string;
 
-  @Prop({ required: true, type: String, ref: 'Role' })
-  role: any;
-
-  permissions?: string[]; // For frontend use
+  @Prop({ required: true, type: String })
+  role: string;
 
   constructor(partial: Partial<UserRole>) {
     Object.assign(this, partial);

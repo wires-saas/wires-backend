@@ -102,12 +102,16 @@ export class FoldersController {
     );
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.foldersService.remove(+id, true);
+  @Delete(':folderId')
+  remove(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+    @Param('folderId') folderId: string,
+  ) {
+    return this.foldersService.remove(organizationId, folderId, true);
   }
 
-  // Resources
+  // Folder Items
 
   @Put(':folderId/items/:itemId')
   async addFolderItem(
@@ -173,6 +177,10 @@ export class FoldersController {
     @Param('folderId') folderId: string,
     @Param('itemId') itemId: string,
   ) {
+    const folder = await this.foldersService.findOne(organizationId, folderId);
+
+    if (!folder) throw new NotFoundException('Folder not found');
+
     const item = await this.folderItemsService.findOne(
       organizationId,
       folderId,

@@ -11,11 +11,11 @@ export class RbacUtils {
   ): boolean {
     const roleNameOfUser = user.find(
       (role) => role.organization === organization,
-    )?.role?._id as RoleName;
+    )?.role as RoleName;
 
     const roleNameOfTargetUser = targetUser.find(
       (role) => role.organization === organization,
-    )?.role?._id as RoleName;
+    )?.role as RoleName;
 
     const roleToInt = (role: RoleName) => {
       switch (role) {

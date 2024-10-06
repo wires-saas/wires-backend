@@ -67,12 +67,13 @@ export class AuthController {
   }> {
     // For the sake of simplicity, we will "de-populate" the roles
     // As frontend doesn't need the inner permissions of the roles
+    /* TODO
     req.user.roles = req.user.roles.map((userRole) => ({
       organization: userRole.organization,
       user: userRole.user,
       role: userRole.role._id,
       permissions: userRole.role.permissions,
-    }));
+    })); */
 
     return {
       jwt: req.jwt,

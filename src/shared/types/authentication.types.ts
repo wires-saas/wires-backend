@@ -1,23 +1,14 @@
-import { User } from '../../users/schemas/user.schema';
+import { UserWithPermissions } from '../../users/schemas/user.schema';
 import { UserRole } from '../../users/schemas/user-role.schema';
-import { Prop } from '@nestjs/mongoose';
-import { Role } from '../../rbac/roles/schemas/role.schema';
 import { MongoAbility } from '@casl/ability';
-
-export type UserId = string;
+import { Permission } from '../../rbac/permissions/schemas/permission.schema';
 
 export class UserRoleWithPermissions extends UserRole {
-  @Prop({ required: true, type: Role })
-  role: Role;
-}
-
-export class UserWithRoles extends User {
-  @Prop()
-  roles: UserRoleWithPermissions[];
+  permissions: Permission[];
 }
 
 export interface AuthenticatedRequest {
-  user: User;
+  user: UserWithPermissions;
   jwt: {
     email: string;
     exp: number;

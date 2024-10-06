@@ -10,14 +10,17 @@ import { UserEmailStatus } from './entities/user-email-status.entity';
 import * as crypto from 'crypto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
-import { User, UserDocument } from './schemas/user.schema';
+import { User, UserDocument, UserWithPermissions } from './schemas/user.schema';
 import { EncryptService } from '../services/security/encrypt.service';
 import { HashService } from '../services/security/hash.service';
 import { UserRole, UserRoleColl } from './schemas/user-role.schema';
 import { MongoAbility } from '@casl/ability';
 import { Action } from '../rbac/permissions/entities/action.entity';
 import { CaslUtils } from '../rbac/casl/casl.utils';
-import { RoleName } from '../shared/types/authentication.types';
+import {
+  RoleName,
+  UserRoleWithPermissions,
+} from '../shared/types/authentication.types';
 import { UserRolesService } from './user-roles/user-roles.service';
 
 @Injectable()
@@ -263,7 +266,7 @@ export class UsersService {
   }
 
   // As email is encrypted, we need to decrypt it all users base before finding a match
-  async findOneByEmail(email: string): Promise<User> {
+  async findOneByEmail(email: string): Promise<UserWithPermissions> {
     return this.userModel
       .find()
       .exec()
@@ -275,15 +278,34 @@ export class UsersService {
         if (!user) throw new NotFoundException('User not found');
 
         // adding roles
-        const roles: UserRole[] = await this.userRoleService
-          .findAll(user._id, false)
-          .catch(() => []);
+        const rolesWithPermissions: UserRoleWithPermissions[] =
+          await this.userRoleService
+            .findAllUserRolesWithPermissions(user._id)
+            .catch(() => []);
 
-        if (roles?.length) user.roles = roles;
+        if (rolesWithPermissions?.length) {
+          user.rolesWithPermissions = rolesWithPermissions;
+          user.rolesWithPermissions.forEach((role) => {
+            role.permissions.forEach((permission) => {
+              delete permission._id;
+            });
+            delete role.user;
+          });
+        }
+
+        const roles: UserRole[] = rolesWithPermissions.map((role) => {
+          return new UserRole({
+            role: role.role,
+            organization: role.organization,
+          });
+        });
+
+        if (roles) user.roles = roles;
+
         user.email = this.encryptService.decrypt(user.email);
 
         return user;
-      });
+      }) as any as UserWithPermissions;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {

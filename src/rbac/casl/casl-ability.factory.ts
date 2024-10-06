@@ -6,7 +6,7 @@ import {
   MongoAbility,
 } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
-import { User } from '../../users/schemas/user.schema';
+import { User, UserWithPermissions } from '../../users/schemas/user.schema';
 import { Action } from '../permissions/entities/action.entity';
 import { UserRoleWithPermissions } from '../../shared/types/authentication.types';
 import { Permission } from '../permissions/schemas/permission.schema';
@@ -59,7 +59,7 @@ export class CaslAbilityFactory {
     'lastSeenAt',
   ];
 
-  createForUser(user: User): MongoAbility {
+  createForUser(user: UserWithPermissions): MongoAbility {
     const { can, build } = new AbilityBuilder(createMongoAbility);
 
     if (user.isSuperAdmin) {
@@ -89,13 +89,11 @@ export class CaslAbilityFactory {
       // Permission without restriction or scope is the most generic one
       // It can create leaks if not used carefully
 
-      user.roles.forEach((userRole: UserRoleWithPermissions) => {
-        userRole.role.permissions.forEach((id) => {
-          // forcing string cast here as we did not deep populate permissions
+      if (!user.rolesWithPermissions)
+        throw new Error('User has no rolesWithPermissions property');
 
-          const permission: Permission = Permission.getPermissionFromId(
-            id.toString(),
-          );
+      user.rolesWithPermissions.forEach((userRole: UserRoleWithPermissions) => {
+        userRole.permissions.forEach((permission) => {
           switch (permission.subject) {
             case Subject.Organization:
               // For DBs access, we need to use the _id

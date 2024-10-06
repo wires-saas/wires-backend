@@ -11,7 +11,7 @@ import { UsersService } from '../users/users.service';
 import { HashService } from '../services/security/hash.service';
 import { JwtService } from '@nestjs/jwt';
 import { EncryptService } from '../services/security/encrypt.service';
-import { User } from '../users/schemas/user.schema';
+import { User, UserWithPermissions } from '../users/schemas/user.schema';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { Organization } from '../organizations/schemas/organization.schema';
 import { UserStatus } from '../users/entities/user-status.entity';
@@ -35,7 +35,7 @@ export class AuthService {
   async signIn(
     email: string,
     pass: string,
-  ): Promise<{ access_token: string; user: User }> {
+  ): Promise<{ access_token: string; user: UserWithPermissions }> {
     const user = await this.usersService.findOneByEmail(email).catch(() => {
       // obfuscate the error message
       throw new UnauthorizedException();
@@ -58,12 +58,13 @@ export class AuthService {
 
     const payload = { sub: user._id.toString(), email: user.email };
 
-    user.roles = user.roles.map((userRole) => ({
+    /*
+    user.rolesW = user.roles.map((userRole) => ({
       organization: userRole.organization,
       user: userRole.user,
       role: userRole.role._id,
-      permissions: userRole.role.permissions,
-    }));
+      permissions: userRole.roleWit,
+    })); */
 
     await this.usersService
       .update(user._id, {
@@ -76,7 +77,7 @@ export class AuthService {
 
     return {
       access_token: await this.jwtService.signAsync(payload),
-      user: user,
+      user,
     };
   }
 

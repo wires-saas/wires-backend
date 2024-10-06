@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { User } from '../users/schemas/user.schema';
 import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 import { AuthGuard } from './auth.guard';
 import { OrganizationsService } from '../organizations/organizations.service';
@@ -49,7 +48,7 @@ export class OrganizationGuard implements CanActivate {
         throw new UnauthorizedException();
       }
 
-      const userFromDatabase: User = await this.usersService.findOneByEmail(
+      const userFromDatabase = await this.usersService.findOneByEmail(
         payload.email,
       );
 

@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { UserStatus } from '../entities/user-status.entity';
 import { UserEmailStatus } from '../entities/user-email-status.entity';
 import { UserRole } from './user-role.schema';
+import { UserRoleWithPermissions } from '../../shared/types/authentication.types';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -57,6 +58,13 @@ export type UserDocument = HydratedDocument<User>;
       delete ret.inviteToken;
       delete ret.emailVerificationToken;
       delete ret.emailVerificationTokenExpiresAt;
+
+      // if roles with permissions are available, use them
+      if (ret.rolesWithPermissions) {
+        ret.roles = ret.rolesWithPermissions;
+        delete ret.rolesWithPermissions;
+      }
+
       return ret;
     },
   },
@@ -129,11 +137,20 @@ export class User {
   @Prop()
   roles: UserRole[];
 
+  // Inheritance not supported with schema class
+  // Only adding an optional field expected to be populated by the service
+  @Prop()
+  rolesWithPermissions?: UserRoleWithPermissions[];
+
   organizations?: UserRole['organization'][];
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
   }
 }
+
+export type UserWithPermissions = User & {
+  rolesWithPermissions: UserRoleWithPermissions[];
+};
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -212,8 +212,13 @@ export class UsersController {
     if (req.ability.cannot(Action.Manage, Organization, organization)) {
       const target = await this.usersService.findOne(id, true);
 
+      // FIXME
       if (
-        RbacUtils.isUserGreaterThan(target.roles, req.user.roles, organization)
+        RbacUtils.isUserGreaterThan(
+          target.roles as any,
+          req.user.roles as any,
+          organization,
+        )
       ) {
         throw new UnauthorizedException(
           'Cannot delete other users with same or higher roles',
