@@ -217,10 +217,7 @@ export class UsersService {
         user.email = this.encryptService.decrypt(user.email);
 
         if (withRoles) {
-          const roles: UserRole[] = await this.userRoleService.findAll(
-            id,
-            false,
-          );
+          const roles: UserRole[] = await this.userRoleService.findAll(id);
 
           if (roles) user.roles = roles;
         }
@@ -238,7 +235,7 @@ export class UsersService {
         if (!user) throw new NotFoundException('User not found');
 
         const roles: UserRole[] = await this.userRoleService
-          .findAll(user._id, false)
+          .findAll(user._id)
           .catch(() => []);
 
         if (roles) user.roles = roles;
@@ -256,7 +253,7 @@ export class UsersService {
         if (!user) throw new NotFoundException('User not found');
 
         const roles: UserRole[] = await this.userRoleService
-          .findAll(user._id, false)
+          .findAll(user._id)
           .catch(() => []);
 
         if (roles) user.roles = roles;

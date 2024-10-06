@@ -37,7 +37,7 @@ export class UserRole {
   organization: string;
 
   @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
-  user: string;
+  user: Types.ObjectId;
 
   @Prop({ required: true, type: String })
   role: string;

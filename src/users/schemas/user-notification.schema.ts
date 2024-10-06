@@ -1,4 +1,4 @@
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import {
   UserNotificationAction,
@@ -35,8 +35,8 @@ export class UserNotification {
   })
   organization: string;
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  user: string;
+  @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
+  user: Types.ObjectId;
 
   @Prop()
   action: UserNotificationAction;

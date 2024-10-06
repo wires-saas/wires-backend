@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { UserRole, UserRoleColl } from '../schemas/user-role.schema';
 import { UserRoleDto } from '../dto/user-role.dto';
 import { UserRoleWithPermissions } from '../../shared/types/authentication.types';
@@ -20,7 +20,7 @@ export class UserRolesService {
       (dto) =>
         new UserRole({
           ...dto,
-          user: userId,
+          user: new Types.ObjectId(userId),
         }),
     );
 
@@ -30,8 +30,7 @@ export class UserRolesService {
   async findAllUserRolesWithPermissions(
     userId: string,
   ): Promise<UserRoleWithPermissions[]> {
-    // TODO now we cannot populate role 'simply'
-    // we have to do a join on 'roles' collection (using role + organization)
+    // we have to do a join on 'roles' collection (using organization + role)
     // and then another join on 'permissions' collection
 
     return (await this.userRoleModel.aggregate([
@@ -81,52 +80,31 @@ export class UserRolesService {
         },
       },
     ])) as any;
-
-    /*
-      .find({ user: userId })
-      .populate('role', 'name')
-      .populate('organization')
-      .populate('user')
-      .exec()) as any;*/
   }
 
-  async findAll(
-    userId: string,
-    deepPopulateRole: boolean = true,
-  ): Promise<UserRole[]> {
-    if (deepPopulateRole) {
-      return this.userRoleModel
-        .find({ user: userId })
-        .populate('organization')
-        .populate('user')
-        .populate({
-          path: 'role',
-          populate: { path: 'permissions', model: 'Permission' },
-        })
-        .exec();
-    } else {
-      return this.userRoleModel.find({ user: userId }).exec();
-    }
-  }
-
-  async findAllNoPopulate(userId: string): Promise<UserRole[]> {
-    return this.userRoleModel.find({ user: userId }).exec();
+  async findAll(userId: string): Promise<UserRole[]> {
+    return this.userRoleModel.find({ user: new Types.ObjectId(userId) }).exec();
   }
 
   removeAll(userId: string) {
-    return this.userRoleModel.deleteMany({ user: userId }).exec();
+    return this.userRoleModel
+      .deleteMany({ user: new Types.ObjectId(userId) })
+      .exec();
   }
 
   removeAllByOrganization(userId: string, organizationId: string) {
     return this.userRoleModel
-      .deleteMany({ user: userId, organization: organizationId })
+      .deleteMany({
+        user: new Types.ObjectId(userId),
+        organization: organizationId,
+      })
       .exec();
   }
 
   async removeOne(userId: string, dto: UserRoleDto) {
     return this.userRoleModel
       .deleteOne({
-        user: userId,
+        user: new Types.ObjectId(userId),
         role: dto.role,
         organization: dto.organization,
       })

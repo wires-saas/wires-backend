@@ -46,7 +46,7 @@ export class UserRolesController {
     const createdUserRoles: UserRole[] = userRoles.map(
       (dto) =>
         new UserRole({
-          user: userId,
+          user: userId as any,
           organization: dto.organization,
           role: dto.role,
         }),
@@ -60,7 +60,7 @@ export class UserRolesController {
       throw new UnauthorizedException('Cannot update user roles');
     }
 
-    const existingRoles = await this.userRolesService.findAllNoPopulate(userId); // TODO filter by ability ?
+    const existingRoles = await this.userRolesService.findAll(userId);
 
     // Avoiding duplicates
     const userRolesRelevant = userRoles.filter((userRole) => {
@@ -71,10 +71,13 @@ export class UserRolesController {
       );
     });
 
+    this.logger.log(userRolesRelevant);
+
     return this.userRolesService
       .createOrUpdate(userId, userRolesRelevant)
       .then((userRoles) => {
         this.logger.log(`User roles updated for user ${userId}`);
+        this.logger.log(userRoles);
 
         userRoles.forEach(async (userRole) => {
           // Considering user roles mutually exclusive

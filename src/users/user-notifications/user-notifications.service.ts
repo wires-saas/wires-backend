@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserNotificationDto } from '../dto/create-user-notification.dto';
 import { UpdateUserNotificationDto } from '../dto/update-user-notification.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   UserNotification,
   UserNotificationColl,
@@ -19,7 +19,7 @@ export class UserNotificationsService {
     createUserNotificationDto: CreateUserNotificationDto,
   ): Promise<UserNotification> {
     const notification = new UserNotification({
-      user: userId,
+      user: new Types.ObjectId(userId),
       ...createUserNotificationDto,
     });
 
@@ -31,12 +31,14 @@ export class UserNotificationsService {
   }
 
   findAll(userId: string): Promise<UserNotification[]> {
-    return this.userNotificationModel.find({ user: userId }).exec();
+    return this.userNotificationModel
+      .find({ user: new Types.ObjectId(userId) })
+      .exec();
   }
 
   findOne(userId: string, notificationId: string): Promise<UserNotification> {
     return this.userNotificationModel
-      .findOne({ user: userId, _id: notificationId })
+      .findOne({ user: new Types.ObjectId(userId), _id: notificationId })
       .exec();
   }
 
