@@ -30,6 +30,7 @@ import { Block, BlockSchema } from '../blocks/schemas/block.schema';
 import { Folder, FolderSchema } from '../folders/schemas/folder.schema';
 import {
   FolderItem,
+  FolderItemColl,
   FolderItemSchema,
 } from '../folders/schemas/folder-item.schema';
 
@@ -57,7 +58,7 @@ export const aiModels: ModelDefinition[] = [
 export const studioModels: ModelDefinition[] = [
   { name: Block.name, schema: BlockSchema },
   { name: Folder.name, schema: FolderSchema },
-  { name: FolderItem.name, schema: FolderItemSchema },
+  { name: FolderItemColl, schema: FolderItemSchema },
 ];
 
 export default allModels;

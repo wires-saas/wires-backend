@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FolderItem } from './schemas/folder-item.schema';
+import { FolderItem, FolderItemColl } from './schemas/folder-item.schema';
 import { FolderItemDto } from './dto/folder-item.dto';
 import { FolderItemType } from './entities/folder-item-type';
 
@@ -10,7 +10,7 @@ export class FolderItemsService {
   private logger: Logger = new Logger(FolderItemsService.name);
 
   constructor(
-    @InjectModel(FolderItem.name) private folderItemModel: Model<FolderItem>,
+    @InjectModel(FolderItemColl) private folderItemModel: Model<FolderItem>,
   ) {}
 
   create(organizationId: string, itemDto: FolderItemDto) {

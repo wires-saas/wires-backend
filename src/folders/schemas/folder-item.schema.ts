@@ -64,3 +64,4 @@ export class FolderItem {
 }
 
 export const FolderItemSchema = SchemaFactory.createForClass(FolderItem);
+export const FolderItemColl = 'folder_items';
