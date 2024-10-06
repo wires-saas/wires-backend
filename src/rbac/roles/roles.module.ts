@@ -8,6 +8,7 @@ import { UserRolesModule } from '../../users/user-roles/user-roles.module';
 import allModels from '../../shared/mongoose-models';
 import { SecurityModule } from '../../services/security/security.module';
 import { UsersModule } from '../../users/users.module';
+import { OrganizationsModule } from '../../organizations/organizations.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UsersModule } from '../../users/users.module';
     AuthModule,
     SecurityModule,
     UsersModule,
+    OrganizationsModule,
     UserRolesModule,
   ],
   controllers: [RolesController],

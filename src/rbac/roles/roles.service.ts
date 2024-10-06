@@ -11,14 +11,23 @@ export class RolesService {
     private roleModel: Model<Role>,
   ) {}
 
-  async create(roleDto: RoleDto): Promise<Role> {
-    const role = new Role({ ...roleDto });
-    return new this.roleModel(role).save();
+  async create(organizationId: string, roleDto: RoleDto): Promise<Role> {
+    // TODO implement (missing id creation)
+    throw new Error('Method not implemented');
+    // const role = new Role({ ...roleDto, organization: organizationId });
+    // return new this.roleModel(role).save();
   }
 
-  async update(id: string, roleDto: RoleDto): Promise<Role> {
-    return this.roleModel.findByIdAndUpdate(
-      id,
+  async update(
+    organizationId: string,
+    roleId: string,
+    roleDto: RoleDto,
+  ): Promise<Role> {
+    return this.roleModel.findOneAndUpdate(
+      {
+        '_id.organization': organizationId,
+        '_id.role': roleId,
+      },
       new Role({
         ...roleDto,
       }),
@@ -26,16 +35,30 @@ export class RolesService {
     );
   }
 
-  async findAll(): Promise<Role[]> {
+  async findAll(organizationId: string): Promise<Role[]> {
     // By populating we exclude deleted/non-existent permissions
-    return this.roleModel.find().populate('permissions').exec();
+    return this.roleModel
+      .find({ '_id.organization': organizationId })
+      .populate('permissions')
+      .exec();
   }
 
-  findOne(id: string) {
-    return this.roleModel.findById(id).populate('permissions').exec();
+  findOne(organizationId: string, roleId: string) {
+    return this.roleModel
+      .findOne({
+        '_id.organization': organizationId,
+        '_id.role': roleId,
+      })
+      .populate('permissions')
+      .exec();
   }
 
-  remove(id: string) {
-    return this.roleModel.findByIdAndDelete(id).exec();
+  remove(organizationId: string, roleId: string) {
+    return this.roleModel
+      .findOneAndDelete({
+        '_id.organization': organizationId,
+        '_id.role': roleId,
+      })
+      .exec();
   }
 }
