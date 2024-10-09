@@ -9,4 +9,6 @@ export enum Subject {
   Tag = 'tag',
   Gpt = 'gpt',
   GptRequest = 'gptRequest',
+  Block = 'block',
+  Folder = 'folder',
 }

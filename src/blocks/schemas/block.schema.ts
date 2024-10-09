@@ -61,11 +61,16 @@ export class Block {
   })
   parameters: string[];
 
+  // TODO model
+
   @Prop({ type: String, required: true })
   code: string;
 
   @Prop({ type: Boolean, required: true })
   wysiwygEnabled: boolean;
+
+  @Prop({ type: Boolean, required: true })
+  isArchived: boolean;
 
   // virtuals
   id: string;

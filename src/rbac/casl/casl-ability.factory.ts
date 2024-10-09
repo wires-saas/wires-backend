@@ -21,6 +21,8 @@ import { ScopedSubject } from './casl.utils';
 import { Tag } from '../../tags/schemas/tag.schema';
 import { Gpt } from '../../ai/schemas/gpt.schema';
 import { GptRequest } from '../../ai/schemas/gpt-request.schema';
+import { Folder } from '../../folders/schemas/folder.schema';
+import { Block } from '../../blocks/schemas/block.schema';
 
 type Subjects =
   | InferSubjects<
@@ -100,6 +102,20 @@ export class CaslAbilityFactory {
               can(permission.action, Organization, {
                 _id: userRole.organization,
               });
+              break;
+
+            case Subject.Block:
+              can(
+                permission.action,
+                ScopedSubject(Block, userRole.organization),
+              );
+              break;
+
+            case Subject.Folder:
+              can(
+                permission.action,
+                ScopedSubject(Folder, userRole.organization),
+              );
               break;
 
             case Subject.Billing:

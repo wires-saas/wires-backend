@@ -29,6 +29,7 @@ export class BlocksService {
         description: createBlockDto.description,
         code: createBlockDto.code,
         wysiwygEnabled: createBlockDto.wysiwygEnabled,
+        isArchived: false,
       }),
     ).save();
   }
@@ -51,26 +52,58 @@ export class BlocksService {
         description: updateBlockDto.description,
         code: updateBlockDto.code,
         wysiwygEnabled: updateBlockDto.wysiwygEnabled,
+        isArchived: updateBlockDto.isArchived,
       }),
     ).save();
   }
 
-  findAllOfOrganization(organizationId: string): Promise<Block[]> {
+  async updateIsArchived(
+    blockId: string,
+    organizationId: string,
+    block: Block,
+    isArchived: boolean,
+  ): Promise<Block> {
+    this.logger.log('Updating block isArchived');
+
+    return new this.blockModel(
+      new Block({
+        _id: {
+          block: blockId,
+          organization: organizationId,
+          timestamp: Date.now(),
+        },
+        displayName: block.displayName,
+        description: block.description,
+        code: block.code,
+        wysiwygEnabled: block.wysiwygEnabled,
+        isArchived: isArchived,
+      }),
+    ).save();
+  }
+
+  async findAllOfOrganization(organizationId: string): Promise<Block[]> {
     return this.blockModel
       .aggregate([
         { $match: { '_id.organization': organizationId } },
         { $sort: { '_id.timestamp': -1 } },
-        { $group: { _id: '$block', doc: { $first: '$$ROOT' } } },
+        { $group: { _id: '$_id.block', doc: { $first: '$$ROOT' } } },
         { $replaceRoot: { newRoot: '$doc' } },
+        { $sort: { '_id.timestamp': -1 } },
       ])
       .then((blocks) => blocks.map((block) => new this.blockModel(block)));
   }
 
   findOne(organizationId: string, blockId: string): Promise<Block> {
-    return this.blockModel.findOne({
-      '_id.block': blockId,
-      '_id.organization': organizationId,
-    });
+    return this.blockModel.findOne(
+      {
+        '_id.block': blockId,
+        '_id.organization': organizationId,
+      },
+      {},
+      {
+        sort: { '_id.timestamp': -1 },
+      },
+    );
   }
 
   remove(organizationId: string, blockId: string) {

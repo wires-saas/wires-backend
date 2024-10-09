@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsDefined,
   IsNotEmpty,
+  IsOptional,
   IsString,
 } from 'class-validator';
 
@@ -34,4 +35,8 @@ export class CreateBlockDto {
   @IsDefined()
   @IsArray()
   parameters: any;
+
+  @IsOptional()
+  @IsBoolean()
+  isArchived: boolean;
 }
