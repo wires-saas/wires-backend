@@ -27,12 +27,16 @@ import { Action } from '../rbac/permissions/entities/action.entity';
 import { SuperAdminGuard } from '../auth/super-admin.guard';
 import { Gpt } from '../ai/schemas/gpt.schema';
 import { ScopedSubject } from '../rbac/casl/casl.utils';
+import { OrganizationPlansService } from './organization-plans.service';
 
 @ApiTags('Organizations')
 @UseGuards(AuthGuard)
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(private readonly organizationsService: OrganizationsService) {}
+  constructor(
+    private readonly organizationsService: OrganizationsService,
+    private readonly organizationPlansService: OrganizationPlansService,
+  ) {}
 
   @Post()
   @UseGuards(SuperAdminGuard)
@@ -44,7 +48,13 @@ export class OrganizationsController {
   async create(
     @Body() createOrganizationDto: CreateOrganizationDto,
   ): Promise<Organization> {
-    return this.organizationsService.create(createOrganizationDto);
+    const organization = await this.organizationsService.create(
+      createOrganizationDto,
+    );
+
+    await this.organizationPlansService.create(organization._id);
+
+    return organization;
   }
 
   @Get()

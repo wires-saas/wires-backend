@@ -29,14 +29,18 @@ import {
 import { Block, BlockSchema } from '../blocks/schemas/block.schema';
 import { Folder, FolderSchema } from '../folders/schemas/folder.schema';
 import {
-  FolderItem,
   FolderItemColl,
   FolderItemSchema,
 } from '../folders/schemas/folder-item.schema';
+import {
+  OrganizationPlanColl,
+  OrganizationPlanSchema,
+} from '../organizations/schemas/organization-plan.schema';
 
 const allModels: ModelDefinition[] = [
   { name: User.name, schema: UserSchema },
   { name: Organization.name, schema: OrganizationSchema },
+  { name: OrganizationPlanColl, schema: OrganizationPlanSchema },
   { name: UserRoleColl, schema: UserRoleSchema },
   { name: UserNotificationColl, schema: UserNotificationSchema },
   { name: Role.name, schema: RoleSchema },

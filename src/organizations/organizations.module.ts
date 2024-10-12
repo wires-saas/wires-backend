@@ -7,6 +7,8 @@ import allModels from '../shared/mongoose-models';
 import { SecurityModule } from '../services/security/security.module';
 import { UsersModule } from '../users/users.module';
 import { CaslModule } from '../rbac/casl/casl.module';
+import { OrganizationPlansController } from './organization-plans.controller';
+import { OrganizationPlansService } from './organization-plans.service';
 
 @Module({
   imports: [
@@ -16,8 +18,8 @@ import { CaslModule } from '../rbac/casl/casl.module';
     SecurityModule,
     CaslModule,
   ],
-  providers: [OrganizationsService],
-  controllers: [OrganizationsController],
-  exports: [OrganizationsService],
+  providers: [OrganizationsService, OrganizationPlansService],
+  controllers: [OrganizationsController, OrganizationPlansController],
+  exports: [OrganizationsService, OrganizationPlansService],
 })
 export class OrganizationsModule {}

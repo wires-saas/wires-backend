@@ -1,5 +1,6 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { OrganizationPlan } from './organization-plan.schema';
 
 export type OrganizationDocument = HydratedDocument<Organization>;
 
@@ -98,13 +99,8 @@ export class Organization {
   )
   security: Record<string, unknown>;
 
-  @Prop(
-    raw({
-      type: { type: String, default: 'free' },
-      willExpireAt: { type: Date },
-    }),
-  )
-  subscription: Record<string, unknown>; // TODO subscription type
+  @Prop({ required: false, type: OrganizationPlan, ref: 'OrganizationPlan' })
+  plan: OrganizationPlan;
 
   @Prop({
     required: false,
