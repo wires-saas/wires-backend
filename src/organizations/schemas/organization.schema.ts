@@ -21,6 +21,7 @@ export interface Contact {
     transform: function (_, ret, __) {
       ret.slug = ret._id;
       delete ret._id;
+      delete ret.plan;
       return ret;
     },
   },
@@ -31,6 +32,7 @@ export interface Contact {
     transform: function (_, ret, __) {
       ret.slug = ret._id;
       delete ret._id;
+      delete ret.plan;
       return ret;
     },
   },
@@ -99,8 +101,10 @@ export class Organization {
   )
   security: Record<string, unknown>;
 
-  @Prop({ required: false, type: OrganizationPlan, ref: 'OrganizationPlan' })
-  plan: OrganizationPlan;
+  // if type is not String but OrganizationPlan, it will apply the schema
+  // hence requiring a populated OrganizationPlan
+  @Prop({ required: false, type: String, ref: 'OrganizationPlan' })
+  plan: string;
 
   @Prop({
     required: false,

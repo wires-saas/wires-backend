@@ -12,6 +12,7 @@ export type OrganizationPlanDocument = HydratedDocument<OrganizationPlan>;
   virtuals: {
     permissions: {
       get(): string[] {
+        console.log(this.type);
         return [
           ...new Set([
             ...this.customPermissions,
@@ -26,8 +27,13 @@ export type OrganizationPlanDocument = HydratedDocument<OrganizationPlan>;
     versionKey: false,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
+      // delete ret._id;
+      delete ret.customPermissions;
+      delete ret.createdAt;
+      delete ret.updatedAt;
       return ret;
     },
+    virtuals: true,
   },
   toJSON: {
     //delete __v from output JSON

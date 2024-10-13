@@ -9,7 +9,6 @@ import { Injectable } from '@nestjs/common';
 import { User, UserWithPermissions } from '../../users/schemas/user.schema';
 import { Action } from '../permissions/entities/action.entity';
 import { UserRoleWithPermissions } from '../../shared/types/authentication.types';
-import { Permission } from '../permissions/schemas/permission.schema';
 import { Subject } from '../permissions/entities/subject.entity';
 import { Organization } from '../../organizations/schemas/organization.schema';
 import { UserRole } from '../../users/schemas/user-role.schema';

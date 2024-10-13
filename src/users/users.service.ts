@@ -22,12 +22,14 @@ import {
   UserRoleWithPermissions,
 } from '../shared/types/authentication.types';
 import { UserRolesService } from './user-roles/user-roles.service';
+import { OrganizationPlansService } from '../organizations/organization-plans.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     // @InjectModel(UserRoleColl) private userRoleModel: Model<UserRole>,
+    private organizationPlansService: OrganizationPlansService,
     private userRoleService: UserRolesService,
     private encryptService: EncryptService,
     private hashService: HashService,
@@ -284,11 +286,13 @@ export class UsersService {
           user.rolesWithPermissions = rolesWithPermissions;
           user.rolesWithPermissions.forEach((role) => {
             role.permissions.forEach((permission) => {
-              delete permission._id;
+              delete permission._id; // removing _id from permissions
             });
-            delete role.user;
+            delete role.user; // removing user reference
           });
         }
+
+        // removing some permissions based on specific organization plan
 
         const roles: UserRole[] = rolesWithPermissions.map((role) => {
           return new UserRole({
@@ -298,6 +302,21 @@ export class UsersService {
         });
 
         if (roles) user.roles = roles;
+
+        // organizations calculated from roles user has
+        const organizations = user.organizations;
+        console.log('organizations', organizations);
+
+        // fetching organization plans
+        const organizationPlans = {};
+        for (const org of organizations) {
+          organizationPlans[org] =
+            await this.organizationPlansService.findOne(org);
+        }
+
+        console.log(organizationPlans);
+
+        // TODO iterate again over rolesWithPermissions and remove permissions based on organization plan
 
         user.email = this.encryptService.decrypt(user.email);
 

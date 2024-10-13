@@ -64,11 +64,11 @@ export class OrganizationsService {
         ],
       })
       .exec()
-      .then((res) => {
-        if (!res) {
+      .then((org) => {
+        if (!org) {
           throw new NotFoundException(`Organization with id ${id} not found`);
         } else {
-          return res;
+          return org;
         }
       });
   }

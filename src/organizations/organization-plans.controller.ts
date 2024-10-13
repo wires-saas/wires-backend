@@ -39,7 +39,7 @@ export class OrganizationPlansController {
   async findAll(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
-  ): Promise<OrganizationPlan[]> {
+  ): Promise<OrganizationPlan> {
     if (req.ability.cannot(Action.Read, Organization)) {
       throw new UnauthorizedException();
     }
@@ -50,6 +50,6 @@ export class OrganizationPlansController {
       throw new NotFoundException('Organization not found');
     }
 
-    return this.organizationPlansService.findAll();
+    return this.organizationPlansService.findOne(organizationId);
   }
 }
