@@ -23,6 +23,7 @@ import {
 } from '../shared/types/authentication.types';
 import { UserRolesService } from './user-roles/user-roles.service';
 import { OrganizationPlansService } from '../organizations/organization-plans.service';
+import { RbacUtils } from '../shared/utils/rbac.utils';
 
 @Injectable()
 export class UsersService {
@@ -305,7 +306,6 @@ export class UsersService {
 
         // organizations calculated from roles user has
         const organizations = user.organizations;
-        console.log('organizations', organizations);
 
         // fetching organization plans
         const organizationPlans = {};
@@ -314,9 +314,16 @@ export class UsersService {
             await this.organizationPlansService.findOne(org);
         }
 
-        console.log(organizationPlans);
-
-        // TODO iterate again over rolesWithPermissions and remove permissions based on organization plan
+        // Iterating again over rolesWithPermissions and remove permissions based on organization plan
+        if (user.rolesWithPermissions?.length) {
+          user.rolesWithPermissions.forEach((role) => {
+            role.permissions =
+              RbacUtils.restrictPermissionsWithOrganizationPlan(
+                role.permissions,
+                organizationPlans[role.organization],
+              );
+          });
+        }
 
         user.email = this.encryptService.decrypt(user.email);
 

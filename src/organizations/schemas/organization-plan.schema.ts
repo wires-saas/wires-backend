@@ -12,7 +12,6 @@ export type OrganizationPlanDocument = HydratedDocument<OrganizationPlan>;
   virtuals: {
     permissions: {
       get(): string[] {
-        console.log(this.type);
         return [
           ...new Set([
             ...this.customPermissions,

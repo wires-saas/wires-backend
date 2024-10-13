@@ -2,6 +2,9 @@ import {
   RoleName,
   UserRoleWithPermissions,
 } from '../types/authentication.types';
+import { OrganizationPlan } from '../../organizations/schemas/organization-plan.schema';
+import { Permission } from '../../rbac/permissions/schemas/permission.schema';
+import { Action } from '../../rbac/permissions/entities/action.entity';
 
 export class RbacUtils {
   static isUserGreaterThan(
@@ -33,5 +36,23 @@ export class RbacUtils {
     };
 
     return roleToInt(roleNameOfUser) > roleToInt(roleNameOfTargetUser);
+  }
+
+  static restrictPermissionsWithOrganizationPlan(
+    permissions: Permission[],
+    organizationPlan?: OrganizationPlan,
+  ): Permission[] {
+    if (!organizationPlan) return permissions;
+
+    return permissions.filter((permission) => {
+      return organizationPlan.permissions.find((planPermission) => {
+        return (
+          (planPermission.action === Action.Manage &&
+            planPermission.subject === permission.subject) ||
+          (planPermission.action === permission.action &&
+            planPermission.subject === permission.subject)
+        );
+      });
+    });
   }
 }
