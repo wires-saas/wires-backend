@@ -8,6 +8,8 @@ import {
   Put,
   UseGuards,
   Request,
+  UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { RoleDto } from './dto/role.dto';
@@ -15,6 +17,10 @@ import { ApiTags } from '@nestjs/swagger';
 import { SuperAdminGuard } from '../../auth/super-admin.guard';
 import { OrganizationGuard } from '../../auth/organization.guard';
 import { AuthenticatedRequest } from '../../shared/types/authentication.types';
+import { ScopedSubject } from '../casl/casl.utils';
+import { Role } from './schemas/role.schema';
+import { Action } from '../permissions/entities/action.entity';
+import { RbacUtils } from '../../shared/utils/rbac.utils';
 
 @ApiTags('Access Control')
 @Controller('organizations/:organizationId/roles')
@@ -25,9 +31,18 @@ export class RolesController {
   @Post()
   @UseGuards(SuperAdminGuard)
   create(
+    @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Body() createRoleDto: RoleDto,
   ) {
+    if (
+      req.ability.cannot(Action.Create, ScopedSubject(Role, organizationId))
+    ) {
+      throw new UnauthorizedException(
+        'Cannot create organization role definition',
+      );
+    }
+
     return this.rolesService.create(organizationId, createRoleDto);
   }
 
@@ -36,28 +51,81 @@ export class RolesController {
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
   ) {
-    // TODO casl
+    if (req.ability.cannot(Action.Read, ScopedSubject(Role, organizationId))) {
+      throw new UnauthorizedException(
+        'Cannot read organization role definitions',
+      );
+    }
 
     return this.rolesService.findAll(organizationId);
   }
 
   @Get(':roleId')
-  @UseGuards(SuperAdminGuard)
   findOne(
+    @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Param('roleId') roleId: string,
   ) {
+    if (req.ability.cannot(Action.Read, ScopedSubject(Role, organizationId))) {
+      throw new UnauthorizedException(
+        'Cannot read organization role definition',
+      );
+    }
+
     return this.rolesService.findOne(organizationId, roleId);
   }
 
-  @Put(':roleId')
-  @UseGuards(SuperAdminGuard)
-  update(
+  @Put()
+  async updateAll(
+    @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
-    @Param('roleId') roleId: string,
-    @Body() roleDto: RoleDto,
+    @Body() roleDtos: RoleDto[],
   ) {
-    return this.rolesService.update(organizationId, roleId, roleDto);
+    if (
+      req.ability.cannot(Action.Update, ScopedSubject(Role, organizationId))
+    ) {
+      throw new UnauthorizedException(
+        'Cannot update organization role definitions',
+      );
+    }
+
+    const roles = await this.rolesService.findAll(organizationId);
+
+    // Ensuring role names are unique
+    if (!RbacUtils.uniqueRoleNames(roleDtos)) {
+      throw new BadRequestException('Role names must be unique');
+    }
+
+    // Preventing a role name from being changed to another role name
+    if (
+      roleDtos.find((role1) =>
+        roleDtos.find((role2) => role1.name === role2.previousName),
+      )
+    ) {
+      throw new BadRequestException(
+        'Role names cannot be interchanged for consistency',
+      );
+    }
+
+    for (const role of roles) {
+      const roleDtoWithNameChange = roleDtos.find(
+        (dto) => dto.previousName === role.name,
+      );
+
+      if (roleDtoWithNameChange) {
+        await this.rolesService.updateName(
+          organizationId,
+          roleDtoWithNameChange,
+        );
+      } else {
+        // TODO update permissions
+        // await this.rolesService.update(organizationId, role._id, roleDtos);
+      }
+    }
+
+    return this.rolesService.findAll(organizationId);
+
+    // return this.rolesService.update(organizationId, roleId, roleDto);
   }
 
   @Delete(':roleId')

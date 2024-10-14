@@ -8,6 +8,8 @@ export const PlanTypePermissions: Record<
 > = {
   [PlanType.FREE]: [
     { action: Action.Manage, subject: Subject.Organization },
+    { action: Action.Read, subject: Subject.Role },
+
     { action: Action.Manage, subject: Subject.User },
     { action: Action.Manage, subject: Subject.UserRole },
     { action: Action.Manage, subject: Subject.Billing },
@@ -25,5 +27,5 @@ export const PlanTypePermissions: Record<
   ],
   [PlanType.BASIC]: [],
   [PlanType.EXTENDED]: [],
-  [PlanType.CUSTOM]: [],
+  [PlanType.CUSTOM]: [{ action: Action.Manage, subject: Subject.Role }],
 };

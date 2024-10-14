@@ -22,6 +22,7 @@ import { Gpt } from '../../ai/schemas/gpt.schema';
 import { GptRequest } from '../../ai/schemas/gpt-request.schema';
 import { Folder } from '../../folders/schemas/folder.schema';
 import { Block } from '../../blocks/schemas/block.schema';
+import { Role } from '../roles/schemas/role.schema';
 
 type Subjects =
   | InferSubjects<
@@ -101,6 +102,13 @@ export class CaslAbilityFactory {
               can(permission.action, Organization, {
                 _id: userRole.organization,
               });
+              break;
+
+            case Subject.Role:
+              can(
+                permission.action,
+                ScopedSubject(Role, userRole.organization),
+              );
               break;
 
             case Subject.Block:

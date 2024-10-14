@@ -12,10 +12,15 @@ export class RolesService {
   ) {}
 
   async create(organizationId: string, roleDto: RoleDto): Promise<Role> {
-    // TODO implement (missing id creation)
-    throw new Error('Method not implemented');
-    // const role = new Role({ ...roleDto, organization: organizationId });
-    // return new this.roleModel(role).save();
+    const role = new Role({
+      _id: {
+        organization: organizationId,
+        role: roleDto.name,
+      },
+      permissions: roleDto.permissions,
+    });
+
+    return new this.roleModel(role).save();
   }
 
   async update(
@@ -33,6 +38,21 @@ export class RolesService {
       }),
       { returnOriginal: false },
     );
+  }
+
+  async updateName(organizationId: string, roleDto: RoleDto): Promise<Role> {
+    // Creation of role required to change compound id field
+    const updatedRole = await this.create(organizationId, roleDto);
+
+    // TODO update all users with the role !!
+
+    // Deletion of previous role
+    await this.roleModel.findOneAndDelete({
+      '_id.organization': organizationId,
+      '_id.role': roleDto.previousName,
+    });
+
+    return updatedRole;
   }
 
   async findAll(organizationId: string): Promise<Role[]> {

@@ -1,6 +1,7 @@
 export enum Subject {
   User = 'user',
   Organization = 'organization',
+  Role = 'role',
   UserRole = 'userRole',
   Feed = 'feed',
   FeedRun = 'feedRun',

@@ -44,7 +44,37 @@ export class RbacUtils {
   ): Permission[] {
     if (!organizationPlan) return permissions;
 
-    return permissions.filter((permission) => {
+    // If user has manage permission, we should expand it to all permissions
+    // Else it may be tricky to restrict permissions with organization plan
+    // (for example if user has manage permission and organization plan has read permission)
+    // (it would require to remove manage permission and add read permission)
+    const permissionsExpanded = permissions.reduce((acc, permission) => {
+      if (permission.action === Action.Manage) {
+        return [
+          ...acc,
+          {
+            action: Action.Create,
+            subject: permission.subject,
+          },
+          {
+            action: Action.Read,
+            subject: permission.subject,
+          },
+          {
+            action: Action.Update,
+            subject: permission.subject,
+          },
+          {
+            action: Action.Delete,
+            subject: permission.subject,
+          },
+        ];
+      } else {
+        return [...acc, permission];
+      }
+    }, []);
+
+    return permissionsExpanded.filter((permission) => {
       return organizationPlan.permissions.find((planPermission) => {
         return (
           (planPermission.action === Action.Manage &&
@@ -54,5 +84,15 @@ export class RbacUtils {
         );
       });
     });
+  }
+
+  static uniqueRoleNames(roles: { name: string }[]): boolean {
+    const names = [];
+    for (const role of roles) {
+      if (names.includes(role.name)) return false;
+      names.push(role.name);
+    }
+
+    return true;
   }
 }
