@@ -27,6 +27,17 @@ export class UserRolesService {
     return this.userRoleModel.insertMany(userRoles);
   }
 
+  async updateRoleName(
+    organizationId: string,
+    previousRole: string,
+    newRole: string,
+  ) {
+    return this.userRoleModel.updateMany(
+      { organization: organizationId, role: previousRole },
+      { role: newRole },
+    );
+  }
+
   async findAllUserRolesWithPermissions(
     userId: string,
   ): Promise<UserRoleWithPermissions[]> {

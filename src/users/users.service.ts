@@ -57,7 +57,7 @@ export class UsersService {
       passwordResetToken: '',
       passwordResetTokenExpiresAt: 0,
       inviteToken: crypto.randomBytes(32).toString('hex'),
-      inviteTokenExpiresAt: Date.now() + 14 * 24 * 60 * 60 * 1000,
+      inviteTokenExpiresAt: Date.now() + 90 * 24 * 60 * 60 * 1000, // TODO change to 14 days in production
       emailVerificationToken: '',
       emailVerificationTokenExpiresAt: 0,
       lastSeenAt: 0,

@@ -1,14 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RoleDto } from './dto/role.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Role } from './schemas/role.schema';
+import { UserRolesService } from '../../users/user-roles/user-roles.service';
 
 @Injectable()
 export class RolesService {
+  private logger = new Logger(RolesService.name);
+
   constructor(
     @InjectModel(Role.name)
     private roleModel: Model<Role>,
+    private userRolesService: UserRolesService,
   ) {}
 
   async create(organizationId: string, roleDto: RoleDto): Promise<Role> {
@@ -23,28 +27,40 @@ export class RolesService {
     return new this.roleModel(role).save();
   }
 
-  async update(
+  async updatePermissions(
     organizationId: string,
-    roleId: string,
     roleDto: RoleDto,
   ): Promise<Role> {
+    this.logger.log('Updating permissions for role', roleDto.name);
     return this.roleModel.findOneAndUpdate(
       {
         '_id.organization': organizationId,
-        '_id.role': roleId,
+        '_id.role': roleDto.name,
       },
-      new Role({
-        ...roleDto,
-      }),
+      {
+        permissions: roleDto.permissions,
+      },
       { returnOriginal: false },
     );
   }
 
   async updateName(organizationId: string, roleDto: RoleDto): Promise<Role> {
+    this.logger.log(
+      'Updating role name and permissions from ' +
+        roleDto.previousName +
+        ' to ' +
+        roleDto.name,
+    );
+
     // Creation of role required to change compound id field
     const updatedRole = await this.create(organizationId, roleDto);
 
-    // TODO update all users with the role !!
+    // Update user roles with new role name
+    await this.userRolesService.updateRoleName(
+      organizationId,
+      roleDto.previousName,
+      roleDto.name,
+    );
 
     // Deletion of previous role
     await this.roleModel.findOneAndDelete({

@@ -62,7 +62,8 @@ export class OrganizationGuard implements CanActivate {
           request.params['organizationId'],
           request['ability'],
         );
-    } catch {
+    } catch (err) {
+      this.logger.error(err);
       throw new UnauthorizedException();
     }
     return true;

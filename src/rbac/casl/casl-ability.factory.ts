@@ -102,6 +102,11 @@ export class CaslAbilityFactory {
               can(permission.action, Organization, {
                 _id: userRole.organization,
               });
+
+              can(
+                permission.action,
+                ScopedSubject(Organization, userRole.organization),
+              );
               break;
 
             case Subject.Role:
@@ -126,10 +131,18 @@ export class CaslAbilityFactory {
               break;
 
             case Subject.Billing:
-              can(permission.action, Subject.Billing);
+              can(
+                permission.action,
+                ScopedSubject(Subject.Billing, userRole.organization),
+              );
               break;
 
             case Subject.UserRole:
+              can(
+                permission.action,
+                ScopedSubject(UserRole, userRole.organization),
+              );
+
               can(permission.action, UserRole, {
                 organization: userRole.organization,
               });

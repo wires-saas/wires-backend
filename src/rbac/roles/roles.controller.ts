@@ -29,8 +29,7 @@ export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Post()
-  @UseGuards(SuperAdminGuard)
-  create(
+  async create(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Body() createRoleDto: RoleDto,
@@ -41,6 +40,11 @@ export class RolesController {
       throw new UnauthorizedException(
         'Cannot create organization role definition',
       );
+    }
+
+    const roles = await this.rolesService.findAll(organizationId);
+    if (roles.find((role) => role.name === createRoleDto.name)) {
+      throw new BadRequestException('Role with this name already exists');
     }
 
     return this.rolesService.create(organizationId, createRoleDto);
@@ -118,14 +122,15 @@ export class RolesController {
           roleDtoWithNameChange,
         );
       } else {
-        // TODO update permissions
-        // await this.rolesService.update(organizationId, role._id, roleDtos);
+        const roleDto = roleDtos.find((dto) => dto.name === role.name);
+
+        if (roleDto) {
+          await this.rolesService.updatePermissions(organizationId, roleDto);
+        }
       }
     }
 
     return this.rolesService.findAll(organizationId);
-
-    // return this.rolesService.update(organizationId, roleId, roleDto);
   }
 
   @Delete(':roleId')

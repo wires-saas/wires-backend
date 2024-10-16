@@ -43,6 +43,10 @@ export class UserRolesController {
     @Body() userRoles: UserRoleDto[],
     @Param('userId') userId: string,
   ): Promise<UserRole[]> {
+    if (req.ability.cannot(Action.Create, UserRole)) {
+      throw new UnauthorizedException('Cannot create user roles');
+    }
+
     const createdUserRoles: UserRole[] = userRoles.map(
       (dto) =>
         new UserRole({
