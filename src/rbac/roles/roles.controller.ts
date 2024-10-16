@@ -13,7 +13,14 @@ import {
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { RoleDto } from './dto/role.dto';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiExcludeEndpoint,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { SuperAdminGuard } from '../../auth/super-admin.guard';
 import { OrganizationGuard } from '../../auth/organization.guard';
 import { AuthenticatedRequest } from '../../shared/types/authentication.types';
@@ -23,17 +30,26 @@ import { Action } from '../permissions/entities/action.entity';
 import { RbacUtils } from '../../shared/utils/rbac.utils';
 
 @ApiTags('Access Control')
+@ApiBearerAuth()
 @Controller('organizations/:organizationId/roles')
 @UseGuards(OrganizationGuard)
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Post()
+  @ApiBadRequestResponse({
+    description:
+      'Role with this name already exists, use PUT endpoint to update it',
+  })
+  @ApiUnauthorizedResponse({
+    description:
+      'Cannot create organization role definition, requires custom plan and "Create Role" permission',
+  })
   async create(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Body() createRoleDto: RoleDto,
-  ) {
+  ): Promise<Role> {
     if (
       req.ability.cannot(Action.Create, ScopedSubject(Role, organizationId))
     ) {
@@ -51,10 +67,14 @@ export class RolesController {
   }
 
   @Get()
+  @ApiUnauthorizedResponse({
+    description:
+      'Cannot read organization role definitions, requires "Read Role" permission',
+  })
   findAll(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
-  ) {
+  ): Promise<Role[]> {
     if (req.ability.cannot(Action.Read, ScopedSubject(Role, organizationId))) {
       throw new UnauthorizedException(
         'Cannot read organization role definitions',
@@ -65,6 +85,10 @@ export class RolesController {
   }
 
   @Get(':roleId')
+  @ApiUnauthorizedResponse({
+    description:
+      'Cannot read organization role definition, requires "Read Role" permission',
+  })
   findOne(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -80,6 +104,15 @@ export class RolesController {
   }
 
   @Put()
+  @ApiBody({ type: [RoleDto], description: 'Array of role definitions' })
+  @ApiBadRequestResponse({
+    description:
+      'Role names must be unique and cannot be interchanged for consistency',
+  })
+  @ApiUnauthorizedResponse({
+    description:
+      'Cannot update organization role definitions, requires custom plan and "Update Role" permission',
+  })
   async updateAll(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -134,6 +167,7 @@ export class RolesController {
   }
 
   @Delete(':roleId')
+  @ApiExcludeEndpoint()
   @UseGuards(SuperAdminGuard)
   remove(
     @Param('organizationId') organizationId: string,

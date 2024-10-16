@@ -6,6 +6,7 @@ import * as compression from 'compression';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { config as readEnvFile } from 'dotenv';
+import * as basicAuth from 'express-basic-auth';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -21,16 +22,32 @@ async function bootstrap() {
     exclude: [{ path: 'health', method: RequestMethod.ALL }],
   });
 
+  // Protecting the documentation with basic auth
+  if (process.env.API_DOCS_PASSWORD) {
+    app.use(
+      '/docs*',
+      basicAuth({
+        challenge: false,
+        users: {
+          documentation: process.env.API_DOCS_PASSWORD,
+        },
+      }),
+    );
+  }
+
   const config = new DocumentBuilder()
     .setTitle('Documentation')
     .setDescription('API Endpoints with Swagger integration')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document, {
+  SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {
       tagsSorter: 'alpha',
       operationsSorter: 'alpha',
+      persistAuthorization: true,
     },
   });
 

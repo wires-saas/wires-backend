@@ -20,7 +20,7 @@ export class GptService {
 
   async request(abstractGpt: Gpt, request: RequestGptDto): Promise<GptRequest> {
     const gpt = GptFactory.create(abstractGpt);
-    this.logger.log(`Prompt: ${request.prompt}`);
+    this.logger.log(`Requesting ${abstractGpt.model} GPT`);
 
     const generationResult = await gpt.request(request.prompt);
 

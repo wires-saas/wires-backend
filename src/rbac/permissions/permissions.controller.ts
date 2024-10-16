@@ -9,11 +9,12 @@ import {
 } from '@nestjs/common';
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { SuperAdminGuard } from '../../auth/super-admin.guard';
 import { AuthGuard } from '../../auth/auth.guard';
 
 @ApiTags('Access Control')
+@ApiBearerAuth()
 @Controller('permissions')
 @UseGuards(AuthGuard)
 export class PermissionsController {
@@ -21,6 +22,7 @@ export class PermissionsController {
 
   @Post()
   @UseGuards(SuperAdminGuard)
+  @ApiExcludeEndpoint()
   create(@Body() createPermissionDto: CreatePermissionDto) {
     return this.permissionsService.create(createPermissionDto);
   }
@@ -30,9 +32,10 @@ export class PermissionsController {
     return this.permissionsService.findAll();
   }
 
-  @Delete(':id')
+  @Delete(':permissionId')
   @UseGuards(SuperAdminGuard)
-  remove(@Param('id') id: string) {
-    return this.permissionsService.remove(id);
+  @ApiExcludeEndpoint()
+  remove(@Param('permissionId') permissionId: string) {
+    return this.permissionsService.remove(permissionId);
   }
 }

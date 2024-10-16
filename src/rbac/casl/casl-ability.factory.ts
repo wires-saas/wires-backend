@@ -173,6 +173,11 @@ export class CaslAbilityFactory {
               can(permission.action, Feed, {
                 organization: userRole.organization,
               });
+
+              can(
+                permission.action,
+                ScopedSubject(Feed, userRole.organization),
+              );
               break;
 
             case Subject.FeedRun:
@@ -187,6 +192,11 @@ export class CaslAbilityFactory {
               can(permission.action, Article, {
                 organization: userRole.organization,
               });
+
+              can(
+                permission.action,
+                ScopedSubject(Article, userRole.organization),
+              );
               break;
 
             case Subject.User:

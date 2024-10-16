@@ -45,9 +45,14 @@ export class GptController {
   @UseGuards(SuperAdminGuard)
   @ApiExcludeEndpoint()
   async createGPT(
+    @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Body() createGptDto: CreateGptDto,
   ): Promise<Gpt> {
+    if (req.ability.cannot(Action.Create, ScopedSubject(Gpt, organizationId))) {
+      throw new UnauthorizedException('Cannot create GPT');
+    }
+
     createGptDto.organization = organizationId;
     return await this.aiService.createGPT(createGptDto).catch((err) => {
       if (err.code === 11000)
@@ -59,7 +64,16 @@ export class GptController {
   @UseGuards(SuperAdminGuard)
   @Get('requests')
   @ApiExcludeEndpoint()
-  async findAllRequests(): Promise<GptRequest[]> {
+  async findAllRequests(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+  ): Promise<GptRequest[]> {
+    if (
+      req.ability.cannot(Action.Read, ScopedSubject(GptRequest, organizationId))
+    ) {
+      throw new UnauthorizedException('Cannot read GPT requests');
+    }
+
     return await this.gptService.findAll();
   }
 
@@ -67,16 +81,30 @@ export class GptController {
   @Patch(':gptId')
   @ApiExcludeEndpoint()
   updateGPT(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
     @Param('gptId') gptId: string,
     @Body() updateGptUsageDto: UpdateGptUsageDto,
   ): Promise<Gpt> {
+    if (req.ability.cannot(Action.Update, ScopedSubject(Gpt, organizationId))) {
+      throw new UnauthorizedException('Cannot update GPT');
+    }
+
     return this.aiService.updateGPT(gptId, updateGptUsageDto);
   }
 
   @UseGuards(SuperAdminGuard)
   @Delete(':gptId')
   @ApiExcludeEndpoint()
-  removeGPT(@Param('gptId') gptId: string) {
+  removeGPT(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+    @Param('gptId') gptId: string,
+  ) {
+    if (req.ability.cannot(Action.Delete, ScopedSubject(Gpt, organizationId))) {
+      throw new UnauthorizedException('Cannot delete GPT');
+    }
+
     return this.aiService.removeGPT(gptId);
   }
 
