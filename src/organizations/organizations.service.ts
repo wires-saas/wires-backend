@@ -83,7 +83,7 @@ export class OrganizationsService {
         {
           $and: [
             { _id: id },
-            accessibleBy(ability, 'update').ofType(Organization),
+            accessibleBy(ability, Action.Update).ofType(Organization),
           ],
         },
         new Organization({
@@ -106,7 +106,7 @@ export class OrganizationsService {
     return this.organizationModel
       .findByIdAndDelete(
         id,
-        accessibleBy(ability, 'delete').ofType(Organization),
+        accessibleBy(ability, Action.Delete).ofType(Organization),
       )
       .exec();
   }

@@ -7,6 +7,10 @@ import {
   UserNotification,
   UserNotificationColl,
 } from '../schemas/user-notification.schema';
+import { MongoAbility } from '@casl/ability';
+import { accessibleBy } from '@casl/mongoose';
+import { Action } from '../../rbac/permissions/entities/action.entity';
+import { Organization } from '../../organizations/schemas/organization.schema';
 
 @Injectable()
 export class UserNotificationsService {
@@ -36,9 +40,38 @@ export class UserNotificationsService {
       .exec();
   }
 
+  findAllWithAbility(
+    userId: string,
+    ability: MongoAbility,
+  ): Promise<UserNotification[]> {
+    return this.userNotificationModel
+      .find({
+        $and: [
+          accessibleBy(ability, Action.Read).ofType(UserNotification),
+          { user: new Types.ObjectId(userId) },
+        ],
+      })
+      .exec();
+  }
+
   findOne(userId: string, notificationId: string): Promise<UserNotification> {
     return this.userNotificationModel
       .findOne({ user: new Types.ObjectId(userId), _id: notificationId })
+      .exec();
+  }
+
+  findOneWithAbility(
+    userId: string,
+    notificationId: string,
+    ability: MongoAbility,
+  ): Promise<UserNotification> {
+    return this.userNotificationModel
+      .findOne({
+        $and: [
+          accessibleBy(ability, Action.Read).ofType(UserNotification),
+          { user: new Types.ObjectId(userId), _id: notificationId },
+        ],
+      })
       .exec();
   }
 
@@ -51,6 +84,25 @@ export class UserNotificationsService {
       updateUserNotificationDto,
       { returnOriginal: false },
     );
+  }
+
+  updateWithAbility(
+    notificationId: string,
+    updateUserNotificationDto: UpdateUserNotificationDto,
+    ability: MongoAbility,
+  ): Promise<UserNotification> {
+    return this.userNotificationModel
+      .findOneAndUpdate(
+        {
+          $and: [
+            { _id: notificationId },
+            accessibleBy(ability, Action.Update).ofType(UserNotification),
+          ],
+        },
+        updateUserNotificationDto,
+        { returnOriginal: false },
+      )
+      .exec();
   }
 
   remove(notificationId: string): Promise<UserNotification> {

@@ -20,7 +20,11 @@ import {
 } from '@nestjs/common';
 import { UserAvatarsService } from './user-avatars.service';
 import {
+  ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -32,6 +36,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from '../users.service';
 
 @ApiTags('Users (Avatars)')
+@ApiBearerAuth()
 @Controller('users')
 @ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @ApiNotFoundResponse({ description: 'User not found' })
@@ -43,6 +48,12 @@ export class UserAvatarsController {
   ) {}
 
   @Post(':userId/avatar')
+  @ApiOperation({ summary: 'Upload user avatar' })
+  @ApiOkResponse({ description: 'User avatar uploaded' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot update user avatar, requires "Update User" permission',
+  })
+  @ApiForbiddenResponse({ description: 'Invalid file extension or type' })
   @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('avatar'))
   async create(
@@ -81,6 +92,10 @@ export class UserAvatarsController {
       throw new NotFoundException('User not found');
     }
 
+    if (req.ability.cannot(Action.Update, user)) {
+      throw new UnauthorizedException('Cannot update this user avatar');
+    }
+
     if (user.avatarName !== UserAvatarsService.DEFAULT_AVATAR) {
       await this.userAvatarsService.remove(userId, user.avatarName);
     }
@@ -93,6 +108,9 @@ export class UserAvatarsController {
   }
 
   @Get(':userId/avatar/:avatarName')
+  @ApiOperation({ summary: 'Get user avatar' })
+  @ApiOkResponse({ description: 'User avatar file found' })
+  @ApiNotFoundResponse({ description: 'User or user avatar not found' })
   @Header('Cache-Control', 'public, max-age=31536000')
   async findOne(
     @Param('userId') userId: string,
@@ -114,15 +132,26 @@ export class UserAvatarsController {
   }
 
   @Delete(':userId/avatar')
+  @ApiOperation({ summary: 'Delete user avatar' })
+  @ApiOkResponse({
+    description: 'User avatar deleted and default avatar set instead',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot delete user avatar, requires "Update User" permission',
+  })
   @UseGuards(AuthGuard)
   async remove(
     @Request() req: AuthenticatedRequest,
     @Param('userId') userId: string,
-  ) {
+  ): Promise<void> {
+    if (req.ability.cannot(Action.Update, User)) {
+      throw new UnauthorizedException('Cannot delete user avatar');
+    }
+
     const user: User = await this.usersService.findOne(userId, false);
 
     if (req.ability.cannot(Action.Update, user)) {
-      throw new UnauthorizedException('Cannot delete user avatar');
+      throw new UnauthorizedException('Cannot delete this user avatar');
     }
 
     // Reinstate default avatar
