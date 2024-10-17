@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
-import { ApiBearerAuth, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SuperAdminGuard } from '../../auth/super-admin.guard';
 import { AuthGuard } from '../../auth/auth.guard';
 
@@ -28,6 +33,7 @@ export class PermissionsController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all permissions' })
   findAll() {
     return this.permissionsService.findAll();
   }

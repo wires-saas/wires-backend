@@ -14,6 +14,7 @@ import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import {
   ApiBearerAuth,
+  ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -35,6 +36,7 @@ export class ArticlesController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create new article' })
   @ApiUnauthorizedResponse({
     description: 'Cannot create article, requires "Create Article" permission',
   })
@@ -51,6 +53,7 @@ export class ArticlesController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all articles' })
   @ApiUnauthorizedResponse({
     description: 'Cannot read articles, requires "Read Article" permission',
   })
@@ -70,7 +73,8 @@ export class ArticlesController {
     return this.articlesService.findAllOfOrganization(organizationId);
   }
 
-  @Get(':id')
+  @Get(':articleId')
+  @ApiOperation({ summary: 'Get article by ID' })
   @ApiUnauthorizedResponse({
     description: 'Cannot read article, requires "Read Article" permission',
   })
@@ -86,7 +90,8 @@ export class ArticlesController {
     return this.articlesService.findOne(articleId);
   }
 
-  @Delete(':id')
+  @Delete(':articleId')
+  @ApiOperation({ summary: 'Delete article by ID' })
   @ApiUnauthorizedResponse({
     description: 'Cannot delete article, requires "Delete Article" permission',
   })

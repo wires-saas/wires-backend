@@ -18,6 +18,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiExcludeEndpoint,
+  ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -37,6 +38,7 @@ export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create new role definition' })
   @ApiBadRequestResponse({
     description:
       'Role with this name already exists, use PUT endpoint to update it',
@@ -67,6 +69,7 @@ export class RolesController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all role definitions' })
   @ApiUnauthorizedResponse({
     description:
       'Cannot read organization role definitions, requires "Read Role" permission',
@@ -85,6 +88,7 @@ export class RolesController {
   }
 
   @Get(':roleId')
+  @ApiOperation({ summary: 'Get role definition by ID' })
   @ApiUnauthorizedResponse({
     description:
       'Cannot read organization role definition, requires "Read Role" permission',
@@ -104,6 +108,7 @@ export class RolesController {
   }
 
   @Put()
+  @ApiOperation({ summary: 'Update all role definitions' })
   @ApiBody({ type: [RoleDto], description: 'Array of role definitions' })
   @ApiBadRequestResponse({
     description:
@@ -117,7 +122,7 @@ export class RolesController {
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Body() roleDtos: RoleDto[],
-  ) {
+  ): Promise<Role[]> {
     if (
       req.ability.cannot(Action.Update, ScopedSubject(Role, organizationId))
     ) {
@@ -167,6 +172,7 @@ export class RolesController {
   }
 
   @Delete(':roleId')
+  @ApiOperation({ summary: 'Delete role definition by ID' })
   @ApiExcludeEndpoint()
   @UseGuards(SuperAdminGuard)
   remove(

@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiForbiddenResponse,
   ApiGoneResponse,
   ApiNotFoundResponse,
@@ -33,9 +34,10 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: 'Sign in' })
   @ApiOkResponse({
-    description: 'Valid access token for 30 days and user data',
+    description: 'Valid access token and user data',
   })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  @ApiForbiddenResponse({ description: 'Email not confirmed' })
   signIn(
     @Body() signInDto: SignInDto,
   ): Promise<{ access_token: string; user: User }> {
@@ -56,6 +58,7 @@ export class AuthController {
     summary: 'Get profile',
   })
   @ApiOkResponse({ description: 'User data and access token properties' })
+  @ApiBearerAuth()
   async getProfile(@Request() req: AuthenticatedRequest): Promise<{
     jwt: {
       email: string;
@@ -110,6 +113,9 @@ export class AuthController {
   @Post('password')
   @ApiOperation({ summary: 'Request password reset' })
   @ApiOkResponse({ description: 'Password reset email sent' })
+  @ApiForbiddenResponse({
+    description: 'Password reset requested less than 1 hour ago',
+  })
   async requestPasswordReset(@Body('email') email: string): Promise<void> {
     return this.authService.requestPasswordReset(email);
   }

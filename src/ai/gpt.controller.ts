@@ -26,6 +26,7 @@ import { GptRequest } from './schemas/gpt-request.schema';
 import {
   ApiBearerAuth,
   ApiExcludeEndpoint,
+  ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -124,6 +125,7 @@ export class GptController {
   // Routes for regular users
 
   @Get()
+  @ApiOperation({ summary: 'Get all GPTs of organization' })
   @ApiUnauthorizedResponse({
     description: 'Cannot read GPTs, requires "Read GPT" permission',
   })
@@ -138,6 +140,7 @@ export class GptController {
   }
 
   @Get(':gptId')
+  @ApiOperation({ summary: 'Get GPT by ID' })
   @ApiUnauthorizedResponse({
     description: 'Cannot read GPT, requires "Read GPT" permission',
   })
@@ -153,6 +156,7 @@ export class GptController {
   }
 
   @Post('request')
+  @ApiOperation({ summary: 'Request default GPT of organization' })
   @ApiUnauthorizedResponse({
     description: 'Cannot request GPT, requires "Create GPT Request" permission',
   })
@@ -207,6 +211,7 @@ export class GptController {
   }
 
   @Post(':gptId/request')
+  @ApiOperation({ summary: 'Request specific GPT of organization' })
   @ApiUnauthorizedResponse({
     description: 'Cannot request GPT, requires "Create GPT Request" permission',
   })

@@ -17,7 +17,7 @@ import {
 import { FoldersService } from './folders.service';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { UpdateFolderDto } from './dto/update-folder.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { OrganizationGuard } from '../auth/organization.guard';
 import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { Folder } from './schemas/folder.schema';
@@ -29,6 +29,7 @@ import { FolderItem } from './schemas/folder-item.schema';
 import { FolderItemType } from './entities/folder-item-type';
 
 @ApiTags('Folders')
+@ApiBearerAuth()
 @UseGuards(OrganizationGuard)
 @Controller('organizations/:organizationId/folders')
 export class FoldersController {
@@ -41,11 +42,15 @@ export class FoldersController {
   ) {}
 
   @Post()
+
   async create(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Body() createFolderDto: CreateFolderDto,
   ) {
+
+    if (req.ability.cannot(Action.Create, ScopedSubject(Folder, organizationId))) {
+
     if (createFolderDto.parentFolder) {
       const parentFolder = await this.foldersService.findOne(
         organizationId,

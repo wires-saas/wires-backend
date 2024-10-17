@@ -10,7 +10,13 @@ import {
   Logger,
 } from '@nestjs/common';
 import { FeedRunsService } from './feed-runs.service';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { FeedsService } from '../feeds.service';
 import { FeedRun } from '../schemas/feed-run.schema';
 import { OrganizationGuard } from '../../auth/organization.guard';
@@ -19,6 +25,7 @@ import { Action } from '../../rbac/permissions/entities/action.entity';
 import { ScopedSubject } from '../../rbac/casl/casl.utils';
 
 @ApiTags('Feeds (Runs)')
+@ApiBearerAuth()
 @UseGuards(OrganizationGuard)
 @Controller('organizations/:organizationId/feeds')
 export class FeedRunsController {
@@ -29,6 +36,11 @@ export class FeedRunsController {
   ) {}
 
   @Post(':feedId/runs')
+  @ApiOperation({ summary: 'Run feed' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot run feed, requires "Create Feed Run" permission',
+  })
+  @ApiNotFoundResponse({ description: 'Feed not found' })
   async runFeed(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -43,10 +55,17 @@ export class FeedRunsController {
     this.logger.debug('User can create feed run');
 
     const feed = await this.feedsService.findOne(feedId);
+    if (!feed) {
+      throw new NotFoundException('Feed not found');
+    }
     return this.feedRunsService.runFeed(feed);
   }
 
   @Get('runs')
+  @ApiOperation({ summary: 'Get all feed runs' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot read feed runs, requires "Read Feed Run" permission',
+  })
   async findAllOfOrganization(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -62,6 +81,10 @@ export class FeedRunsController {
   }
 
   @Get(':feedId/runs')
+  @ApiOperation({ summary: 'Get all feed runs of specific feed' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot read feed runs, requires "Read Feed Run" permission',
+  })
   findAllOfFeed(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -76,6 +99,11 @@ export class FeedRunsController {
   }
 
   @Get(':feedId/runs/:runId')
+  @ApiOperation({ summary: 'Get feed run by ID' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot read feed run, requires "Read Feed Run" permission',
+  })
+  @ApiNotFoundResponse({ description: 'Feed run not found' })
   async findOneOfFeed(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,

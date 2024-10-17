@@ -13,7 +13,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { BlocksService } from './blocks.service';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { OrganizationGuard } from '../auth/organization.guard';
 import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { Block } from './schemas/block.schema';
@@ -24,12 +30,17 @@ import { Action } from '../rbac/permissions/entities/action.entity';
 import { ScopedSubject } from '../rbac/casl/casl.utils';
 
 @ApiTags('Blocks')
+@ApiBearerAuth()
 @UseGuards(OrganizationGuard)
 @Controller('organizations/:organizationId/blocks')
 export class BlocksController {
   constructor(private readonly blocksService: BlocksService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create new block' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot create block, requires "Create Block" permission',
+  })
   create(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -45,7 +56,12 @@ export class BlocksController {
   }
 
   @Put(':blockId')
-  update(
+  @ApiOperation({ summary: 'Update existing block' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot update block, requires "Update Block" permission',
+  })
+  @ApiNotFoundResponse({ description: 'Block not found' })
+  async update(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Param('blockId') blockId: string,
@@ -57,10 +73,20 @@ export class BlocksController {
       throw new UnauthorizedException('Cannot update block');
     }
 
+    const block = await this.blocksService.findOne(organizationId, blockId);
+    if (!block) {
+      throw new NotFoundException('Block not found');
+    }
+
     return this.blocksService.update(blockId, organizationId, updateBlockDto);
   }
 
   @Patch(':blockId')
+  @ApiOperation({ summary: 'Archive block' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot archive block, requires "Update Block" permission',
+  })
+  @ApiNotFoundResponse({ description: 'Block not found' })
   async archive(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -87,6 +113,10 @@ export class BlocksController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all blocks' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot read blocks, requires "Read Block" permission',
+  })
   findAll(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -99,6 +129,11 @@ export class BlocksController {
   }
 
   @Get(':blockId')
+  @ApiOperation({ summary: 'Get block by ID' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot read block, requires "Read Block" permission',
+  })
+  @ApiNotFoundResponse({ description: 'Block not found' })
   async findOne(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -117,6 +152,10 @@ export class BlocksController {
   }
 
   @Delete(':blockId')
+  @ApiOperation({ summary: 'Delete block by ID' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot delete block, requires "Delete Block" permission',
+  })
   remove(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
