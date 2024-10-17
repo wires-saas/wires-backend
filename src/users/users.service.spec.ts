@@ -5,6 +5,7 @@ import { EncryptService } from '../services/security/encrypt.service';
 import { User } from './schemas/user.schema';
 import { HashService } from '../services/security/hash.service';
 import { UserRolesService } from './user-roles/user-roles.service';
+import { OrganizationPlansService } from '../organizations/organization-plans.service';
 
 const mockUserModel = {
   save: jest.fn(),
@@ -15,6 +16,14 @@ const mockUserModel = {
 };
 
 const mockUserRolesService = {
+  create: jest.fn(),
+  findAll: jest.fn(),
+  findOne: jest.fn(),
+  update: jest.fn(),
+  remove: jest.fn(),
+};
+
+const mockOrganizationPlansService = {
   create: jest.fn(),
   findAll: jest.fn(),
   findOne: jest.fn(),
@@ -42,6 +51,10 @@ describe('UsersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
+        {
+          provide: OrganizationPlansService,
+          useValue: mockOrganizationPlansService,
+        },
         { provide: UserRolesService, useValue: mockUserRolesService },
         { provide: getModelToken(User.name), useValue: mockUserModel },
         { provide: EncryptService, useValue: mockEncryptService },

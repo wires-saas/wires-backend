@@ -5,8 +5,17 @@ import { CaslAbilityFactory } from '../rbac/casl/casl-ability.factory';
 import { AuthGuard } from '../auth/auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
+import { OrganizationPlansService } from './organization-plans.service';
 
 const mockOrganizationsService = {
+  create: jest.fn(),
+  findAll: jest.fn(),
+  findOne: jest.fn(),
+  update: jest.fn(),
+  remove: jest.fn(),
+};
+
+const mockOrganizationPlansService = {
   create: jest.fn(),
   findAll: jest.fn(),
   findOne: jest.fn(),
@@ -42,6 +51,10 @@ describe('OrganizationsController', () => {
       controllers: [OrganizationsController],
       providers: [
         { provide: OrganizationsService, useValue: mockOrganizationsService },
+        {
+          provide: OrganizationPlansService,
+          useValue: mockOrganizationPlansService,
+        },
         { provide: CaslAbilityFactory, useValue: mockCaslAbilityFactory },
         { provide: AuthGuard, useValue: authGuardMock },
         { provide: JwtService, useValue: mockJwtService },

@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { UserRolesService } from './user-roles.service';
 import {
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -26,6 +27,7 @@ import { AuthenticatedRequest } from '../../shared/types/authentication.types';
 import { AuthGuard } from '../../auth/auth.guard';
 
 @ApiTags('Users (Roles)')
+@ApiBearerAuth()
 @UseGuards(AuthGuard)
 @Controller('users')
 @ApiUnauthorizedResponse({ description: 'Unauthorized' })
@@ -108,6 +110,10 @@ export class UserRolesController {
   @Get(':userId/roles')
   @ApiOperation({ summary: 'Get all roles of user' })
   @ApiOkResponse({ description: 'Roles returned' })
+  @ApiUnauthorizedResponse({
+    description:
+      'Cannot read user roles, requires "Read User" and "Read User Role" permissions',
+  })
   async findAll(
     @Request() req: AuthenticatedRequest,
     @Param('userId') userId: string,
@@ -126,6 +132,10 @@ export class UserRolesController {
   @Delete(':userId/roles/all')
   @ApiOperation({ summary: 'Remove all roles from user' })
   @ApiOkResponse({ description: 'All roles removed' })
+  @ApiUnauthorizedResponse({
+    description:
+      'Cannot delete all user roles, requires "Delete User Role" permission',
+  })
   remove(
     @Request() req: AuthenticatedRequest,
     @Param('userId') userId: string,
@@ -142,6 +152,10 @@ export class UserRolesController {
   @Delete(':userId/roles')
   @ApiOperation({ summary: 'Remove specific role from user' })
   @ApiOkResponse({ description: 'Role removed' })
+  @ApiUnauthorizedResponse({
+    description:
+      'Cannot delete user role, requires "Delete User Role" permission',
+  })
   removeOne(
     @Request() req: AuthenticatedRequest,
     @Body() userRoleToDelete: UserRoleDto,
