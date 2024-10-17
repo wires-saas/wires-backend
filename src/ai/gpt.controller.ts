@@ -11,6 +11,8 @@ import {
   Logger,
   Request,
   UnauthorizedException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { AiService } from './ai.service';
 import { CreateGptDto } from './dto/create-gpt.dto';
@@ -21,14 +23,25 @@ import { Gpt } from './schemas/gpt.schema';
 import { GptService } from './gpt.service';
 import { RequestGptDto } from './dto/request-gpt.dto';
 import { GptRequest } from './schemas/gpt-request.schema';
-import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { Action } from '../rbac/permissions/entities/action.entity';
 import { ScopedSubject } from '../rbac/casl/casl.utils';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { Organization } from '../organizations/schemas/organization.schema';
+import {
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiTooManyRequestsResponse,
+} from '@nestjs/swagger/dist/decorators/api-response.decorator';
 
 @ApiTags('AI')
+@ApiBearerAuth()
 @UseGuards(OrganizationGuard)
 @Controller('organizations/:organizationId/gpt')
 export class GptController {
@@ -111,6 +124,9 @@ export class GptController {
   // Routes for regular users
 
   @Get()
+  @ApiUnauthorizedResponse({
+    description: 'Cannot read GPTs, requires "Read GPT" permission',
+  })
   findAllOfOrganization(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -122,6 +138,9 @@ export class GptController {
   }
 
   @Get(':gptId')
+  @ApiUnauthorizedResponse({
+    description: 'Cannot read GPT, requires "Read GPT" permission',
+  })
   findOne(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -134,6 +153,15 @@ export class GptController {
   }
 
   @Post('request')
+  @ApiUnauthorizedResponse({
+    description: 'Cannot request GPT, requires "Create GPT Request" permission',
+  })
+  @ApiForbiddenResponse({
+    description: 'Organization does not have GPT',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'GPT limits exceeded, requires payment or throttling',
+  })
   async requestOrganizationGPT(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -158,7 +186,10 @@ export class GptController {
     const organizationGpt: Gpt = await this.aiService.findOne(organization.gpt);
 
     if (!organizationGpt.canRequest) {
-      throw new ForbiddenException('GPT limits exceeded');
+      throw new HttpException(
+        'GPT limits exceeded',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
 
     const generation = await this.gptService.request(
@@ -176,6 +207,15 @@ export class GptController {
   }
 
   @Post(':gptId/request')
+  @ApiUnauthorizedResponse({
+    description: 'Cannot request GPT, requires "Create GPT Request" permission',
+  })
+  @ApiNotFoundResponse({
+    description: 'GPT does not exist for organization',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'GPT limits exceeded, requires payment or throttling',
+  })
   async requestSpecificGPT(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
@@ -194,7 +234,10 @@ export class GptController {
     const gpt: Gpt = await this.aiService.findOne(gptId);
 
     if (!gpt.canRequest) {
-      throw new ForbiddenException('GPT limits exceeded');
+      throw new HttpException(
+        'GPT limits exceeded',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
 
     const generation = await this.gptService.request(gpt, requestGptDto);

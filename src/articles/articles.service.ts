@@ -138,11 +138,11 @@ export class ArticlesService {
     return articles;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} article`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} article`;
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateGptDto } from './dto/create-gpt.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -80,6 +80,8 @@ export class AiService {
 
   async findOne(gptId: string): Promise<Gpt> {
     const gpt: Gpt = await this.gptModel.findById(gptId).exec();
+
+    if (!gpt) throw new NotFoundException('GPT not found');
 
     if (gpt.authentication.type === AuthenticationType.API_KEY) {
       gpt.authentication.apiKey = this.encryptService.decrypt(
