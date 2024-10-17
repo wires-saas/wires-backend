@@ -200,6 +200,11 @@ export class CaslAbilityFactory {
               break;
 
             case Subject.User:
+              can(
+                permission.action,
+                ScopedSubject(User, userRole.organization),
+              );
+
               switch (permission.action) {
                 case Action.Update:
                   can(

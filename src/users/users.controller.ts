@@ -18,6 +18,8 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -30,14 +32,16 @@ import { Action } from '../rbac/permissions/entities/action.entity';
 import { AuthenticatedRequest } from '../shared/types/authentication.types';
 import { AuthGuard } from '../auth/auth.guard';
 import { Organization } from '../organizations/schemas/organization.schema';
-import { RbacUtils } from '../shared/utils/rbac.utils';
 import { accessibleFieldsBy } from '@casl/mongoose';
 import { EmailService } from '../services/email/email.service';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { UserEmailStatus } from './entities/user-email-status.entity';
 import { EncryptService } from '../services/security/encrypt.service';
+import { UserRole } from './schemas/user-role.schema';
+import { ScopedSubject } from '../rbac/casl/casl.utils';
 
 @ApiTags('Users')
+@ApiBearerAuth()
 @UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController {
@@ -51,15 +55,22 @@ export class UsersController {
   @Post()
   @ApiOperation({ summary: 'Create new user' })
   @ApiOkResponse({
-    description: 'New user invited to validate account',
+    description: 'New user invited to validate account by email',
   })
-  @ApiUnauthorizedResponse({ description: 'User cannot create other users' })
+  @ApiBadRequestResponse({ description: 'Organization not found' })
+  @ApiUnauthorizedResponse({
+    description:
+      'Cannot create user, requires "Create User" and "Create User Role" permissions',
+  })
   async create(
     @Request() req: AuthenticatedRequest,
     @Body() createUserDto: CreateUserDto,
   ): Promise<User> {
-    if (req.ability.cannot(Action.Create, User)) {
-      throw new UnauthorizedException();
+    if (
+      req.ability.cannot(Action.Create, User) ||
+      req.ability.cannot(Action.Create, UserRole)
+    ) {
+      throw new UnauthorizedException('Cannot create user');
     }
 
     const organization = await this.organizationsService.findOne(
@@ -68,6 +79,25 @@ export class UsersController {
 
     if (!organization) {
       throw new BadRequestException('Organization not found');
+    }
+
+    if (
+      req.ability.cannot(Action.Create, ScopedSubject(User, organization.slug))
+    ) {
+      throw new UnauthorizedException(
+        'Cannot create users for this organization',
+      );
+    }
+
+    if (
+      req.ability.cannot(
+        Action.Create,
+        ScopedSubject(UserRole, organization.slug),
+      )
+    ) {
+      throw new UnauthorizedException(
+        'Cannot create roles for this organization',
+      );
     }
 
     const userCreated: User = await this.usersService.create(createUserDto);
@@ -84,9 +114,11 @@ export class UsersController {
   }
 
   @Post(':userId/invite')
-  @ApiOperation({ summary: 'Resend invite to user' })
-  @ApiOkResponse({ description: 'User invite resent' })
-  @ApiUnauthorizedResponse({ description: 'Cannot invite user' })
+  @ApiOperation({ summary: 'Resend email invite to user' })
+  @ApiOkResponse({ description: 'User email invite resent' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot invite user, requires "Update User" permission',
+  })
   @ApiForbiddenResponse({ description: 'User already validated' })
   @ApiNotFoundResponse({ description: 'User not found' })
   async resendInvite(
@@ -97,7 +129,7 @@ export class UsersController {
       throw new UnauthorizedException('Cannot invite user');
     }
 
-    const user = await this.usersService.findOne(userId, true);
+    const user: User = await this.usersService.findOne(userId, true);
 
     if (user.emailStatus !== UserEmailStatus.UNCONFIRMED) {
       throw new ForbiddenException('User already validated');
@@ -110,7 +142,7 @@ export class UsersController {
     });
 
     const organizationSlug = user.organizations[0];
-    const organization =
+    const organization: Organization =
       await this.organizationsService.findOne(organizationSlug);
 
     await this.emailService.sendUserInviteEmail(
@@ -121,12 +153,17 @@ export class UsersController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Fetch all users' })
+  @ApiOkResponse({ description: 'All users' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot read users, requires "Read User" permission',
+  })
   async findAll(
     @Request() req: AuthenticatedRequest,
     @Query('organizations') organizations?: string,
   ): Promise<User[]> {
     if (req.ability.cannot(Action.Read, User)) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Cannot read users');
     }
 
     if (organizations) {
@@ -136,43 +173,54 @@ export class UsersController {
     return this.usersService.findAll(req.ability);
   }
 
-  @Get(':id')
-  findOne(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
+  @Get(':userId')
+  @ApiOperation({ summary: 'Fetch user by ID' })
+  @ApiOkResponse({ description: 'User found' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot read users, requires "Read User" permission',
+  })
+  findOne(
+    @Request() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+  ): Promise<User> {
     if (req.ability.cannot(Action.Read, User)) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Cannot read users');
     }
 
-    return this.usersService.findOne(id, false);
+    return this.usersService.findOne(userId, false);
   }
 
-  @Patch(':id')
+  @Patch(':userId')
   @ApiOperation({ summary: 'Update user information' })
   @ApiOkResponse({ description: 'User updated' })
-  @ApiUnauthorizedResponse({ description: 'Cannot update target user' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot update target user, requires "Update User" permission',
+  })
   @ApiNotFoundResponse({ description: 'User not found' })
   async update(
     @Request() req: AuthenticatedRequest,
-    @Param('id') id: string,
+    @Param('userId') userId: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     // Not applying any authorization/field filtering if user can manage all
     if (req.ability.can(Action.Manage, 'all')) {
-      return this.usersService.update(id, updateUserDto);
+      return this.usersService.update(userId, updateUserDto);
     }
 
     if (req.ability.cannot(Action.Update, User)) {
       throw new UnauthorizedException('Cannot update other users');
     }
 
-    const target: User = await this.usersService.findOne(id, true);
+    const target: User = await this.usersService.findOne(userId, true);
 
     if (req.ability.cannot(Action.Update, target)) {
       throw new UnauthorizedException('Cannot update target user');
     }
 
-    const fieldsToKeep = accessibleFieldsBy(req.ability, Action.Update).of(
-      target,
-    );
+    const fieldsToKeep: string[] = accessibleFieldsBy(
+      req.ability,
+      Action.Update,
+    ).of(target);
 
     const safeUpdateUserDto = {};
     for (const field of fieldsToKeep) {
@@ -180,52 +228,33 @@ export class UsersController {
         safeUpdateUserDto[field] = updateUserDto[field];
     }
 
-    return this.usersService.update(id, safeUpdateUserDto);
+    return this.usersService.update(userId, safeUpdateUserDto);
   }
 
-  @Delete(':id')
+  @Delete(':userId')
   @ApiOperation({
     summary: 'Remove user roles from organization, delete user if no roles',
   })
   @ApiOkResponse({ description: 'User excluded from organization' })
-  @ApiUnauthorizedResponse({ description: 'Cannot delete other users' })
+  @ApiUnauthorizedResponse({
+    description: 'Cannot delete other users, requires "Delete User" permission',
+  })
   @ApiNotFoundResponse({ description: 'User not found' })
   async remove(
     @Request() req: AuthenticatedRequest,
-    @Param('id') id: string,
-    @Query('organization') organization: string,
-  ) {
-    if (!organization) {
+    @Param('userId') userId: string,
+    @Query('organization') organizationId: string,
+  ): Promise<User> {
+    if (!organizationId) {
       throw new BadRequestException('Organization is required');
     }
 
-    if (req.ability.cannot(Action.Delete, User)) {
+    if (
+      req.ability.cannot(Action.Delete, ScopedSubject(User, organizationId))
+    ) {
       throw new UnauthorizedException('Cannot delete other users');
     }
 
-    if (req.ability.cannot(Action.Update, Organization, organization)) {
-      throw new UnauthorizedException(
-        'Cannot delete users from this organization',
-      );
-    }
-
-    if (req.ability.cannot(Action.Manage, Organization, organization)) {
-      const target = await this.usersService.findOne(id, true);
-
-      // FIXME
-      if (
-        RbacUtils.isUserGreaterThan(
-          target.roles as any,
-          req.user.roles as any,
-          organization,
-        )
-      ) {
-        throw new UnauthorizedException(
-          'Cannot delete other users with same or higher roles',
-        );
-      }
-    }
-
-    return this.usersService.remove(id, organization);
+    return this.usersService.remove(userId, organizationId);
   }
 }

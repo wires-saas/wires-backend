@@ -11,6 +11,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -30,6 +32,7 @@ import { ScopedSubject } from '../rbac/casl/casl.utils';
 import { OrganizationPlansService } from './organization-plans.service';
 
 @ApiTags('Organizations')
+@ApiBearerAuth()
 @UseGuards(AuthGuard)
 @Controller('organizations')
 export class OrganizationsController {
@@ -40,6 +43,7 @@ export class OrganizationsController {
 
   @Post()
   @UseGuards(SuperAdminGuard)
+  @ApiExcludeEndpoint()
   @ApiOperation({ summary: 'Create new organization (super admin only)' })
   @ApiOkResponse({ description: 'Organization created' })
   @ApiUnauthorizedResponse({
@@ -59,80 +63,105 @@ export class OrganizationsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Fetch all organizations accessible by user' })
+  @ApiOperation({ summary: 'Fetch all organizations' })
   @ApiOkResponse({ description: 'All organizations' })
-  @ApiUnauthorizedResponse({ description: 'User cannot read any organization' })
+  @ApiUnauthorizedResponse({
+    description:
+      'Cannot read any organization, requires "Read Organization" permission',
+  })
   async findAll(@Request() req: AuthenticatedRequest): Promise<Organization[]> {
     if (req.ability.cannot(Action.Read, Organization)) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Cannot read organizations');
     }
 
     return this.organizationsService.findAll(req.ability);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Fetch one organization by id (slug)' })
-  @ApiOkResponse({ description: 'Organization matching id' })
+  @Get(':organizationId')
+  @ApiOperation({ summary: 'Fetch one organization by ID' })
+  @ApiOkResponse({ description: 'Organization matching ID' })
+  @ApiUnauthorizedResponse({
+    description:
+      'Cannot read organization, requires "Read Organization" permission',
+  })
   @ApiNotFoundResponse({ description: 'Organization not found' })
   async findOne(
     @Request() req: AuthenticatedRequest,
-    @Param('id') id: string,
+    @Param('organizationId') organizationId: string,
   ): Promise<Organization> {
     if (req.ability.cannot(Action.Read, Organization)) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Cannot read organization');
     }
 
-    const organization = await this.organizationsService.findOne(id);
+    const organization: Organization =
+      await this.organizationsService.findOne(organizationId);
 
     if (req.ability.cannot(Action.Read, organization)) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Cannot read this organization');
     }
 
     return organization;
   }
 
-  @Patch(':id')
+  @Patch(':organizationId')
   @ApiOperation({
     summary: 'Update provided fields of organization',
   })
-  @ApiOkResponse({ description: 'Organization updated' })
+  @ApiOkResponse({ description: 'Updated organization' })
   @ApiNotFoundResponse({ description: 'Organization not found' })
   @ApiUnauthorizedResponse({
-    description: 'User cannot update any organization',
+    description: 'Cannot update any organization or organization GPT',
   })
   update(
     @Request() req: AuthenticatedRequest,
-    @Param('id') id: string,
+    @Param('organizationId') organizationId: string,
     @Body() updateOrganizationDto: UpdateOrganizationDto,
   ): Promise<Organization> {
     if (req.ability.cannot(Action.Update, Organization)) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Cannot update organization');
     }
 
     if (updateOrganizationDto.gpt) {
-      if (req.ability.cannot(Action.Update, ScopedSubject(Gpt, id))) {
-        throw new UnauthorizedException();
+      if (
+        req.ability.cannot(Action.Update, ScopedSubject(Gpt, organizationId))
+      ) {
+        throw new UnauthorizedException(
+          'Cannot update GPT for this organization',
+        );
       }
     }
 
     return this.organizationsService.update(
       req.ability,
-      id,
+      organizationId,
       updateOrganizationDto,
     );
   }
 
-  @Delete(':id')
+  @Delete(':organizationId')
   @UseGuards(SuperAdminGuard)
+  @ApiExcludeEndpoint()
   @ApiOperation({
     summary: 'Delete organization',
   })
   @ApiOkResponse({ description: 'Organization deleted' })
   @ApiNotFoundResponse({ description: 'Organization not found' })
   @ApiUnauthorizedResponse({
-    description: 'User cannot delete any organization',
+    description: 'Cannot delete organization',
   })
-  remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.organizationsService.remove(req.ability, id);
+  remove(
+    @Request() req: AuthenticatedRequest,
+    @Param('organizationId') organizationId: string,
+  ): Promise<Organization> {
+    if (
+      req.ability.cannot(
+        Action.Delete,
+        ScopedSubject(Organization, organizationId),
+      )
+    ) {
+      throw new UnauthorizedException('Cannot delete organization');
+    }
+
+    return this.organizationsService.remove(req.ability, organizationId);
   }
 }

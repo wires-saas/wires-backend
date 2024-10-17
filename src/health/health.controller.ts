@@ -7,7 +7,12 @@ import {
   MemoryHealthIndicator,
   MongooseHealthIndicator,
 } from '@nestjs/terminus';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiInternalServerErrorResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Miscellaneous')
@@ -29,6 +34,8 @@ export class HealthController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Check health status of the application' })
+  @ApiOkResponse({ description: 'The Health Check is successful' })
   @HealthCheck()
   check() {
     return this.health.check([

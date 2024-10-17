@@ -5,13 +5,14 @@ import { UsersService } from '../users/users.service';
 import { SuperAdminGuard } from '../auth/super-admin.guard';
 import { I18nService } from 'nestjs-i18n';
 import { EncryptService } from '../services/security/encrypt.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
 
 // This controller is mainly used for debugging
 // Hence why SuperAdminGuard is used
 // It allows to preview email templates
 
 @Controller('mail')
+@ApiExcludeController()
 @ApiTags('Mails')
 @UseGuards(SuperAdminGuard)
 export class MailController {
