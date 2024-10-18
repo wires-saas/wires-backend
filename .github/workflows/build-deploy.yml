@@ -8,7 +8,7 @@ on:
 
 jobs:
   ship:
-    runs-on: [self-hosted, 8GB]
+    runs-on: ubuntu-latest
     env:
       DEPLOY_WEBHOOK_URL_PROD: ${{ secrets.DEPLOY_WEBHOOK_URL_PROD }}
       DEPLOY_WEBHOOK_TOKEN_PROD: ${{ secrets.DEPLOY_WEBHOOK_TOKEN_PROD }}
@@ -100,7 +100,7 @@ jobs:
         continue-on-error: true
   test:
     needs: ship
-    runs-on: [ self-hosted, 8GB ]
+    runs-on: ubuntu-latest
     env:
       BACKEND_URL_DEV: ${{ vars.BACKEND_URL_DEV }}
     steps:
