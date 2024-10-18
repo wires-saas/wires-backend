@@ -10,7 +10,6 @@ import {
 import { MongoAbility } from '@casl/ability';
 import { accessibleBy } from '@casl/mongoose';
 import { Action } from '../../rbac/permissions/entities/action.entity';
-import { Organization } from '../../organizations/schemas/organization.schema';
 
 @Injectable()
 export class UserNotificationsService {
