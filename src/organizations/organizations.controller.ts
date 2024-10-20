@@ -89,18 +89,19 @@ export class OrganizationsController {
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
   ): Promise<Organization> {
-    if (req.ability.cannot(Action.Read, Organization)) {
+    if (
+      req.ability.cannot(
+        Action.Read,
+        ScopedSubject(Organization, organizationId),
+      )
+    ) {
       throw new UnauthorizedException('Cannot read organization');
     }
 
-    const organization: Organization =
-      await this.organizationsService.findOne(organizationId);
-
-    if (req.ability.cannot(Action.Read, organization)) {
-      throw new UnauthorizedException('Cannot read this organization');
-    }
-
-    return organization;
+    return await this.organizationsService.findOneWithAbility(
+      organizationId,
+      req.ability,
+    );
   }
 
   @Patch(':organizationId')
@@ -117,7 +118,12 @@ export class OrganizationsController {
     @Param('organizationId') organizationId: string,
     @Body() updateOrganizationDto: UpdateOrganizationDto,
   ): Promise<Organization> {
-    if (req.ability.cannot(Action.Update, Organization)) {
+    if (
+      req.ability.cannot(
+        Action.Update,
+        ScopedSubject(Organization, organizationId),
+      )
+    ) {
       throw new UnauthorizedException('Cannot update organization');
     }
 

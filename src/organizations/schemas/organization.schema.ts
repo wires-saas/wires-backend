@@ -103,7 +103,7 @@ export class Organization {
   // if type is not String but OrganizationPlan, it will apply the schema
   // hence requiring a populated OrganizationPlan
   @Prop({ required: false, type: String, ref: 'OrganizationPlan' })
-  plan: string;
+  plan?: string;
 
   @Prop({
     required: false,
