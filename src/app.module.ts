@@ -26,6 +26,7 @@ import { TagsModule } from './tags/tags.module';
 import { AiModule } from './ai/ai.module';
 import { BlocksModule } from './blocks/blocks.module';
 import { FoldersModule } from './folders/folders.module';
+import { ContactsProvidersModule } from './providers/contacts-providers/contacts-providers.module';
 
 readEnvFile();
 const connectionString = process.env.MONGO_URI;
@@ -73,6 +74,7 @@ const connectionString = process.env.MONGO_URI;
     AiModule,
     BlocksModule,
     FoldersModule,
+    ContactsProvidersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
