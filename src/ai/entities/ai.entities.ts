@@ -2,7 +2,7 @@ export enum SupportedGPT {
   GEMINI_FLASH_1_5 = 'gemini-1.5-flash',
 }
 
-export enum AuthenticationType {
+export enum GptAuthenticationType {
   API_KEY = 'apiKey',
 }
 

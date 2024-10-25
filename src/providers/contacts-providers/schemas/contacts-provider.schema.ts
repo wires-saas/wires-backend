@@ -1,6 +1,9 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ProviderId } from '../../schemas/provider-id.schema';
+import { Authentication } from '../../../shared/schemas/authentication.schema';
+import { SupportedContactsProvider } from '../entities/contacts-provider.entities';
+import { ProviderType } from '../../entities/provider.entities';
 
 export type ContactsProviderDocument = HydratedDocument<ContactsProvider>;
 
@@ -31,8 +34,6 @@ export type ContactsProviderDocument = HydratedDocument<ContactsProvider>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
       delete ret._id;
-      delete ret.description;
-      ret.abc = 'def';
       return ret;
     },
     virtuals: true,
@@ -40,15 +41,28 @@ export type ContactsProviderDocument = HydratedDocument<ContactsProvider>;
 })
 export class ContactsProvider {
   _id: ProviderId;
+  type: ProviderType;
   displayName: string;
   description: string;
 
-  @Prop({ type: String, required: true })
-  test: string;
+  @Prop({
+    type: String,
+    enum: SupportedContactsProvider,
+    required: true,
+  })
+  implementation: SupportedContactsProvider;
+
+  @Prop({ type: Authentication, required: true })
+  authentication: Authentication;
 
   // virtuals
   id: string;
   organization: string;
+
+  getContacts(): Promise<any[]> {
+    // implementation specific logic
+    return new Promise((res, _) => res(['NOT IMPLEMENTED']));
+  }
 
   constructor(partial: Partial<ContactsProvider>) {
     Object.assign(this, partial);

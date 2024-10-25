@@ -7,6 +7,9 @@ import {
   ContactsProvider,
   ContactsProviderSchema,
 } from './schemas/contacts-provider.schema';
+import { SecurityModule } from '../../services/security/security.module';
+import { UsersModule } from '../../users/users.module';
+import { OrganizationsModule } from '../../organizations/organizations.module';
 
 @Module({
   imports: [
@@ -19,6 +22,9 @@ import {
         ],
       },
     ]),
+    SecurityModule,
+    UsersModule,
+    OrganizationsModule,
   ],
   controllers: [ContactsProvidersController],
   providers: [ContactsProvidersService],

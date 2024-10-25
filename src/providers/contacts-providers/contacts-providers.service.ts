@@ -2,8 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CreateContactsProviderDto } from './dto/create-contacts-provider.dto';
 import { UpdateContactsProviderDto } from './dto/update-contacts-provider.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { ContactsProvider } from './schemas/contacts-provider.schema';
+import { EncryptService } from '../../services/security/encrypt.service';
+import { ContactsProviderFactory } from './entities/contacts-provider.factory';
 
 @Injectable()
 export class ContactsProvidersService {
@@ -12,6 +14,7 @@ export class ContactsProvidersService {
   constructor(
     @InjectModel(ContactsProvider.name)
     private contactsProviderModel: Model<ContactsProvider>,
+    private encryptService: EncryptService,
   ) {}
 
   create(createContactsProviderDto: CreateContactsProviderDto) {
@@ -19,14 +22,32 @@ export class ContactsProvidersService {
   }
 
   async findAll(): Promise<ContactsProvider[]> {
-    const providers = await this.contactsProviderModel.find();
+    const providers: ContactsProvider[] =
+      await this.contactsProviderModel.find();
     this.logger.log(providers);
+
+    providers.forEach((provider) => {
+      this.logger.log(
+        this.encryptService.decrypt(provider.authentication.apiKey),
+      );
+      this.logger.log(
+        this.encryptService.decrypt(provider.authentication.secretKey),
+      );
+    });
 
     return providers;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} contactsProvider`;
+  async findOne(
+    organizationId: string,
+    providerId: string,
+  ): Promise<ContactsProvider> {
+    return this.contactsProviderModel
+      .findOne({
+        '_id.organization': organizationId,
+        '_id.provider': new Types.ObjectId(providerId),
+      })
+      .exec();
   }
 
   update(id: number, updateContactsProviderDto: UpdateContactsProviderDto) {

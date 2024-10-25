@@ -6,7 +6,7 @@ import { Gpt } from './schemas/gpt.schema';
 import { EncryptService } from '../services/security/encrypt.service';
 import { UpdateGptUsageDto } from './dto/update-gpt-usage.dto';
 import { GptUsage } from './schemas/gpt-usage.schema';
-import { AuthenticationType } from './entities/ai.entities';
+import { GptAuthenticationType } from './entities/ai.entities';
 
 // This service allows to manipulate abstract AI entities.
 
@@ -83,7 +83,7 @@ export class AiService {
 
     if (!gpt) throw new NotFoundException('GPT not found');
 
-    if (gpt.authentication.type === AuthenticationType.API_KEY) {
+    if (gpt.authentication.type === GptAuthenticationType.API_KEY) {
       gpt.authentication.apiKey = this.encryptService.decrypt(
         gpt.authentication.apiKey,
       );

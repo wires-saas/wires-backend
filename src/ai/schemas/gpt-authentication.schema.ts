@@ -1,5 +1,5 @@
 import { Prop, Schema } from '@nestjs/mongoose';
-import { AuthenticationType } from '../entities/ai.entities';
+import { GptAuthenticationType } from '../entities/ai.entities';
 
 @Schema({
   timestamps: false,
@@ -8,7 +8,7 @@ import { AuthenticationType } from '../entities/ai.entities';
 })
 export class GptAuthentication {
   @Prop({ type: String })
-  type: AuthenticationType;
+  type: GptAuthenticationType;
 
   @Prop({ type: String, required: false })
   apiKey?: string;

@@ -6,7 +6,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { AuthenticationType, SupportedGPT } from '../entities/ai.entities';
+import { GptAuthenticationType, SupportedGPT } from '../entities/ai.entities';
 
 export class CreateGptDto {
   @IsNotEmpty()
@@ -26,8 +26,8 @@ export class CreateGptDto {
   tokensLimit: number;
 
   @IsDefined()
-  @IsEnum(AuthenticationType)
-  authenticationType: AuthenticationType;
+  @IsEnum(GptAuthenticationType)
+  authenticationType: GptAuthenticationType;
 
   @IsOptional()
   @IsString()

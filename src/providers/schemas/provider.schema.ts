@@ -2,6 +2,7 @@ import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ProviderId } from './provider-id.schema';
 import { ContactsProvider } from '../contacts-providers/schemas/contacts-provider.schema';
+import { ProviderType } from '../entities/provider.entities';
 
 export type ProviderDocument = HydratedDocument<Provider>;
 
@@ -20,8 +21,8 @@ export class Provider {
   @Prop({ type: String })
   description: string;
 
-  @Prop({ type: String, required: true, enum: [ContactsProvider.name] })
-  type: string;
+  @Prop({ type: String, enum: ProviderType, required: true })
+  type: ProviderType;
 
   // virtuals
   id: string;

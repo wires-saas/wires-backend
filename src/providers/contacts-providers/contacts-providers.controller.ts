@@ -6,14 +6,20 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Logger,
 } from '@nestjs/common';
 import { ContactsProvidersService } from './contacts-providers.service';
 import { CreateContactsProviderDto } from './dto/create-contacts-provider.dto';
 import { UpdateContactsProviderDto } from './dto/update-contacts-provider.dto';
 import { ContactsProvider } from './schemas/contacts-provider.schema';
+import { OrganizationGuard } from '../../auth/organization.guard';
 
-@Controller('providers/contacts')
+@Controller('organizations/:organizationId/providers/contacts')
+@UseGuards(OrganizationGuard)
 export class ContactsProvidersController {
+  private logger: Logger = new Logger(ContactsProvidersController.name);
+
   constructor(
     private readonly contactsProvidersService: ContactsProvidersService,
   ) {}
@@ -28,9 +34,13 @@ export class ContactsProvidersController {
     return this.contactsProvidersService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.contactsProvidersService.findOne(+id);
+  @Get(':providerId')
+  findOne(
+    @Param('organizationId') organizationId: string,
+    @Param('providerId') providerId: string,
+  ): Promise<ContactsProvider> {
+    this.logger.log('organizationId', organizationId);
+    return this.contactsProvidersService.findOne(organizationId, providerId);
   }
 
   @Patch(':id')
