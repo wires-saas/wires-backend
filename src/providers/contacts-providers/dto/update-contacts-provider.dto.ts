@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/swagger';
+import { OmitType, PartialType } from '@nestjs/swagger';
 import { CreateContactsProviderDto } from './create-contacts-provider.dto';
 
-export class UpdateContactsProviderDto extends PartialType(CreateContactsProviderDto) {}
+// Forbid the type and organization fields from being updated
+export class UpdateContactsProviderDto extends PartialType(
+  OmitType(CreateContactsProviderDto, ['type', 'organization']),
+) {}

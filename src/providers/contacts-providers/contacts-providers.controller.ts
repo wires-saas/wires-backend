@@ -8,12 +8,15 @@ import {
   Delete,
   UseGuards,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { ContactsProvidersService } from './contacts-providers.service';
 import { CreateContactsProviderDto } from './dto/create-contacts-provider.dto';
 import { UpdateContactsProviderDto } from './dto/update-contacts-provider.dto';
 import { ContactsProvider } from './schemas/contacts-provider.schema';
 import { OrganizationGuard } from '../../auth/organization.guard';
+import { MailjetContactsProvider } from './entities/mailjet-contacts-provider';
+import { ContactsProviderFactory } from './entities/contacts-provider.factory';
 
 @Controller('organizations/:organizationId/providers/contacts')
 @UseGuards(OrganizationGuard)
@@ -22,11 +25,23 @@ export class ContactsProvidersController {
 
   constructor(
     private readonly contactsProvidersService: ContactsProvidersService,
+    private readonly contactsProviderFactory: ContactsProviderFactory,
   ) {}
 
   @Post()
-  create(@Body() createContactsProviderDto: CreateContactsProviderDto) {
-    return this.contactsProvidersService.create(createContactsProviderDto);
+  create(
+    @Param('organizationId') organizationId: string,
+    @Body() createContactsProviderDto: CreateContactsProviderDto,
+  ) {
+    if (createContactsProviderDto.organization !== organizationId) {
+      throw new BadRequestException(
+        'Organization ID does not match provider organization ID',
+      );
+    }
+    return this.contactsProvidersService.create(
+      organizationId,
+      createContactsProviderDto,
+    );
   }
 
   @Get()
@@ -35,24 +50,42 @@ export class ContactsProvidersController {
   }
 
   @Get(':providerId')
-  findOne(
+  async findOne(
     @Param('organizationId') organizationId: string,
     @Param('providerId') providerId: string,
   ): Promise<ContactsProvider> {
-    this.logger.log('organizationId', organizationId);
-    return this.contactsProvidersService.findOne(organizationId, providerId);
+    const providerDocument = (await this.contactsProvidersService.findOne(
+      organizationId,
+      providerId,
+    )) as MailjetContactsProvider;
+
+    const provider = this.contactsProviderFactory.create(providerDocument);
+
+    const totalContacts = await provider.getContactsCount();
+    this.logger.debug(totalContacts);
+    this.logger.log('Seed: ', (provider as any).seed);
+
+    return providerDocument;
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
+  @Patch(':providerId')
+  async update(
+    @Param('organizationId') organizationId: string,
+    @Param('providerId') providerId: string,
     @Body() updateContactsProviderDto: UpdateContactsProviderDto,
-  ) {
-    return this.contactsProvidersService.update(+id, updateContactsProviderDto);
+  ): Promise<ContactsProvider> {
+    return this.contactsProvidersService.update(
+      organizationId,
+      providerId,
+      updateContactsProviderDto,
+    );
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contactsProvidersService.remove(+id);
+  @Delete(':providerId')
+  async remove(
+    @Param('organizationId') organizationId: string,
+    @Param('providerId') providerId: string,
+  ) {
+    return this.contactsProvidersService.remove(organizationId, providerId);
   }
 }

@@ -34,6 +34,9 @@ export type ContactsProviderDocument = HydratedDocument<ContactsProvider>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
       delete ret._id;
+      ret.type = ret.implementation;
+      delete ret.implementation;
+
       return ret;
     },
     virtuals: true,
@@ -59,9 +62,10 @@ export class ContactsProvider {
   id: string;
   organization: string;
 
-  getContacts(): Promise<any[]> {
+  // cannot be made abstract because of schema generation
+  getContactsCount(): Promise<number> {
     // implementation specific logic
-    return new Promise((res, _) => res(['NOT IMPLEMENTED']));
+    throw new Error('Method not implemented');
   }
 
   constructor(partial: Partial<ContactsProvider>) {

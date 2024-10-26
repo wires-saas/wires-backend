@@ -1,6 +1,11 @@
 import { ContactsProvider } from '../schemas/contacts-provider.schema';
 
+import { Client, SendEmailV3_1, LibraryResponse, Contact } from 'node-mailjet';
+
 export class MailjetContactsProvider extends ContactsProvider {
+  private client: any;
+  private seed: number;
+
   constructor(partial: Partial<ContactsProvider>) {
     super({
       _id: partial._id,
@@ -11,11 +16,37 @@ export class MailjetContactsProvider extends ContactsProvider {
       description: partial.description,
       authentication: partial.authentication,
     });
-    console.log('MailjetContactsProvider created');
+
+    this.seed = Math.random();
+
+    this.client = new Client({
+      apiKey: partial.authentication.apiKey,
+      apiSecret: partial.authentication.secretKey,
+    });
+
+    console.log('MailjetContactsProvider connected');
   }
 
-  async getContacts(): Promise<any[]> {
-    console.log('getContacts');
-    return new Promise((res, _) => res([1, 2, 3]));
+  async getContactsCount(): Promise<number> {
+    const queryParams: Contact.GetContactQueryParams = {
+      countOnly: true,
+    };
+
+    return this.client
+      .get('contact', { version: 'v3' })
+      .request({}, queryParams)
+      .then((response: LibraryResponse<Contact.GetContactResponse>) => {
+        console.log(response.body);
+        return response.body.Total;
+      });
+  }
+
+  async getSenderDomains(): Promise<any[]> {
+    return this.client
+      .get('sender', { version: 'v3' })
+      .request()
+      .then((response) => {
+        return response.body['Data'];
+      });
   }
 }

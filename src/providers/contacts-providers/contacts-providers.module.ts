@@ -10,6 +10,7 @@ import {
 import { SecurityModule } from '../../services/security/security.module';
 import { UsersModule } from '../../users/users.module';
 import { OrganizationsModule } from '../../organizations/organizations.module';
+import { ContactsProviderFactory } from './entities/contacts-provider.factory';
 
 @Module({
   imports: [
@@ -27,6 +28,6 @@ import { OrganizationsModule } from '../../organizations/organizations.module';
     OrganizationsModule,
   ],
   controllers: [ContactsProvidersController],
-  providers: [ContactsProvidersService],
+  providers: [ContactsProvidersService, ContactsProviderFactory],
 })
 export class ContactsProvidersModule {}
