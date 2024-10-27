@@ -65,6 +65,9 @@ export class ContactsProvider {
   @Prop({ type: Boolean, default: false })
   isVerified: boolean; // authentication verified
 
+  @Prop({ type: Boolean, default: false })
+  externallyManaged: boolean; // restrain features to GET requests
+
   // virtuals
   id: string;
   organization: string;

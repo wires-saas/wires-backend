@@ -13,4 +13,6 @@ export enum Subject {
   User = 'user',
   UserRole = 'userRole',
   UserNotification = 'userNotification',
+  ContactsProvider = 'contactsProvider',
+  EmailsProvider = 'emailsProvider',
 }

@@ -20,6 +20,9 @@ const noRestrictions: Array<{ action: Action; subject: Subject }> = [
 
   { action: Action.Manage, subject: Subject.Gpt },
   { action: Action.Manage, subject: Subject.GptRequest },
+
+  { action: Action.Manage, subject: Subject.ContactsProvider },
+  { action: Action.Manage, subject: Subject.EmailsProvider },
 ];
 
 export const PlanTypePermissions: Record<

@@ -23,6 +23,7 @@ import { GptRequest } from '../../ai/schemas/gpt-request.schema';
 import { Folder } from '../../folders/schemas/folder.schema';
 import { Block } from '../../blocks/schemas/block.schema';
 import { Role } from '../roles/schemas/role.schema';
+import { ContactsProvider } from '../../providers/contacts-providers/schemas/contacts-provider.schema';
 
 type Subjects =
   | InferSubjects<
@@ -113,6 +114,20 @@ export class CaslAbilityFactory {
               can(
                 permission.action,
                 ScopedSubject(Role, userRole.organization),
+              );
+              break;
+
+            case Subject.ContactsProvider:
+              can(
+                permission.action,
+                ScopedSubject(ContactsProvider, userRole.organization),
+              );
+              break;
+
+            case Subject.EmailsProvider:
+              can(
+                permission.action,
+                ScopedSubject(ContactsProvider, userRole.organization), // TODO EmailsProvider
               );
               break;
 
