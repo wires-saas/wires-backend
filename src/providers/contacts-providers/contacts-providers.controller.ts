@@ -7,16 +7,23 @@ import {
   Param,
   Delete,
   UseGuards,
+  UseInterceptors,
   Logger,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { ContactsProvidersService } from './contacts-providers.service';
 import { CreateContactsProviderDto } from './dto/create-contacts-provider.dto';
 import { UpdateContactsProviderDto } from './dto/update-contacts-provider.dto';
 import { ContactsProvider } from './schemas/contacts-provider.schema';
 import { OrganizationGuard } from '../../auth/organization.guard';
-import { MailjetContactsProvider } from './entities/mailjet-contacts-provider';
 import { ContactsProviderFactory } from './entities/contacts-provider.factory';
+import {
+  CACHE_MANAGER,
+  CacheInterceptor,
+  CacheTTL,
+} from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Controller('organizations/:organizationId/providers/contacts')
 @UseGuards(OrganizationGuard)
@@ -26,18 +33,38 @@ export class ContactsProvidersController {
   constructor(
     private readonly contactsProvidersService: ContactsProvidersService,
     private readonly contactsProviderFactory: ContactsProviderFactory,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  private async clearCache(organizationId: string, providerId: string) {
+    const keys = await this.cacheManager.store.keys(
+      `/v1/organizations/${organizationId}/providers/contacts/${providerId}*`,
+    );
+
+    for (const key of keys) {
+      this.logger.debug('Deleting cache key: ' + key);
+      await this.cacheManager.del(key);
+    }
+  }
+
   @Post()
-  create(
+  async create(
     @Param('organizationId') organizationId: string,
     @Body() createContactsProviderDto: CreateContactsProviderDto,
-  ) {
+  ): Promise<ContactsProvider> {
     if (createContactsProviderDto.organization !== organizationId) {
       throw new BadRequestException(
         'Organization ID does not match provider organization ID',
       );
     }
+
+    const providers =
+      await this.contactsProvidersService.findAll(organizationId);
+
+    if (providers.length === 0) {
+      createContactsProviderDto.isDefault = true;
+    }
+
     return this.contactsProvidersService.create(
       organizationId,
       createContactsProviderDto,
@@ -45,8 +72,10 @@ export class ContactsProvidersController {
   }
 
   @Get()
-  findAll(): Promise<ContactsProvider[]> {
-    return this.contactsProvidersService.findAll();
+  findAll(
+    @Param('organizationId') organizationId: string,
+  ): Promise<ContactsProvider[]> {
+    return this.contactsProvidersService.findAll(organizationId);
   }
 
   @Get(':providerId')
@@ -54,18 +83,27 @@ export class ContactsProvidersController {
     @Param('organizationId') organizationId: string,
     @Param('providerId') providerId: string,
   ): Promise<ContactsProvider> {
-    const providerDocument = (await this.contactsProvidersService.findOne(
+    return this.contactsProvidersService.findOne(organizationId, providerId);
+  }
+
+  // TODO move this in contacts module
+
+  @Get(':providerId/total')
+  @CacheTTL(60000)
+  @UseInterceptors(CacheInterceptor)
+  async findTotalContacts(
+    @Param('organizationId') organizationId: string,
+    @Param('providerId') providerId: string,
+  ): Promise<number> {
+    this.logger.log('Finding total contacts');
+    const providerDocument = await this.contactsProvidersService.findOne(
       organizationId,
       providerId,
-    )) as MailjetContactsProvider;
+    );
 
     const provider = this.contactsProviderFactory.create(providerDocument);
 
-    const totalContacts = await provider.getContactsCount();
-    this.logger.debug(totalContacts);
-    this.logger.log('Seed: ', (provider as any).seed);
-
-    return providerDocument;
+    return await provider.getContactsCount();
   }
 
   @Patch(':providerId')
@@ -74,11 +112,35 @@ export class ContactsProvidersController {
     @Param('providerId') providerId: string,
     @Body() updateContactsProviderDto: UpdateContactsProviderDto,
   ): Promise<ContactsProvider> {
-    return this.contactsProvidersService.update(
+    const needToSetDefault = updateContactsProviderDto.isDefault;
+
+    let previousDefaultProvider: ContactsProvider;
+    if (needToSetDefault) {
+      previousDefaultProvider =
+        await this.contactsProvidersService.findDefault(organizationId);
+    }
+
+    const update = await this.contactsProvidersService.update(
       organizationId,
       providerId,
       updateContactsProviderDto,
     );
+
+    if (
+      needToSetDefault &&
+      previousDefaultProvider &&
+      previousDefaultProvider._id.provider !== providerId
+    ) {
+      await this.contactsProvidersService.update(
+        organizationId,
+        previousDefaultProvider._id.provider,
+        { isDefault: false },
+      );
+    }
+
+    await this.clearCache(organizationId, providerId);
+
+    return update;
   }
 
   @Delete(':providerId')
@@ -86,6 +148,13 @@ export class ContactsProvidersController {
     @Param('organizationId') organizationId: string,
     @Param('providerId') providerId: string,
   ) {
-    return this.contactsProvidersService.remove(organizationId, providerId);
+    const deletion = await this.contactsProvidersService.remove(
+      organizationId,
+      providerId,
+    );
+
+    await this.clearCache(organizationId, providerId);
+
+    return deletion;
   }
 }

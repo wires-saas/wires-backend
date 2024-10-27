@@ -48,14 +48,20 @@ export class ContactsProvidersService {
         displayName: createContactsProviderDto.displayName,
         description: createContactsProviderDto.description,
 
+        isDefault: createContactsProviderDto.isDefault,
+        isVerified: false,
+
         authentication,
       }),
     ).save();
   }
 
-  async findAll(): Promise<ContactsProvider[]> {
-    const providers: ContactsProvider[] =
-      await this.contactsProviderModel.find();
+  async findAll(organizationId: string): Promise<ContactsProvider[]> {
+    const providers: ContactsProvider[] = await this.contactsProviderModel.find(
+      {
+        '_id.organization': organizationId,
+      },
+    );
 
     providers.forEach((provider) => {
       this.logger.log(
@@ -67,6 +73,36 @@ export class ContactsProvidersService {
     });
 
     return providers;
+  }
+
+  async findDefault(
+    organizationId: string,
+  ): Promise<ContactsProvider | undefined> {
+    return this.contactsProviderModel
+      .findOne({
+        '_id.organization': organizationId,
+        isDefault: true,
+      })
+      .exec()
+      .then((provider) => {
+        if (!provider) {
+          return undefined;
+        }
+
+        if (provider.authentication.apiKey) {
+          provider.authentication.apiKey = this.encryptService.decrypt(
+            provider.authentication.apiKey,
+          );
+        }
+
+        if (provider.authentication.secretKey) {
+          provider.authentication.secretKey = this.encryptService.decrypt(
+            provider.authentication.secretKey,
+          );
+        }
+
+        return provider;
+      });
   }
 
   async findOne(

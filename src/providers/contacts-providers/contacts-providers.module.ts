@@ -11,9 +11,13 @@ import { SecurityModule } from '../../services/security/security.module';
 import { UsersModule } from '../../users/users.module';
 import { OrganizationsModule } from '../../organizations/organizations.module';
 import { ContactsProviderFactory } from './entities/contacts-provider.factory';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
+    CacheModule.register({
+      ttl: 0,
+    }),
     MongooseModule.forFeature([
       {
         name: Provider.name,

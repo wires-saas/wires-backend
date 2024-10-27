@@ -27,12 +27,14 @@ import { AiModule } from './ai/ai.module';
 import { BlocksModule } from './blocks/blocks.module';
 import { FoldersModule } from './folders/folders.module';
 import { ContactsProvidersModule } from './providers/contacts-providers/contacts-providers.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 readEnvFile();
 const connectionString = process.env.MONGO_URI;
 
 @Module({
   imports: [
+    CacheModule.register(),
     CaslModule,
     UsersModule,
     HealthModule,

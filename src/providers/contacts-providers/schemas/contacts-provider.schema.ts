@@ -40,6 +40,7 @@ export type ContactsProviderDocument = HydratedDocument<ContactsProvider>;
       return ret;
     },
     virtuals: true,
+    versionKey: false,
   },
 })
 export class ContactsProvider {
@@ -57,6 +58,12 @@ export class ContactsProvider {
 
   @Prop({ type: Authentication, required: true })
   authentication: Authentication;
+
+  @Prop({ type: Boolean, default: false })
+  isDefault: boolean; // implicitly used for organization
+
+  @Prop({ type: Boolean, default: false })
+  isVerified: boolean; // authentication verified
 
   // virtuals
   id: string;

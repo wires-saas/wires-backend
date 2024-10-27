@@ -25,4 +25,6 @@ export class CreateContactsProviderDto {
   @IsString()
   @IsOptional()
   secretKey: string;
+
+  isDefault: boolean;
 }

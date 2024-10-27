@@ -12,7 +12,6 @@ export enum AuthenticationType {
   toObject: {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
-      console.log('toObject');
       return ret;
     },
   },
