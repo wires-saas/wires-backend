@@ -11,7 +11,9 @@ describe('ContactsProvidersController', () => {
       providers: [ContactsProvidersService],
     }).compile();
 
-    controller = module.get<ContactsProvidersController>(ContactsProvidersController);
+    controller = module.get<ContactsProvidersController>(
+      ContactsProvidersController,
+    );
   });
 
   it('should be defined', () => {

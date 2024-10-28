@@ -1,7 +1,6 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ProviderId } from './provider-id.schema';
-import { ContactsProvider } from '../contacts-providers/schemas/contacts-provider.schema';
 import { ProviderType } from '../entities/provider.entities';
 
 export type ProviderDocument = HydratedDocument<Provider>;

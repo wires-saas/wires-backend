@@ -1,6 +1,6 @@
 import { ContactsProvider } from '../schemas/contacts-provider.schema';
 
-import { Client, SendEmailV3_1, LibraryResponse, Contact } from 'node-mailjet';
+import { Client, LibraryResponse, Contact } from 'node-mailjet';
 
 export class MailjetContactsProvider extends ContactsProvider {
   private client: any;

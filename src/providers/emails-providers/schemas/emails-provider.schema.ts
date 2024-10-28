@@ -4,6 +4,7 @@ import { ProviderId } from '../../schemas/provider-id.schema';
 import { Authentication } from '../../../shared/schemas/authentication.schema';
 import { ProviderType } from '../../entities/provider.entities';
 import { SupportedEmailsProvider } from '../entities/emails-provider.entities';
+import { Sender } from './sender.schema';
 
 export type EmailsProviderDocument = HydratedDocument<EmailsProvider>;
 
@@ -37,6 +38,8 @@ export type EmailsProviderDocument = HydratedDocument<EmailsProvider>;
       ret.type = ret.implementation;
       delete ret.implementation;
 
+      console.log(ret.domains);
+
       return ret;
     },
     virtuals: true,
@@ -65,12 +68,18 @@ export class EmailsProvider {
   @Prop({ type: Boolean, default: false })
   isVerified: boolean; // authentication verified
 
+  @Prop({ type: [Sender], default: [] })
+  senders: Sender[];
+
+  @Prop({ type: [String], default: [] })
+  domains: string[]; // allowed domains
+
   // virtuals
   id: string;
   organization: string;
 
   // cannot be made abstract because of schema generation
-  getSenderDomains(): Promise<any> {
+  getSenderDomains(): Promise<string[]> {
     // implementation specific logic
     throw new Error('Method not implemented');
   }

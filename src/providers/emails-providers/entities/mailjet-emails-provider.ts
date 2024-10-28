@@ -1,6 +1,6 @@
 import { EmailsProvider } from '../schemas/emails-provider.schema';
 
-import { Client } from 'node-mailjet';
+import { Client, LibraryResponse, Sender } from 'node-mailjet';
 
 export class MailjetEmailsProvider extends EmailsProvider {
   private client: any;
@@ -27,16 +27,12 @@ export class MailjetEmailsProvider extends EmailsProvider {
     console.log('MailjetEmailsProvider connected');
   }
 
-  async getSenderDomains(): Promise<any[]> {
-    /* return this.client
+  async getSenderDomains(): Promise<string[]> {
+    return this.client
       .get('sender', { version: 'v3' })
       .request()
-      .then((response) => {
-        return response.body['Data'];
-      }); */
-
-    return new Promise((resolve) => {
-      return resolve(['test.com']);
-    });
+      .then((response: LibraryResponse<Sender.GetSenderResponse>) => {
+        return response.body['Data'].map((_) => _.Name);
+      });
   }
 }

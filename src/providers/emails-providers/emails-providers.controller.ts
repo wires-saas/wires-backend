@@ -78,23 +78,12 @@ export class EmailsProvidersController {
   }
 
   @Get(':providerId')
+  @CacheTTL(60000)
+  @UseInterceptors(CacheInterceptor)
   async findOne(
     @Param('organizationId') organizationId: string,
     @Param('providerId') providerId: string,
   ): Promise<EmailsProvider> {
-    return this.emailsProvidersService.findOne(organizationId, providerId);
-  }
-
-  // TODO move this in contacts module
-
-  @Get(':providerId/domains')
-  @CacheTTL(60000)
-  @UseInterceptors(CacheInterceptor)
-  async findApprovedDomains(
-    @Param('organizationId') organizationId: string,
-    @Param('providerId') providerId: string,
-  ): Promise<string[]> {
-    this.logger.log('Finding total contacts');
     const providerDocument = await this.emailsProvidersService.findOne(
       organizationId,
       providerId,
@@ -102,7 +91,9 @@ export class EmailsProvidersController {
 
     const provider = this.emailsProviderFactory.create(providerDocument);
 
-    return await provider.getSenderDomains();
+    providerDocument.domains = await provider.getSenderDomains();
+
+    return providerDocument;
   }
 
   @Patch(':providerId')
