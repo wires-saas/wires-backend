@@ -24,6 +24,7 @@ import {
 import { Cache } from 'cache-manager';
 import { EmailsProvider } from './schemas/emails-provider.schema';
 import { EmailsProvidersService } from './emails-providers.service';
+import { Domain } from './schemas/domain.schema';
 
 @Controller('organizations/:organizationId/providers/emails')
 @UseGuards(OrganizationGuard)
@@ -78,7 +79,7 @@ export class EmailsProvidersController {
   }
 
   @Get(':providerId')
-  @CacheTTL(60000)
+  @CacheTTL(300000)
   @UseInterceptors(CacheInterceptor)
   async findOne(
     @Param('organizationId') organizationId: string,
@@ -91,7 +92,7 @@ export class EmailsProvidersController {
 
     const provider = this.emailsProviderFactory.create(providerDocument);
 
-    providerDocument.domains = await provider.getSenderDomains();
+    providerDocument.domains = await provider.getDomains();
 
     return providerDocument;
   }
@@ -146,5 +147,26 @@ export class EmailsProvidersController {
     await this.clearCache(organizationId, providerId);
 
     return deletion;
+  }
+
+  // Domains
+
+  @Post(':providerId/domains')
+  async createDomain(
+    @Param('organizationId') organizationId: string,
+    @Param('providerId') providerId: string,
+    @Body('domain') domain: string,
+  ): Promise<void> {
+    this.logger.log(`Creating domain ${domain} for provider ${providerId}`);
+
+    const providerDocument = await this.emailsProvidersService.findOne(
+      organizationId,
+      providerId,
+    );
+
+    const provider = this.emailsProviderFactory.create(providerDocument);
+    await provider.addDomain(domain);
+
+    await this.clearCache(organizationId, providerId);
   }
 }

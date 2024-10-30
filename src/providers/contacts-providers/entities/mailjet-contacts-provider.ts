@@ -23,8 +23,6 @@ export class MailjetContactsProvider extends ContactsProvider {
       apiKey: partial.authentication.apiKey,
       apiSecret: partial.authentication.secretKey,
     });
-
-    console.log('MailjetContactsProvider connected');
   }
 
   async getContactsCount(): Promise<number> {
@@ -36,7 +34,6 @@ export class MailjetContactsProvider extends ContactsProvider {
       .get('contact', { version: 'v3' })
       .request({}, queryParams)
       .then((response: LibraryResponse<Contact.GetContactResponse>) => {
-        console.log(response.body);
         return response.body.Total;
       });
   }
