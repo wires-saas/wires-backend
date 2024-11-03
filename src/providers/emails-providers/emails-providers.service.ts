@@ -8,6 +8,8 @@ import { EncryptService } from '../../services/security/encrypt.service';
 import { AuthenticationType } from '../../shared/schemas/authentication.schema';
 import { randomId } from '../../shared/utils/db.utils';
 import { ProviderType } from '../entities/provider.entities';
+import { Sender } from './schemas/sender.schema';
+import { SenderDto } from './dto/update-senders.dto';
 
 @Injectable()
 export class EmailsProvidersService {
@@ -147,6 +149,27 @@ export class EmailsProvidersService {
         },
         {
           $set: updateContactsProviderDto,
+        },
+        {
+          new: true,
+        },
+      )
+      .exec();
+  }
+
+  updateSenders(
+    organizationId: string,
+    providerId: string,
+    senders: SenderDto[],
+  ): Promise<EmailsProvider> {
+    return this.emailsProviderModel
+      .findOneAndUpdate(
+        {
+          '_id.organization': organizationId,
+          '_id.provider': providerId,
+        },
+        {
+          $set: { senders },
         },
         {
           new: true,

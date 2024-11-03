@@ -11,6 +11,8 @@ import {
   Logger,
   BadRequestException,
   Inject,
+  Put,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateEmailsProviderDto } from './dto/create-emails-provider.dto';
 import { UpdateEmailsProviderDto } from './dto/update-emails-provider.dto';
@@ -25,6 +27,7 @@ import { Cache } from 'cache-manager';
 import { EmailsProvider } from './schemas/emails-provider.schema';
 import { EmailsProvidersService } from './emails-providers.service';
 import { Domain } from './schemas/domain.schema';
+import { UpdateSendersDto } from './dto/update-senders.dto';
 
 @Controller('organizations/:organizationId/providers/emails')
 @UseGuards(OrganizationGuard)
@@ -147,6 +150,36 @@ export class EmailsProvidersController {
     await this.clearCache(organizationId, providerId);
 
     return deletion;
+  }
+
+  // Senders
+
+  @Put(':providerId/senders')
+  async updateSenders(
+    @Param('organizationId') organizationId: string,
+    @Param('providerId') providerId: string,
+    @Body('senders') senders: UpdateSendersDto,
+  ): Promise<EmailsProvider> {
+    this.logger.log(
+      `Updating ${senders.length} senders for provider ${providerId}`,
+    );
+
+    const providerDocument = await this.emailsProvidersService.findOne(
+      organizationId,
+      providerId,
+    );
+
+    if (!providerDocument) {
+      throw new NotFoundException('Provider not found');
+    }
+
+    await this.clearCache(organizationId, providerId);
+
+    return this.emailsProvidersService.updateSenders(
+      organizationId,
+      providerId,
+      senders,
+    );
   }
 
   // Domains
