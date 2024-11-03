@@ -102,6 +102,18 @@ export class EmailsProvider {
     throw new Error('Method not implemented');
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  removeDomain(domain: string): Promise<void> {
+    // implementation specific logic
+    throw new Error('Method not implemented');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  checkDomain(domain: Domain): Promise<void> {
+    // implementation specific logic
+    throw new Error('Method not implemented');
+  }
+
   constructor(partial: Partial<EmailsProvider>) {
     Object.assign(this, partial);
   }

@@ -169,4 +169,53 @@ export class EmailsProvidersController {
 
     await this.clearCache(organizationId, providerId);
   }
+
+  @Delete(':providerId/domains/:domain')
+  async deleteDomain(
+    @Param('organizationId') organizationId: string,
+    @Param('providerId') providerId: string,
+    @Param('domain') domain: string,
+  ): Promise<void> {
+    this.logger.log(`Deleting domain ${domain} of provider ${providerId}`);
+
+    const providerDocument = await this.emailsProvidersService.findOne(
+      organizationId,
+      providerId,
+    );
+
+    const provider = this.emailsProviderFactory.create(providerDocument);
+    await provider.removeDomain(domain);
+
+    await this.clearCache(organizationId, providerId);
+  }
+
+  @Post(':providerId/domains/:domain/dns')
+  async checkDomain(
+    @Param('organizationId') organizationId: string,
+    @Param('providerId') providerId: string,
+    @Param('domain') domain: string,
+  ): Promise<Domain> {
+    this.logger.log(`Checking domain ${domain} for provider ${providerId}`);
+
+    const providerDocument = await this.emailsProvidersService.findOne(
+      organizationId,
+      providerId,
+    );
+
+    const provider = this.emailsProviderFactory.create(providerDocument);
+    providerDocument.domains = await provider.getDomains();
+
+    const matchingDomain = providerDocument.domains.find(
+      (d: Domain) => d.domain === domain,
+    );
+    if (!matchingDomain) {
+      throw new BadRequestException('Domain not found, must be added first');
+    }
+
+    await provider.checkDomain(matchingDomain);
+
+    await this.clearCache(organizationId, providerId);
+
+    return matchingDomain;
+  }
 }

@@ -4,6 +4,9 @@ import { Client, DNS, LibraryResponse, Sender } from 'node-mailjet';
 import { Domain } from '../schemas/domain.schema';
 import { DomainStatus } from './emails-provider.entities';
 
+// DMARC
+// https://documentation.mailjet.com/hc/en-us/articles/20531905163419-Understanding-DMARC
+
 export class MailjetEmailsProvider extends EmailsProvider {
   private client: any;
   private seed: number;
@@ -49,20 +52,25 @@ export class MailjetEmailsProvider extends EmailsProvider {
           // DNS.SPFConfigurationCheckStatus.OK undefined
           const spfOk = dns.SPFStatus === 'OK';
 
+          // Sender.SenderStatus.Active undefined
+          const ownershipOk = senderDomain.Status === 'Active';
+
           const domain: Domain = {
             domain: dns.Domain,
             dkim: dkimOk,
             dkimRecordName: dns.DKIMRecordName,
             dkimRecordValue: dns.DKIMRecordValue,
             spf: spfOk,
-            spfRecordName: '',
+            spfRecordName: dns.Domain,
             spfRecordValue: dns.SPFRecordValue,
-            ownership: dkimOk || spfOk,
+            ownership: ownershipOk,
             ownershipRecordName: dns.OwnerShipTokenRecordName,
             ownershipRecordValue: dns.OwnerShipToken,
 
             status:
-              dkimOk && spfOk ? DomainStatus.Verified : DomainStatus.Pending,
+              dkimOk && spfOk && ownershipOk
+                ? DomainStatus.Verified
+                : DomainStatus.Pending,
           };
 
           domains.push(domain);
@@ -76,5 +84,50 @@ export class MailjetEmailsProvider extends EmailsProvider {
     return this.client.post('sender', { version: 'v3' }).request({
       Email: `*@${domain}`,
     });
+  }
+
+  async removeDomain(domain: string): Promise<void> {
+    return this.client
+      .delete('sender', { version: 'v3' })
+      .id(`*@${domain}`)
+      .request();
+  }
+
+  // Perform DNS checks and alter domain status
+  async checkDomain(domain: Domain): Promise<void> {
+    if (!domain.ownership) {
+      // Check ownership
+      const ownershipCheck: boolean = await this.client
+        .post('sender', { version: 'v3' })
+        .id(`*@${domain.domain}`)
+        .action('validate')
+        .request()
+        .then(
+          (response: LibraryResponse<Sender.PostSenderValidateResponse>) => {
+            return response.body['ValidationMethod'] !== '';
+          },
+        );
+
+      domain.ownership = domain.ownership || ownershipCheck;
+    }
+
+    // Check DKIM and SPF
+    await this.client
+      .post('dns', { version: 'v3' })
+      .id(domain.domain)
+      .action('check')
+      .request()
+      .then((response: LibraryResponse<DNS.GetDNSResponse>) => {
+        const dns: DNS.DNS = response.body['Data'][0];
+
+        domain.dkim = dns.DKIMStatus === 'OK';
+        domain.spf = dns.SPFStatus === 'OK';
+      });
+
+    // Finally update domain status
+    domain.status =
+      domain.dkim && domain.spf && domain.ownership
+        ? DomainStatus.Verified
+        : DomainStatus.Pending;
   }
 }
