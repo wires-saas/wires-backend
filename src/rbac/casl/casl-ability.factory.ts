@@ -24,6 +24,7 @@ import { Folder } from '../../folders/schemas/folder.schema';
 import { Block } from '../../blocks/schemas/block.schema';
 import { Role } from '../roles/schemas/role.schema';
 import { ContactsProvider } from '../../providers/contacts-providers/schemas/contacts-provider.schema';
+import { EmailsProvider } from '../../providers/emails-providers/schemas/emails-provider.schema';
 
 type Subjects =
   | InferSubjects<
@@ -127,7 +128,7 @@ export class CaslAbilityFactory {
             case Subject.EmailsProvider:
               can(
                 permission.action,
-                ScopedSubject(ContactsProvider, userRole.organization), // TODO EmailsProvider
+                ScopedSubject(EmailsProvider, userRole.organization),
               );
               break;
 

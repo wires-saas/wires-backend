@@ -72,8 +72,17 @@ export class ContactsProvider {
   id: string;
   organization: string;
 
-  // cannot be made abstract because of schema generation
+  async getContacts(): Promise<Array<any>> {
+    // implementation specific logic
+    throw new Error('Method not implemented');
+  }
+
   getContactsCount(): Promise<number> {
+    // implementation specific logic
+    throw new Error('Method not implemented');
+  }
+
+  getContactSchema(): Promise<any> {
     // implementation specific logic
     throw new Error('Method not implemented');
   }

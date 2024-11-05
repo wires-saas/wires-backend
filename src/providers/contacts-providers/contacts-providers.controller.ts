@@ -106,6 +106,24 @@ export class ContactsProvidersController {
     return await provider.getContactsCount();
   }
 
+  @Get(':providerId/schema')
+  @CacheTTL(60000)
+  @UseInterceptors(CacheInterceptor)
+  async findContactSchema(
+    @Param('organizationId') organizationId: string,
+    @Param('providerId') providerId: string,
+  ): Promise<number> {
+    this.logger.log('Finding contact schema');
+    const providerDocument = await this.contactsProvidersService.findOne(
+      organizationId,
+      providerId,
+    );
+
+    const provider = this.contactsProviderFactory.create(providerDocument);
+
+    return await provider.getContactSchema();
+  }
+
   @Patch(':providerId')
   async update(
     @Param('organizationId') organizationId: string,

@@ -8,7 +8,6 @@ import { EncryptService } from '../../services/security/encrypt.service';
 import { AuthenticationType } from '../../shared/schemas/authentication.schema';
 import { randomId } from '../../shared/utils/db.utils';
 import { ProviderType } from '../entities/provider.entities';
-import { Sender } from './schemas/sender.schema';
 import { SenderDto } from './dto/update-senders.dto';
 
 @Injectable()

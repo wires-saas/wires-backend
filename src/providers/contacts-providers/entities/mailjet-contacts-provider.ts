@@ -25,6 +25,18 @@ export class MailjetContactsProvider extends ContactsProvider {
     });
   }
 
+  async getContacts(): Promise<Array<any>> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          {
+            email: 'a@mail.com',
+          },
+        ]);
+      }, 1000);
+    });
+  }
+
   async getContactsCount(): Promise<number> {
     const queryParams: Contact.GetContactQueryParams = {
       countOnly: true,
@@ -38,12 +50,13 @@ export class MailjetContactsProvider extends ContactsProvider {
       });
   }
 
-  async getSenderDomains(): Promise<any[]> {
+  async getContactSchema(): Promise<any> {
     return this.client
-      .get('sender', { version: 'v3' })
+      .get('contactmetadata', { version: 'v3' })
       .request()
-      .then((response) => {
-        return response.body['Data'];
+      .then((response: LibraryResponse<any>) => {
+        console.log(response.body);
+        return response.body;
       });
   }
 }

@@ -33,5 +33,6 @@ import { CacheModule } from '@nestjs/cache-manager';
   ],
   controllers: [ContactsProvidersController],
   providers: [ContactsProvidersService, ContactsProviderFactory],
+  exports: [ContactsProvidersService, ContactsProviderFactory],
 })
 export class ContactsProvidersModule {}

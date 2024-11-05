@@ -1,7 +1,7 @@
 import { ContactsProvider } from '../schemas/contacts-provider.schema';
 import { SupportedContactsProvider } from './contacts-provider.entities';
 import { MailjetContactsProvider } from './mailjet-contacts-provider';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 // NestJS default dependency injection = singleton
 // Factory to create contacts provider singletons
@@ -11,6 +11,7 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class ContactsProviderFactory {
   private registry: Map<string, ContactsProvider> = new Map();
+  private logger = new Logger(ContactsProviderFactory.name);
 
   private getProviderId(provider: ContactsProvider): string {
     return `${provider._id.organization}:${provider._id.provider}`;
@@ -37,6 +38,7 @@ export class ContactsProviderFactory {
 
   create(provider: ContactsProvider): ContactsProvider {
     if (this.singletonInRegistryRelevant(provider)) {
+      this.logger.debug('Returning singleton provider from registry');
       return this.registry.get(this.getProviderId(provider));
     }
 
