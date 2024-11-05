@@ -23,6 +23,19 @@ import { Tag } from '../../tags/schemas/tag.schema';
 import { TagsService } from '../../tags/tags.service';
 
 export class TestUtils {
+  static createModel() {
+    return {
+      save: jest.fn(),
+      find: jest.fn(),
+      findById: jest.fn(),
+      findByIdAndUpdate: jest.fn(),
+      findByIdAndDelete: jest.fn(),
+      insertMany: jest.fn(),
+      deleteMany: jest.fn(),
+      deleteOne: jest.fn(),
+    };
+  }
+
   static createTestingModule(metadata: ModuleMetadata): Promise<TestingModule> {
     const mockConfigService = {
       get: jest.fn(),
@@ -183,17 +196,6 @@ export class TestUtils {
       scrapeFeed: jest.fn(),
     };
 
-    const modelFactory = () => ({
-      save: jest.fn(),
-      find: jest.fn(),
-      findById: jest.fn(),
-      findByIdAndUpdate: jest.fn(),
-      findByIdAndDelete: jest.fn(),
-      insertMany: jest.fn(),
-      deleteMany: jest.fn(),
-      deleteOne: jest.fn(),
-    });
-
     return Test.createTestingModule({
       imports: metadata.imports ? [...metadata.imports] : [],
       controllers: metadata.controllers ? [...metadata.controllers] : [],
@@ -214,10 +216,19 @@ export class TestUtils {
         { provide: ScrapingService, useValue: mockScrapingService },
         { provide: TagsService, useValue: mockTagsService },
 
-        { provide: getModelToken(Feed.name), useValue: modelFactory() },
-        { provide: getModelToken(FeedRunColl), useValue: modelFactory() },
-        { provide: getModelToken(Article.name), useValue: modelFactory() },
-        { provide: getModelToken(Tag.name), useValue: modelFactory() },
+        {
+          provide: getModelToken(Feed.name),
+          useValue: TestUtils.createModel(),
+        },
+        {
+          provide: getModelToken(FeedRunColl),
+          useValue: TestUtils.createModel(),
+        },
+        {
+          provide: getModelToken(Article.name),
+          useValue: TestUtils.createModel(),
+        },
+        { provide: getModelToken(Tag.name), useValue: TestUtils.createModel() },
 
         ...metadata.providers,
       ],

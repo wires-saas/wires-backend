@@ -11,6 +11,7 @@ export class ContactsService {
     private contactsProviderFactory: ContactsProviderFactory,
   ) {}
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   create(createContactDto: CreateContactDto) {
     return 'This action adds a new contact';
   }
@@ -28,6 +29,7 @@ export class ContactsService {
     return `This action returns a #${id} contact`;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   update(id: number, updateContactDto: UpdateContactDto) {
     return `This action updates a #${id} contact`;
   }
