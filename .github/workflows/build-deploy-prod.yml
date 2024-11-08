@@ -10,7 +10,7 @@ jobs:
   ship:
     runs-on: ubuntu-latest
     env:
-      DEPLOY_WEBHOOK_URL_PROD: ${{ secrets.DEPLOY_WEBHOOK_URL_PROD }}
+      DEPLOY_WEBHOOK_URL_PROD: ${{ vars.DEPLOY_WEBHOOK_URL_PROD }}
       DEPLOY_WEBHOOK_TOKEN_PROD: ${{ secrets.DEPLOY_WEBHOOK_TOKEN_PROD }}
     steps:
       - uses: actions/checkout@v4
