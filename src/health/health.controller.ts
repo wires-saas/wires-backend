@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Logger } from '@nestjs/common';
 import {
   HealthCheckService,
   HttpHealthIndicator,
@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 @ApiTags('Miscellaneous')
 @Controller('health')
 export class HealthController {
+  private logger: Logger = new Logger(HealthController.name);
   private readonly s3Url: string;
 
   constructor(
@@ -27,7 +28,10 @@ export class HealthController {
       this.configService.getOrThrow('S3_protocol') +
       this.configService.getOrThrow('S3_url') +
       ':' +
-      this.configService.getOrThrow('S3_port');
+      this.configService.getOrThrow('S3_port') +
+      '/minio/health/live';
+
+    this.logger.log('S3 Health URL is ' + this.s3Url);
   }
 
   @Get()
@@ -36,7 +40,10 @@ export class HealthController {
   @HealthCheck()
   check() {
     return this.health.check([
-      () => this.http.pingCheck('s3', this.s3Url),
+      () =>
+        this.http.responseCheck('s3', this.s3Url, (res) => {
+          return res.status === 200;
+        }),
       () =>
         this.disk.checkStorage('storage', {
           path: '/',
