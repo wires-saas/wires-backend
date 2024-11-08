@@ -27,10 +27,11 @@ async function bootstrap() {
     app.use(
       '/docs*',
       basicAuth({
-        challenge: false,
+        challenge: true,
         users: {
           documentation: process.env.API_DOCS_PASSWORD,
         },
+        realm: process.env.APP_NAME,
       }),
     );
   }

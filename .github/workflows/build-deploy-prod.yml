@@ -1,4 +1,4 @@
-name: Build Deploy Test
+name: Prod Build Deploy Test
 
 on:
   push:
@@ -12,8 +12,6 @@ jobs:
     env:
       DEPLOY_WEBHOOK_URL_PROD: ${{ secrets.DEPLOY_WEBHOOK_URL_PROD }}
       DEPLOY_WEBHOOK_TOKEN_PROD: ${{ secrets.DEPLOY_WEBHOOK_TOKEN_PROD }}
-      DEPLOY_WEBHOOK_URL_DEV: ${{ secrets.DEPLOY_WEBHOOK_URL_DEV }}
-      DEPLOY_WEBHOOK_TOKEN_DEV: ${{ secrets.DEPLOY_WEBHOOK_TOKEN_DEV }}
     steps:
       - uses: actions/checkout@v4
 
@@ -78,10 +76,10 @@ jobs:
           cache-from: type=local,src=/tmp/.docker-buildx-cache
           cache-to: type=local,dest=/tmp/.docker-buildx-cache,mode=max
 
-      - name: Always deploy on dev environment
+      - name: Always deploy on prod environment (for now)
         if: github.event_name == 'push'
         run: |
-          curl --fail -H "Authorization: ${DEPLOY_WEBHOOK_TOKEN_DEV}" -XGET "${DEPLOY_WEBHOOK_URL_DEV}/backend?version=${GITHUB_SHA}"
+          curl --fail -H "Authorization: ${DEPLOY_WEBHOOK_TOKEN_PROD}" -XGET "${DEPLOY_WEBHOOK_URL_PROD}/backend?version=${GITHUB_SHA}"
         continue-on-error: true
 
       - name: Check if commit contains release
@@ -93,16 +91,16 @@ jobs:
           error: 'We expect a release message to be in the format "release: <version>"'
         continue-on-error: true
 
-      - name: Deploy on prod environment only if release
-        if: steps.check_release.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          curl --fail -H "Authorization: ${DEPLOY_WEBHOOK_TOKEN_PROD}" -XGET "${DEPLOY_WEBHOOK_URL_PROD}/backend?&version=${GITHUB_SHA}"
-        continue-on-error: true
+      # - name: Deploy on prod environment only if release
+      #  if: steps.check_release.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      #  run: |
+      #    curl --fail -H "Authorization: ${DEPLOY_WEBHOOK_TOKEN_PROD}" -XGET "${DEPLOY_WEBHOOK_URL_PROD}/backend?&version=${GITHUB_SHA}"
+      #  continue-on-error: true
   test:
     needs: ship
     runs-on: ubuntu-latest
     env:
-      BACKEND_URL_DEV: ${{ vars.BACKEND_URL_DEV }}
+      BACKEND_URL_PROD: ${{ vars.BACKEND_URL_PROD }}
     steps:
       - name: Checking status of backend
-        run: curl -XGET "${BACKEND_URL_DEV}/status"
+        run: curl -XGET "${BACKEND_URL_PROD}/status"
