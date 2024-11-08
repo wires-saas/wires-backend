@@ -72,7 +72,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: wiresantoine/saas-factory:latest
+          tags: wiresantoine/wires-backend:prod
           cache-from: type=local,src=/tmp/.docker-buildx-cache
           cache-to: type=local,dest=/tmp/.docker-buildx-cache,mode=max
 
