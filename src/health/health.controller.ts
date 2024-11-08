@@ -25,7 +25,9 @@ export class HealthController {
   ) {
     this.s3Url =
       this.configService.getOrThrow('S3_protocol') +
-      this.configService.getOrThrow('S3_url');
+      this.configService.getOrThrow('S3_url') +
+      ':' +
+      this.configService.getOrThrow('S3_port');
   }
 
   @Get()

@@ -17,6 +17,10 @@ export class FileUploadService {
       accessKey: this.configService.getOrThrow('S3_accessKey'),
       secretKey: this.configService.getOrThrow('S3_secretKey'),
     });
+
+    this.logger.log('Minio client configuration set');
+    this.logger.log('URL: ' + this.configService.getOrThrow('S3_url'));
+    this.logger.log('Port: ' + this.configService.getOrThrow('S3_port'));
   }
 
   async uploadFile(
