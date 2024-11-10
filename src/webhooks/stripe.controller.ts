@@ -1,5 +1,7 @@
-import { Controller, Post, Body, Logger } from '@nestjs/common';
+import { Controller, Post, Body, Logger, Get } from '@nestjs/common';
 import { WebhooksService } from './webhooks.service';
+import { StripeWebhookEventDto } from './dto/stripe-webhook-event.dto';
+import { WebhookEvent } from './schemas/webhook-event.schema';
 
 @Controller('webhooks/stripe')
 export class StripeController {
@@ -8,9 +10,14 @@ export class StripeController {
   constructor(private readonly webhooksService: WebhooksService) {}
 
   @Post()
-  create(@Body() webhookEvent: any) {
+  create(@Body() webhookEvent: StripeWebhookEventDto): Promise<WebhookEvent> {
     this.logger.log('Received webhook event');
     this.logger.log(JSON.stringify(webhookEvent));
-    // return this.webhooksService.create(webhookEvent);
+    return this.webhooksService.createStripeEvent(webhookEvent);
+  }
+
+  @Get()
+  findAll(): Promise<WebhookEvent[]> {
+    return this.webhooksService.findAll();
   }
 }

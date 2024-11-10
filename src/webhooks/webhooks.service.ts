@@ -1,28 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { CreateWebhookDto } from './dto/create-webhook.dto';
-import { UpdateWebhookDto } from './dto/update-webhook.dto';
+import { StripeWebhookEventDto } from './dto/stripe-webhook-event.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { WebhookEvent, WebhookEventColl } from './schemas/webhook-event.schema';
+import { randomId } from '../shared/utils/db.utils';
 
 @Injectable()
 export class WebhooksService {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  create(createWebhookDto: CreateWebhookDto) {
-    return 'This action adds a new webhook';
+  constructor(
+    @InjectModel(WebhookEventColl)
+    private webhookEventModel: Model<WebhookEvent>,
+  ) {}
+
+  createStripeEvent(createWebhookDto: StripeWebhookEventDto) {
+    return new this.webhookEventModel(
+      new WebhookEvent({
+        _id: randomId(),
+        emittedAt: createWebhookDto.created * 1000, // Stripe returns seconds
+        type: createWebhookDto.type,
+        data: createWebhookDto.data,
+        externalId: createWebhookDto.id,
+      }),
+    ).save();
   }
 
-  findAll() {
-    return `This action returns all webhooks`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} webhook`;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(id: number, updateWebhookDto: UpdateWebhookDto) {
-    return `This action updates a #${id} webhook`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} webhook`;
+  findAll(): Promise<WebhookEvent[]> {
+    return this.webhookEventModel.find().exec();
   }
 }
