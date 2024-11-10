@@ -30,6 +30,7 @@ import { ContactsProvidersModule } from './providers/contacts-providers/contacts
 import { CacheModule } from '@nestjs/cache-manager';
 import { EmailsProvidersModule } from './providers/emails-providers/emails-providers.module';
 import { ContactsModule } from './contacts/contacts.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 
 readEnvFile();
 const connectionString = process.env.MONGO_URI;
@@ -81,6 +82,7 @@ const connectionString = process.env.MONGO_URI;
     ContactsProvidersModule,
     EmailsProvidersModule,
     ContactsModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
