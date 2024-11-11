@@ -46,6 +46,8 @@ export class StripeController {
     const event: WebhookEvent =
       await this.webhooksService.createStripeEvent(webhookEvent);
 
+    // Workflow for handling Stripe events
+
     if (event.type === StripeWebhookEventType.CUSTOMER_SUBSCRIPTION_CREATED) {
       const plan = await this.organizationPlansService.findOneBySubscriptionId(
         event.data.object.id,
@@ -85,6 +87,44 @@ export class StripeController {
           ? PlanStatus.ACTIVE
           : PlanStatus.INCOMPLETE,
       );
+    } else if (
+      event.type === StripeWebhookEventType.CHECKOUT_SESSION_COMPLETED
+    ) {
+      const subscriptionId = event.data.object.subscription;
+      const organizationSlug = event.data.object.client_reference_id;
+      if (!organizationSlug) {
+        this.logger.warn(
+          'No client reference id found in event data, cannot retrieve organization',
+        );
+      } else {
+        this.logger.log(
+          'Updating organization plan for organization ' + organizationSlug,
+        );
+        await this.organizationPlansService.updateOrganization(
+          subscriptionId,
+          organizationSlug,
+        );
+      }
+    } else if (
+      event.type === StripeWebhookEventType.CUSTOMER_SUBSCRIPTION_UPDATED
+    ) {
+      const plan = await this.organizationPlansService.findOneBySubscriptionId(
+        event.data.object.id,
+      );
+
+      if (!plan) {
+        this.logger.warn('No plan found for subscription, ignoring event');
+      } else {
+        if (event.data.object.canceled_at) {
+          this.logger.log(
+            'Cancelling plan for subscription ' + plan.subscriptionId,
+          );
+          await this.organizationPlansService.cancel(
+            plan.subscriptionId,
+            event.data.object.cancel_at * 1000,
+          );
+        }
+      }
     }
 
     return event;

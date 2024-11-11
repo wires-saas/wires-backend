@@ -41,6 +41,8 @@ export type OrganizationPlanDocument = HydratedDocument<OrganizationPlan>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     transform: function (_, ret, __) {
       delete ret._id;
+      delete ret.customerId;
+      delete ret.subscriptionId;
       delete ret.customPermissions;
       delete ret.createdAt;
       delete ret.updatedAt;
@@ -53,22 +55,29 @@ export class OrganizationPlan {
   @Prop({ required: true })
   _id: string;
 
+  @Prop({ required: true, type: String, unique: true })
+  subscriptionId: string;
+
   @Prop({
     type: String,
     ref: 'Organization',
   })
   organization: string;
 
+  // Plan must have an organization or a creation token
+  @Prop({ type: String })
+  organizationCreationToken: string;
+
   @Prop({ required: true, enum: PlanType })
   type: PlanType;
 
   @Prop({ type: String })
-  subscriptionId: string;
-
-  @Prop({ type: String })
   customerId: string;
 
-  @Prop({ type: String, enum: PlanStatus })
+  @Prop({ type: String })
+  customerEmail: string;
+
+  @Prop({ type: String, enum: PlanStatus, required: true })
   status: PlanStatus;
 
   @Prop({ type: Number })
@@ -76,6 +85,9 @@ export class OrganizationPlan {
 
   @Prop({ type: Number })
   currentPeriodEnd: number;
+
+  @Prop({ type: Boolean })
+  isTrial: boolean;
 
   // Permissions are built-in to the plan
   // But can be overridden by the organization

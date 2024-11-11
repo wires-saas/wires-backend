@@ -103,15 +103,45 @@ export class OrganizationPlansService {
       .exec();
   }
 
-  async findAll(): Promise<OrganizationPlan[]> {
-    return this.organizationPlanModel.find().exec();
+  // Set plan status to cancelled and update current period end
+  async cancel(subscriptionId: string, end: number): Promise<OrganizationPlan> {
+    return this.organizationPlanModel
+      .findOneAndUpdate(
+        {
+          subscriptionId,
+        },
+        {
+          status: PlanStatus.CANCELLED,
+          currentPeriodEnd: end,
+        },
+      )
+      .exec();
   }
 
+  // Assigns an organization to a plan
+  async updateOrganization(
+    subscriptionId: string,
+    organizationId: string,
+  ): Promise<OrganizationPlan> {
+    return this.organizationPlanModel
+      .findOneAndUpdate(
+        {
+          subscriptionId,
+        },
+        {
+          organization: organizationId,
+        },
+      )
+      .exec();
+  }
+
+  // Find last updated plan of organization
   async findOne(organizationId: string): Promise<OrganizationPlan> {
     return this.organizationPlanModel
       .findOne({
         organization: organizationId,
       })
+      .sort({ updatedAt: -1 })
       .exec();
   }
 
