@@ -57,7 +57,7 @@ export class OrganizationsController {
     );
 
     // Create free plan for organization
-    await this.organizationPlansService.create(organization._id);
+    await this.organizationPlansService.createForOrganization(organization._id);
 
     return organization;
   }

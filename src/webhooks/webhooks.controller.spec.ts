@@ -2,10 +2,16 @@ import { TestingModule } from '@nestjs/testing';
 import { StripeController } from './stripe.controller';
 import { WebhooksService } from './webhooks.service';
 import { TestUtils } from '../shared/utils/test.utils';
+import { OrganizationPlansService } from '../organizations/organization-plans.service';
 
 const mockWebhooksService = {
   createStripeEvent: jest.fn(() => true),
   findAll: jest.fn(() => true),
+};
+
+const mockOrganizationPlansService = {
+  create: jest.fn(() => true),
+  findOneBySubscriptionId: jest.fn(() => true),
 };
 
 describe('WebhooksController', () => {
@@ -18,6 +24,10 @@ describe('WebhooksController', () => {
         {
           provide: WebhooksService,
           useValue: mockWebhooksService,
+        },
+        {
+          provide: OrganizationPlansService,
+          useValue: mockOrganizationPlansService,
         },
       ],
     });

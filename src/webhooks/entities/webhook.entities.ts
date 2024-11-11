@@ -1,4 +1,7 @@
 export enum StripeWebhookEventType {
+  BILLING_PORTAL_CONFIGURATION_CREATED = 'billing_portal.configuration.created',
+  BILLING_PORTAL_CONFIGURATION_UPDATED = 'billing_portal.configuration.updated',
+  BILLING_PORTAL_SESSION_CREATED = 'billing_portal.session.created',
   CUSTOMER_CREATED = 'customer.created',
   CUSTOMER_UPDATED = 'customer.updated',
   CUSTOMER_SUBSCRIPTION_CREATED = 'customer.subscription.created',

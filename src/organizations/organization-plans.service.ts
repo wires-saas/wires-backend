@@ -6,6 +6,7 @@ import {
   OrganizationPlanColl,
 } from './schemas/organization-plan.schema';
 import { PlanType } from './entities/plan-type.entity';
+import { randomId } from '../shared/utils/db.utils';
 
 @Injectable()
 export class OrganizationPlansService {
@@ -16,7 +17,7 @@ export class OrganizationPlansService {
     private organizationPlanModel: Model<OrganizationPlan>,
   ) {}
 
-  createFreePlan(organizationId: string): OrganizationPlan {
+  private createFreePlan(organizationId: string): OrganizationPlan {
     return new OrganizationPlan({
       _id: 'free',
       organization: organizationId,
@@ -24,9 +25,34 @@ export class OrganizationPlansService {
     });
   }
 
-  create(organizationId: string): Promise<OrganizationPlan> {
+  private createPlan(
+    type: PlanType,
+    subscriptionId: string,
+    customerId: string,
+  ): OrganizationPlan {
+    return new OrganizationPlan({
+      _id: randomId(),
+      type,
+      subscriptionId,
+      customerId,
+    });
+  }
+
+  createForOrganization(organizationId: string): Promise<OrganizationPlan> {
     this.logger.log(`Creating free plan for organization ${organizationId}`);
     const plan = this.createFreePlan(organizationId);
+    return new this.organizationPlanModel(plan).save();
+  }
+
+  create(
+    type: PlanType,
+    subscriptionId: string,
+    customerId: string,
+  ): Promise<OrganizationPlan> {
+    this.logger.log(
+      `Creating plan ${type} for customer ${customerId} with subscription ${subscriptionId}`,
+    );
+    const plan = this.createPlan(type, subscriptionId, customerId);
     return new this.organizationPlanModel(plan).save();
   }
 
@@ -38,6 +64,16 @@ export class OrganizationPlansService {
     return this.organizationPlanModel
       .findOne({
         organization: organizationId,
+      })
+      .exec();
+  }
+
+  async findOneBySubscriptionId(
+    subscriptionId: string,
+  ): Promise<OrganizationPlan> {
+    return this.organizationPlanModel
+      .findOne({
+        subscriptionId,
       })
       .exec();
   }

@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { PlanType } from '../entities/plan-type.entity';
 import { Permission } from '../../rbac/permissions/schemas/permission.schema';
 import { PlanTypePermissions } from '../entities/plan-type-permissions.entity';
+import { PlanStatus } from '../entities/plan-status.entity';
 
 export type OrganizationPlanDocument = HydratedDocument<OrganizationPlan>;
 
@@ -61,10 +62,20 @@ export class OrganizationPlan {
   @Prop({ required: true, enum: PlanType })
   type: PlanType;
 
-  // Allows retrieving subscription details
-  // Requesting payment provider with this external subscription ID
-  @Prop()
-  subscription: string;
+  @Prop({ type: String })
+  subscriptionId: string;
+
+  @Prop({ type: String })
+  customerId: string;
+
+  @Prop({ type: String, enum: PlanStatus })
+  status: PlanStatus;
+
+  @Prop({ type: Number })
+  currentPeriodStart: number;
+
+  @Prop({ type: Number })
+  currentPeriodEnd: number;
 
   // Permissions are built-in to the plan
   // But can be overridden by the organization

@@ -6,12 +6,14 @@ import {
   WebhookEventColl,
   WebhookEventSchema,
 } from './schemas/webhook-event.schema';
+import { OrganizationsModule } from '../organizations/organizations.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: WebhookEventColl, schema: WebhookEventSchema },
     ]),
+    OrganizationsModule,
   ],
   controllers: [StripeController],
   providers: [WebhooksService],
