@@ -7,6 +7,7 @@ import {
 } from './schemas/organization-plan.schema';
 import { PlanType } from './entities/plan-type.entity';
 import { randomId } from '../shared/utils/db.utils';
+import { PlanStatus } from './entities/plan-status.entity';
 
 @Injectable()
 export class OrganizationPlansService {
@@ -29,12 +30,17 @@ export class OrganizationPlansService {
     type: PlanType,
     subscriptionId: string,
     customerId: string,
+    currentPeriodStart: number,
+    currentPeriodEnd: number,
   ): OrganizationPlan {
     return new OrganizationPlan({
       _id: randomId(),
       type,
       subscriptionId,
       customerId,
+      currentPeriodStart,
+      currentPeriodEnd,
+      status: PlanStatus.INCOMPLETE,
     });
   }
 
@@ -48,12 +54,53 @@ export class OrganizationPlansService {
     type: PlanType,
     subscriptionId: string,
     customerId: string,
+    currentPeriodStart: number,
+    currentPeriodEnd: number,
   ): Promise<OrganizationPlan> {
     this.logger.log(
       `Creating plan ${type} for customer ${customerId} with subscription ${subscriptionId}`,
     );
-    const plan = this.createPlan(type, subscriptionId, customerId);
+    const plan = this.createPlan(
+      type,
+      subscriptionId,
+      customerId,
+      currentPeriodStart,
+      currentPeriodEnd,
+    );
     return new this.organizationPlanModel(plan).save();
+  }
+
+  createOrUpdate(
+    type: PlanType,
+    subscriptionId: string,
+    customerId: string,
+    currentPeriodStart: number,
+    currentPeriodEnd: number,
+    status: PlanStatus,
+  ): Promise<OrganizationPlan> {
+    this.logger.log(
+      `Upsert plan ${type} for customer ${customerId} with subscription ${subscriptionId}`,
+    );
+
+    return this.organizationPlanModel
+      .findOneAndUpdate(
+        {
+          subscriptionId,
+          customerId,
+        },
+        {
+          type,
+          subscriptionId,
+          customerId,
+          currentPeriodStart,
+          currentPeriodEnd,
+          status,
+        },
+        {
+          upsert: true,
+        },
+      )
+      .exec();
   }
 
   async findAll(): Promise<OrganizationPlan[]> {

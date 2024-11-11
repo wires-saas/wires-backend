@@ -12,6 +12,7 @@ import { WebhookEvent } from './schemas/webhook-event.schema';
 import { StripeWebhookEventType } from './entities/webhook.entities';
 import { OrganizationPlansService } from '../organizations/organization-plans.service';
 import { PlanType } from '../organizations/entities/plan-type.entity';
+import { PlanStatus } from '../organizations/entities/plan-status.entity';
 
 @Controller('webhooks/stripe')
 export class StripeController {
@@ -22,46 +23,68 @@ export class StripeController {
     private readonly organizationPlansService: OrganizationPlansService,
   ) {}
 
+  private validatePlanType(planType: string): PlanType {
+    if (
+      !(
+        [PlanType.BASIC, PlanType.EXTENDED, PlanType.CUSTOM] as string[]
+      ).includes(planType)
+    ) {
+      this.logger.error(
+        'Invalid plan nickname received, cannot map it to plan type',
+      );
+      throw new BadRequestException('Invalid plan nickname');
+    }
+    return planType as PlanType;
+  }
+
   @Post()
   async create(
     @Body() webhookEvent: StripeWebhookEventDto,
   ): Promise<WebhookEvent> {
-    this.logger.log('Received webhook event');
-    this.logger.log(JSON.stringify(webhookEvent));
+    this.logger.log('Received webhook event of type ' + webhookEvent.type);
+
     const event: WebhookEvent =
       await this.webhooksService.createStripeEvent(webhookEvent);
 
     if (event.type === StripeWebhookEventType.CUSTOMER_SUBSCRIPTION_CREATED) {
-      this.logger.log('New subscription, creating organization plan');
-
       const plan = await this.organizationPlansService.findOneBySubscriptionId(
-        event.data.id,
+        event.data.object.id,
       );
 
-      const planType = event.data.plan.nickname as PlanType;
+      const planType = this.validatePlanType(event.data.object.plan.nickname);
 
       if (!plan) {
-        if (
-          ![PlanType.BASIC, PlanType.EXTENDED, PlanType.CUSTOM].includes(
-            planType,
-          )
-        ) {
-          this.logger.error(
-            'Invalid plan nickname received, cannot map it to plan type',
-          );
-          throw new BadRequestException('Invalid plan nickname');
-        }
-
+        this.logger.log('Creating new organization plan');
         await this.organizationPlansService.create(
           planType,
-          event.data.customer,
-          event.data.id,
+          event.data.object.id,
+          event.data.object.customer,
+          event.data.object.current_period_start * 1000,
+          event.data.object.current_period_end * 1000,
         );
       } else {
         this.logger.warn(
           'Plan already exists for subscription, ignoring event',
         );
       }
+    } else if (
+      event.type === StripeWebhookEventType.INVOICE_PAYMENT_SUCCEEDED
+    ) {
+      const planType = this.validatePlanType(
+        event.data.object.lines.data[0].plan.nickname,
+      );
+
+      this.logger.log('Updating organization plan based on invoice event data');
+      await this.organizationPlansService.createOrUpdate(
+        planType,
+        event.data.object.subscription,
+        event.data.object.customer,
+        event.data.object.period_start * 1000,
+        event.data.object.period_end * 1000,
+        event.data.object.status === 'paid'
+          ? PlanStatus.ACTIVE
+          : PlanStatus.INCOMPLETE,
+      );
     }
 
     return event;
