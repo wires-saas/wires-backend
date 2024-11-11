@@ -21,6 +21,11 @@ export type OrganizationPlanDocument = HydratedDocument<OrganizationPlan>;
         ];
       },
     },
+    isTrial: {
+      get(): boolean {
+        return this.trialEnd > Date.now();
+      },
+    },
   },
   toObject: {
     //delete __v from output object
@@ -86,8 +91,8 @@ export class OrganizationPlan {
   @Prop({ type: Number })
   currentPeriodEnd: number;
 
-  @Prop({ type: Boolean })
-  isTrial: boolean;
+  @Prop({ type: Number })
+  trialEnd: number;
 
   // Permissions are built-in to the plan
   // But can be overridden by the organization
@@ -102,6 +107,7 @@ export class OrganizationPlan {
 
   // virtuals
   permissions: Permission[];
+  isTrial: boolean;
 
   constructor(partial: Partial<OrganizationPlan>) {
     Object.assign(this, partial);

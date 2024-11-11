@@ -7,6 +7,7 @@ import {
   WebhookEventSchema,
 } from './schemas/webhook-event.schema';
 import { OrganizationsModule } from '../organizations/organizations.module';
+import { EmailModule } from '../services/email/email.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { OrganizationsModule } from '../organizations/organizations.module';
       { name: WebhookEventColl, schema: WebhookEventSchema },
     ]),
     OrganizationsModule,
+    EmailModule,
   ],
   controllers: [StripeController],
   providers: [WebhooksService],

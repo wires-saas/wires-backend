@@ -11,6 +11,7 @@ export enum StripeWebhookEventType {
   PAYMENT_INTENT_SUCCEEDED = 'payment_intent.succeeded',
   INVOICE_CREATED = 'invoice.created',
   INVOICE_INCOMING = 'invoice.incoming',
+  INVOICE_UPCOMING = 'invoice.upcoming',
   INVOICE_UPDATED = 'invoice.updated',
   INVOICE_FINALIZED = 'invoice.finalized',
   INVOICE_PAID = 'invoice.paid',

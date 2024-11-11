@@ -1,8 +1,7 @@
-import { Controller, Get, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
-import { SuperAdminGuard } from '../auth/super-admin.guard';
 import { I18nService } from 'nestjs-i18n';
 import { EncryptService } from '../services/security/encrypt.service';
 import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
@@ -14,7 +13,7 @@ import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
 @Controller('mail')
 @ApiExcludeController()
 @ApiTags('Mails')
-@UseGuards(SuperAdminGuard)
+// @UseGuards(SuperAdminGuard)
 export class MailController {
   constructor(
     private configService: ConfigService,
@@ -72,6 +71,37 @@ export class MailController {
       orgName: 'Alphabet Corporation',
       expiration: EncryptService.TOKEN_EXPIRATION_DAYS,
       userPasswordReset,
+      footer,
+    };
+
+    return res.render(file, options);
+  }
+
+  @Get('organization-creation-invite')
+  async getOrganizationCreationInviteEmail(@Res() res: Response) {
+    const file = 'email-organization-creation-invite.ejs';
+
+    const organizationCreationInvite = this.i18n.t(
+      'email.organizationCreationInvite',
+    );
+    const footer = this.i18n.t('email.footer');
+
+    const token = 'ABCDEFGH';
+
+    const planSubscribed = this.i18n.t('plans.basic');
+
+    const options = {
+      appName: this.configService.getOrThrow('appName'),
+      appUrl: this.configService.getOrThrow('appUrl'),
+      theme: this.configService.getOrThrow('theme'),
+      ...this.configService.getOrThrow('urls'),
+
+      createOrganizationInviteURL: `${this.configService.getOrThrow('urls.createOrganizationInviteURL')}?token=${encodeURIComponent(token)}`,
+
+      organizationCreationInvite,
+
+      planSubscribed,
+
       footer,
     };
 

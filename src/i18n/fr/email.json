@@ -1,4 +1,15 @@
 {
+  "organizationCreationInvite": {
+    "subject": "Invitation à créer votre compte",
+    "title": "Invitation",
+    "welcome": "Merci à vous,",
+    "invited": "Suite à votre paiement, nous vous invitons à créer votre organisation pour bénéficier de votre souscription à la formule",
+    "process": "Pour ce faire, merci de cliquer sur le bouton ci-dessous",
+    "button": "Créer mon organisation",
+    "alternative": "Si vous ne pouvez pas cliquer sur le bouton, copiez et collez le lien suivant dans votre navigateur :",
+    "greets": "Cordialement,",
+    "team": "L'équipe"
+  },
   "userInvite": {
     "subject": "Invitation à rejoindre { organization }",
     "title": "Invitation de",

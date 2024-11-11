@@ -33,6 +33,7 @@ export default () => {
     urls: {
       acceptInviteURL: `${appUrl}/${fallbackLanguage}/auth/accept-invite`,
       passwordResetURL: `${appUrl}/${fallbackLanguage}/auth/reset-password`,
+      createOrganizationInviteURL: `${appUrl}/${fallbackLanguage}/auth/create-organization-invite`,
       helpURL: `${appUrl}/${fallbackLanguage}/help`,
       tosURL: `${appUrl}/${fallbackLanguage}/tos`,
       faqURL: `${appUrl}/${fallbackLanguage}/faq`,

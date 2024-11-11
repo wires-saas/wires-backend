@@ -8,6 +8,7 @@ import * as ejs from 'ejs';
 import { join } from 'path';
 import { I18nService } from 'nestjs-i18n';
 import { Organization } from '../../organizations/schemas/organization.schema';
+import { PlanType } from '../../organizations/entities/plan-type.entity';
 
 @Injectable()
 export class EmailService {
@@ -182,6 +183,61 @@ export class EmailService {
         }
 
         if (html) await this.sendEmail(userEmail, subject, html);
+      },
+    );
+  }
+
+  async sendOrganizationCreationEmail(
+    customerId: string,
+    customerEmail: string,
+    token: string,
+    plan: PlanType,
+  ): Promise<void> {
+    this.logger.log(
+      'Sending organization creation email to customer #' + customerId,
+    );
+
+    const organizationCreationInvite = this.i18n.t(
+      'email.organizationCreationInvite',
+    );
+    const footer = this.i18n.t('email.footer');
+
+    const planSubscribed = this.i18n.t(`plans.${plan}`);
+
+    const options = {
+      appName: this.configService.getOrThrow('appName'),
+      appUrl: this.configService.getOrThrow('appUrl'),
+      theme: this.configService.getOrThrow('theme'),
+      ...this.configService.getOrThrow('urls'),
+
+      createOrganizationInviteURL: `${this.configService.getOrThrow('urls.createOrganizationInviteURL')}?token=${encodeURIComponent(token)}`,
+
+      organizationCreationInvite,
+
+      planSubscribed,
+
+      footer,
+    };
+
+    const subject = this.i18n.t('email.organizationCreationInvite.subject');
+
+    return ejs.renderFile(
+      join(
+        __dirname,
+        '../../../',
+        'views',
+        'email-organization-creation-invite.ejs',
+      ),
+      options,
+      async (err, html) => {
+        if (err) {
+          return this.logger.error(
+            'An error occurred while trying to render email-organization-creation-invite.ejs',
+            err,
+          );
+        }
+
+        if (html) return await this.sendEmail(customerEmail, subject, html);
       },
     );
   }

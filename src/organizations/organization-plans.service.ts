@@ -32,6 +32,8 @@ export class OrganizationPlansService {
     customerId: string,
     currentPeriodStart: number,
     currentPeriodEnd: number,
+    trialEnd: number,
+    withOrganizationCreationToken: boolean,
   ): OrganizationPlan {
     return new OrganizationPlan({
       _id: randomId(),
@@ -40,7 +42,11 @@ export class OrganizationPlansService {
       customerId,
       currentPeriodStart,
       currentPeriodEnd,
+      trialEnd,
       status: PlanStatus.INCOMPLETE,
+      organizationCreationToken: withOrganizationCreationToken
+        ? randomId()
+        : null,
     });
   }
 
@@ -56,6 +62,8 @@ export class OrganizationPlansService {
     customerId: string,
     currentPeriodStart: number,
     currentPeriodEnd: number,
+    trialEnd: number,
+    withCreationToken: boolean,
   ): Promise<OrganizationPlan> {
     this.logger.log(
       `Creating plan ${type} for customer ${customerId} with subscription ${subscriptionId}`,
@@ -66,6 +74,8 @@ export class OrganizationPlansService {
       customerId,
       currentPeriodStart,
       currentPeriodEnd,
+      trialEnd,
+      withCreationToken,
     );
     return new this.organizationPlanModel(plan).save();
   }
@@ -98,6 +108,38 @@ export class OrganizationPlansService {
         },
         {
           upsert: true,
+        },
+      )
+      .exec();
+  }
+
+  async activate(subscriptionId: string): Promise<OrganizationPlan> {
+    return this.organizationPlanModel
+      .findOneAndUpdate(
+        {
+          subscriptionId,
+        },
+        {
+          status: PlanStatus.ACTIVE,
+        },
+      )
+      .exec();
+  }
+
+  async updateCustomerEmail(
+    customerId: string,
+    customerEmail: string,
+  ): Promise<unknown> {
+    return this.organizationPlanModel
+      .updateMany(
+        {
+          customerId,
+        },
+        {
+          customerEmail,
+        },
+        {
+          upsert: false,
         },
       )
       .exec();
@@ -151,6 +193,14 @@ export class OrganizationPlansService {
     return this.organizationPlanModel
       .findOne({
         subscriptionId,
+      })
+      .exec();
+  }
+
+  async findAllByCustomerId(customerId: string): Promise<OrganizationPlan[]> {
+    return this.organizationPlanModel
+      .find({
+        customerId,
       })
       .exec();
   }
