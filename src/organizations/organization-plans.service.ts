@@ -148,6 +148,24 @@ export class OrganizationPlansService {
       .exec();
   }
 
+  async renew(
+    subscriptionId: string,
+    start: number,
+    end: number,
+  ): Promise<OrganizationPlan> {
+    return this.organizationPlanModel
+      .findOneAndUpdate(
+        {
+          subscriptionId,
+        },
+        {
+          currentPeriodStart: start,
+          currentPeriodEnd: end,
+        },
+      )
+      .exec();
+  }
+
   async updateCustomerEmail(
     customerId: string,
     customerEmail: string,
@@ -178,6 +196,25 @@ export class OrganizationPlansService {
         },
         {
           type: planType,
+        },
+        {
+          upsert: false,
+        },
+      )
+      .exec();
+  }
+
+  async updateLastInvoice(
+    subscriptionId: string,
+    invoiceUrl: string,
+  ): Promise<OrganizationPlan> {
+    return this.organizationPlanModel
+      .findOneAndUpdate(
+        {
+          subscriptionId,
+        },
+        {
+          lastInvoice: invoiceUrl,
         },
         {
           upsert: false,

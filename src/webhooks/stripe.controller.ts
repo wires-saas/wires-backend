@@ -98,6 +98,14 @@ export class StripeController {
             event.data.object.customer_email,
           );
 
+          if (event.data.object.hosted_invoice_url) {
+            this.logger.log('Sending invoice email to customer');
+            await this.organizationPlansService.updateLastInvoice(
+              plan.subscriptionId,
+              event.data.object.hosted_invoice_url,
+            );
+          }
+
           const eventPlanType = this.validatePlanType(
             event.data.object.lines.data[0].plan.nickname,
           );
@@ -131,6 +139,7 @@ export class StripeController {
       } else {
         this.logger.error('No plan found for subscription');
         throw new NotFoundException('No plan found for subscription');
+        // Stripe will retry webhook event
       }
     } else if (
       event.type === StripeWebhookEventType.CUSTOMER_CREATED ||
@@ -175,6 +184,7 @@ export class StripeController {
       // - Plan is cancelled
       // - Plan is upgraded/downgraded
       // - Trial period ends and is converted
+      // - Plan is renewed
 
       const plan = await this.organizationPlansService.findOneBySubscriptionId(
         event.data.object.id,
@@ -201,6 +211,18 @@ export class StripeController {
               plan.subscriptionId,
           );
           await this.organizationPlansService.convertFreeTrial(
+            plan.subscriptionId,
+            event.data.object.current_period_start * 1000,
+            event.data.object.current_period_end * 1000,
+          );
+        } else if (
+          event.data.previous_attributes.current_period_end &&
+          event.data.previous_attributes.current_period_start
+        ) {
+          this.logger.log(
+            'Renewing plan for subscription ' + plan.subscriptionId,
+          );
+          await this.organizationPlansService.renew(
             plan.subscriptionId,
             event.data.object.current_period_start * 1000,
             event.data.object.current_period_end * 1000,

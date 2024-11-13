@@ -82,6 +82,9 @@ export class OrganizationPlan {
   @Prop({ type: String })
   customerEmail: string;
 
+  @Prop({ type: String })
+  lastInvoice: string;
+
   @Prop({ type: String, enum: PlanStatus, required: true })
   status: PlanStatus;
 
