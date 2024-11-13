@@ -98,7 +98,7 @@ export class OrganizationCreationController {
     });
 
     this.logger.log('Setting owner as admin of the organization');
-    await this.userRolesService.createOrUpdate(check.owner, [
+    await this.userRolesService.createOrUpdate(user._id, [
       {
         organization: organization._id,
         role: RoleName.ADMIN,

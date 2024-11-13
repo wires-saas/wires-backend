@@ -9,6 +9,7 @@ import { UsersModule } from '../users/users.module';
 import { CaslModule } from '../rbac/casl/casl.module';
 import { OrganizationPlansController } from './organization-plans.controller';
 import { OrganizationPlansService } from './organization-plans.service';
+import { RolesService } from '../rbac/roles/roles.service';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { OrganizationPlansService } from './organization-plans.service';
     SecurityModule,
     CaslModule,
   ],
-  providers: [OrganizationsService, OrganizationPlansService],
+  providers: [OrganizationsService, OrganizationPlansService, RolesService],
   controllers: [OrganizationsController, OrganizationPlansController],
   exports: [OrganizationsService, OrganizationPlansService],
 })

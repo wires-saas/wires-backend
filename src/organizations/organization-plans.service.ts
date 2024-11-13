@@ -50,7 +50,9 @@ export class OrganizationPlansService {
     });
   }
 
-  createForOrganization(organizationId: string): Promise<OrganizationPlan> {
+  createFreePlanForOrganization(
+    organizationId: string,
+  ): Promise<OrganizationPlan> {
     this.logger.log(`Creating free plan for organization ${organizationId}`);
     const plan = this.createFreePlan(organizationId);
     return new this.organizationPlanModel(plan).save();

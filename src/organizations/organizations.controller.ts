@@ -30,6 +30,7 @@ import { SuperAdminGuard } from '../auth/super-admin.guard';
 import { Gpt } from '../ai/schemas/gpt.schema';
 import { ScopedSubject } from '../rbac/casl/casl.utils';
 import { OrganizationPlansService } from './organization-plans.service';
+import { RolesService } from '../rbac/roles/roles.service';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
@@ -39,6 +40,7 @@ export class OrganizationsController {
   constructor(
     private readonly organizationsService: OrganizationsService,
     private readonly organizationPlansService: OrganizationPlansService,
+    private readonly rolesService: RolesService,
   ) {}
 
   @Post()
@@ -57,7 +59,14 @@ export class OrganizationsController {
     );
 
     // Create free plan for organization
-    await this.organizationPlansService.createForOrganization(organization._id);
+    await this.organizationPlansService.createFreePlanForOrganization(
+      organization._id,
+    );
+
+    // Create basic roles for organization
+    await this.rolesService.createBasicRolesForNewOrganization(
+      organization._id,
+    );
 
     return organization;
   }
