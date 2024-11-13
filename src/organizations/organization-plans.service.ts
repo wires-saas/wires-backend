@@ -139,9 +139,9 @@ export class OrganizationPlansService {
           subscriptionId,
         },
         {
+          trialEnd: Date.now(),
           currentPeriodStart: start,
           currentPeriodEnd: end,
-          isTrial: false,
           status: PlanStatus.ACTIVE,
         },
       )
