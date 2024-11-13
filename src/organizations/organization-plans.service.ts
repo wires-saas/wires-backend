@@ -128,6 +128,26 @@ export class OrganizationPlansService {
       .exec();
   }
 
+  async convertFreeTrial(
+    subscriptionId: string,
+    start: number,
+    end: number,
+  ): Promise<OrganizationPlan> {
+    return this.organizationPlanModel
+      .findOneAndUpdate(
+        {
+          subscriptionId,
+        },
+        {
+          currentPeriodStart: start,
+          currentPeriodEnd: end,
+          isTrial: false,
+          status: PlanStatus.ACTIVE,
+        },
+      )
+      .exec();
+  }
+
   async updateCustomerEmail(
     customerId: string,
     customerEmail: string,

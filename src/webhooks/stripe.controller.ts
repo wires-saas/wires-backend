@@ -152,6 +152,7 @@ export class StripeController {
       // Multiple things can happen here:
       // - Plan is cancelled
       // - Plan is upgraded/downgraded
+      // - Trial period ends and is converted
 
       const plan = await this.organizationPlansService.findOneBySubscriptionId(
         event.data.object.id,
@@ -168,6 +169,19 @@ export class StripeController {
           await this.organizationPlansService.cancel(
             plan.subscriptionId,
             event.data.object.cancel_at * 1000,
+          );
+        } else if (
+          event.data.object.previous_attributes.status === 'trialing' &&
+          event.data.object.status === 'active'
+        ) {
+          this.logger.log(
+            'Converting trial to paid plan for subscription ' +
+              plan.subscriptionId,
+          );
+          await this.organizationPlansService.convertFreeTrial(
+            plan.subscriptionId,
+            event.data.object.current_period_start * 1000,
+            event.data.object.current_period_end * 1000,
           );
         }
       }

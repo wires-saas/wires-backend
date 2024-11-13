@@ -7,6 +7,7 @@ export enum StripeWebhookEventType {
   CUSTOMER_UPDATED = 'customer.updated',
   CUSTOMER_SUBSCRIPTION_CREATED = 'customer.subscription.created',
   CUSTOMER_SUBSCRIPTION_UPDATED = 'customer.subscription.updated',
+  CUSTOMER_SUBSCRIPTION_TRIAL_WILL_END = 'customer.subscription.trial_will_end',
   PAYMENT_INTENT_CREATED = 'payment_intent.created',
   PAYMENT_INTENT_SUCCEEDED = 'payment_intent.succeeded',
   INVOICE_CREATED = 'invoice.created',
