@@ -72,7 +72,7 @@ export type UserDocument = HydratedDocument<User>;
 export class User {
   _id: string;
 
-  @Prop({ required: true }) // not specify it will throw, resulting in error 500
+  @Prop()
   firstName: string;
 
   @Prop()
