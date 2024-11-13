@@ -167,6 +167,25 @@ export class OrganizationPlansService {
       .exec();
   }
 
+  async updatePlanType(
+    subscriptionId: string,
+    planType: string,
+  ): Promise<unknown> {
+    return this.organizationPlanModel
+      .findOneAndUpdate(
+        {
+          subscriptionId,
+        },
+        {
+          type: planType,
+        },
+        {
+          upsert: false,
+        },
+      )
+      .exec();
+  }
+
   // Set plan status to cancelled and update current period end
   async cancel(subscriptionId: string, end: number): Promise<OrganizationPlan> {
     return this.organizationPlanModel

@@ -98,13 +98,35 @@ export class StripeController {
             event.data.object.customer_email,
           );
 
-          // Send email to user
-          await this.emailService.sendOrganizationCreationEmail(
-            plan.customerId,
-            event.data.object.customer_email,
-            plan.organizationCreationToken,
-            plan.type,
+          const eventPlanType = this.validatePlanType(
+            event.data.object.lines.data[0].plan.nickname,
           );
+
+          if (plan.type !== eventPlanType) {
+            this.logger.log(
+              'Switching plan type from ' +
+                plan.type +
+                ' to ' +
+                eventPlanType +
+                ' for subscription ' +
+                plan.subscriptionId,
+            );
+            await this.organizationPlansService.updatePlanType(
+              plan.subscriptionId,
+              eventPlanType,
+            );
+          }
+
+          // Send email to user
+          if (!plan.organization) {
+            this.logger.log('Sending organization creation email to customer');
+            await this.emailService.sendOrganizationCreationEmail(
+              plan.customerId,
+              event.data.object.customer_email,
+              plan.organizationCreationToken,
+              plan.type,
+            );
+          }
         }
       } else {
         this.logger.error('No plan found for subscription');
