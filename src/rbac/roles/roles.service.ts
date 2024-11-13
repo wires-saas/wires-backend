@@ -4,6 +4,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Role } from './schemas/role.schema';
 import { UserRolesService } from '../../users/user-roles/user-roles.service';
+import { RoleName } from '../../shared/types/authentication.types';
+import { AdminRolePermissions } from './entities/admin-role.permissions';
+import { ManagerRolePermissions } from './entities/manager-role.permissions';
+import { UserRolePermissions } from './entities/user-role.permissions';
 
 @Injectable()
 export class RolesService {
@@ -14,6 +18,38 @@ export class RolesService {
     private roleModel: Model<Role>,
     private userRolesService: UserRolesService,
   ) {}
+
+  async createBasicRolesForNewOrganization(
+    organizationId: string,
+  ): Promise<Role[]> {
+    this.logger.log('Creating basic roles for organization', organizationId);
+
+    const roles = [
+      new Role({
+        _id: {
+          organization: organizationId,
+          role: RoleName.ADMIN,
+        },
+        permissions: AdminRolePermissions,
+      }),
+      new Role({
+        _id: {
+          organization: organizationId,
+          role: RoleName.MANAGER,
+        },
+        permissions: ManagerRolePermissions,
+      }),
+      new Role({
+        _id: {
+          organization: organizationId,
+          role: RoleName.USER,
+        },
+        permissions: UserRolePermissions,
+      }),
+    ];
+
+    return this.roleModel.insertMany(roles);
+  }
 
   async create(organizationId: string, roleDto: RoleDto): Promise<Role> {
     const role = new Role({

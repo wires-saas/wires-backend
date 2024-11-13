@@ -1,8 +1,8 @@
 import {
   IsAlpha,
+  IsAlphanumeric,
   IsLowercase,
   IsNotEmpty,
-  IsOptional,
   IsString,
   MaxLength,
   MinLength,
@@ -11,7 +11,10 @@ import {
 export class CreateOrganizationDto {
   @IsNotEmpty()
   @IsString()
-  name: string;
+  @IsAlphanumeric()
+  @MinLength(2)
+  @MaxLength(255)
+  organizationName: string;
 
   @IsNotEmpty()
   @IsString()
@@ -19,9 +22,9 @@ export class CreateOrganizationDto {
   @IsLowercase()
   @MinLength(3)
   @MaxLength(32)
-  slug: string;
+  organizationSlug: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  country?: string;
+  userPassword: string;
 }

@@ -1,4 +1,6 @@
 export enum Subject {
+  All = 'all',
+
   Article = 'article',
   Billing = 'billing',
   Block = 'block',

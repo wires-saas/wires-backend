@@ -40,6 +40,7 @@ export class Permission {
 
   static getPermissionFromId(id: string): Permission {
     return new Permission({
+      _id: id,
       action: id.split('_')[0] as Action,
       subject: id.split('_')[1] as Subject,
     });

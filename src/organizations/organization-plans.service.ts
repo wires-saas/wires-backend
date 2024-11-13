@@ -197,6 +197,14 @@ export class OrganizationPlansService {
       .exec();
   }
 
+  async findOneByToken(token: string): Promise<OrganizationPlan> {
+    return this.organizationPlanModel
+      .findOne({
+        organizationCreationToken: token,
+      })
+      .exec();
+  }
+
   async findAllByCustomerId(customerId: string): Promise<OrganizationPlan[]> {
     return this.organizationPlanModel
       .find({

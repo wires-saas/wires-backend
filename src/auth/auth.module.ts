@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -11,6 +11,9 @@ import { SecurityModule } from '../services/security/security.module';
 import { UsersModule } from '../users/users.module';
 import { OrganizationsModule } from '../organizations/organizations.module';
 import { EmailModule } from '../services/email/email.module';
+import { OrganizationCreationService } from './organization-creation/organization-creation.service';
+import { OrganizationCreationController } from './organization-creation/organization-creation.controller';
+import { RolesModule } from '../rbac/roles/roles.module';
 
 readEnvFile();
 const jwtSecret = process.env.JWT_SECRET;
@@ -27,8 +30,9 @@ const jwtSecret = process.env.JWT_SECRET;
     UsersModule,
     OrganizationsModule,
     EmailModule,
+    forwardRef(() => RolesModule),
   ],
-  controllers: [AuthController, MailController],
-  providers: [AuthService],
+  controllers: [AuthController, OrganizationCreationController, MailController],
+  providers: [AuthService, OrganizationCreationService],
 })
 export class AuthModule {}

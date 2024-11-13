@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { RolesController } from './roles.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -13,13 +13,14 @@ import { OrganizationsModule } from '../../organizations/organizations.module';
 @Module({
   imports: [
     MongooseModule.forFeature(allModels),
-    AuthModule,
     SecurityModule,
     UsersModule,
     OrganizationsModule,
     UserRolesModule,
+    forwardRef(() => AuthModule),
   ],
   controllers: [RolesController],
   providers: [RolesService, SuperAdminGuard],
+  exports: [RolesService],
 })
 export class RolesModule {}

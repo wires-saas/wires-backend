@@ -64,6 +64,19 @@ export class UsersService {
     });
   }
 
+  async createOwner(email: string, password: string): Promise<User> {
+    const user = new User({
+      email: this.encryptService.encrypt(email),
+      password: await this.hashService.hash(password),
+      firstName: '',
+      lastName: '',
+      status: UserStatus.ACTIVE,
+      emailStatus: UserEmailStatus.CONFIRMED,
+    });
+
+    return await new this.userModel(user).save();
+  }
+
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.convertToEntity(createUserDto);
 
