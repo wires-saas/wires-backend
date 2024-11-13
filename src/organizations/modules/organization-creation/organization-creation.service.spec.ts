@@ -1,25 +1,13 @@
 import { TestingModule } from '@nestjs/testing';
-import { TestUtils } from '../../shared/utils/test.utils';
 import { OrganizationCreationService } from './organization-creation.service';
-
-const mockOrganizationPlansService = {
-  checkOrganizationCreationInviteToken: jest.fn(),
-  useOrganizationCreationInviteToken: jest.fn(),
-};
+import { TestUtils } from '../../../shared/utils/test.utils';
 
 describe('OrganizationCreationService', () => {
   let service: OrganizationCreationService;
 
   beforeEach(async () => {
     const module: TestingModule = await TestUtils.createTestingModule({
-      providers: [
-        OrganizationCreationService,
-        {
-          provide: OrganizationCreationService,
-          useValue: mockOrganizationPlansService,
-        },
-      ],
-      controllers: [],
+      providers: [OrganizationCreationService],
     });
 
     service = module.get<OrganizationCreationService>(

@@ -21,6 +21,10 @@ import { Article } from '../../articles/schemas/article.schema';
 import { ScrapingService } from '../../services/scraping/scraping.service';
 import { Tag } from '../../tags/schemas/tag.schema';
 import { TagsService } from '../../tags/tags.service';
+import { OrganizationCreationService } from '../../organizations/modules/organization-creation/organization-creation.service';
+import { OrganizationPlansService } from '../../organizations/organization-plans.service';
+import { RolesService } from '../../rbac/roles/roles.service';
+import { UserRolesService } from '../../users/user-roles/user-roles.service';
 
 export class TestUtils {
   static createModel() {
@@ -91,6 +95,31 @@ export class TestUtils {
       removeFile: jest.fn(),
     };
 
+    const mockOrganizationCreationService = {
+      checkOrganizationCreationInviteToken: jest.fn(),
+      createOrganizationAndResourcesWithToken: jest.fn(),
+    };
+
+    const mockOrganizationPlansService = {
+      findOneByToken: jest.fn(),
+    };
+
+    const mockRolesService = {
+      create: jest.fn(),
+      findAll: jest.fn(),
+      findOne: jest.fn(),
+      update: jest.fn(),
+      remove: jest.fn(),
+    };
+
+    const mockUserRolesService = {
+      create: jest.fn(),
+      findAll: jest.fn(),
+      findOne: jest.fn(),
+      update: jest.fn(),
+      remove: jest.fn(),
+    };
+
     return Test.createTestingModule({
       imports: metadata.imports ? [...metadata.imports] : [],
       controllers: metadata.controllers ? [...metadata.controllers] : [],
@@ -112,6 +141,25 @@ export class TestUtils {
         { provide: EmailService, useValue: mockEmailService },
 
         { provide: FileUploadService, useValue: mockFileUploadService },
+
+        {
+          provide: OrganizationCreationService,
+          useValue: mockOrganizationCreationService,
+        },
+
+        {
+          provide: OrganizationPlansService,
+          useValue: mockOrganizationPlansService,
+        },
+
+        {
+          provide: RolesService,
+          useValue: mockRolesService,
+        },
+        {
+          provide: UserRolesService,
+          useValue: mockUserRolesService,
+        },
 
         ...metadata.providers,
       ],

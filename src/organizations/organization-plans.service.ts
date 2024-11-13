@@ -179,6 +179,22 @@ export class OrganizationPlansService {
       .exec();
   }
 
+  async updateOrganizationWithCreationToken(
+    creationToken: string,
+    organizationId: string,
+  ): Promise<OrganizationPlan> {
+    return this.organizationPlanModel
+      .findOneAndUpdate(
+        {
+          organizationCreationToken: creationToken,
+        },
+        {
+          organization: organizationId,
+        },
+      )
+      .exec();
+  }
+
   // Find last updated plan of organization
   async findOne(organizationId: string): Promise<OrganizationPlan> {
     return this.organizationPlanModel

@@ -8,7 +8,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class CreateOrganizationDto {
+export class CreateOrganizationWithTokenDto {
   @IsNotEmpty()
   @IsString()
   @IsAlphanumeric()

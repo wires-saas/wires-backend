@@ -22,8 +22,6 @@ export class RolesService {
   async createBasicRolesForNewOrganization(
     organizationId: string,
   ): Promise<Role[]> {
-    this.logger.log('Creating basic roles for organization', organizationId);
-
     const roles = [
       new Role({
         _id: {

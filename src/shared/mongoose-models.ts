@@ -17,21 +17,11 @@ import {
   UserNotificationColl,
   UserNotificationSchema,
 } from '../users/schemas/user-notification.schema';
-import { Feed, FeedSchema } from '../feeds/schemas/feed.schema';
-import { FeedRunColl, FeedRunSchema } from '../feeds/schemas/feed-run.schema';
-import { Article, ArticleSchema } from '../articles/schemas/article.schema';
-import { Tag, TagSchema } from '../tags/schemas/tag.schema';
 import { Gpt, GptSchema } from '../ai/schemas/gpt.schema';
 import {
   GptRequestColl,
   GptRequestSchema,
 } from '../ai/schemas/gpt-request.schema';
-import { Block, BlockSchema } from '../blocks/schemas/block.schema';
-import { Folder, FolderSchema } from '../folders/schemas/folder.schema';
-import {
-  FolderItemColl,
-  FolderItemSchema,
-} from '../folders/schemas/folder-item.schema';
 import {
   OrganizationPlanColl,
   OrganizationPlanSchema,
@@ -47,22 +37,9 @@ const allModels: ModelDefinition[] = [
   { name: Permission.name, schema: PermissionSchema },
 ];
 
-export const contentModels: ModelDefinition[] = [
-  { name: Article.name, schema: ArticleSchema },
-  { name: Feed.name, schema: FeedSchema },
-  { name: FeedRunColl, schema: FeedRunSchema },
-  { name: Tag.name, schema: TagSchema },
-];
-
 export const aiModels: ModelDefinition[] = [
   { name: Gpt.name, schema: GptSchema },
   { name: GptRequestColl, schema: GptRequestSchema },
-];
-
-export const studioModels: ModelDefinition[] = [
-  { name: Block.name, schema: BlockSchema },
-  { name: Folder.name, schema: FolderSchema },
-  { name: FolderItemColl, schema: FolderItemSchema },
 ];
 
 export default allModels;
