@@ -6,6 +6,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { OrganizationPlansService } from './organization-plans.service';
+import { RolesService } from '../rbac/roles/roles.service';
 
 const mockOrganizationsService = {
   create: jest.fn(),
@@ -40,6 +41,10 @@ const mockUsersService = {
   findOneByEmail: jest.fn(),
 };
 
+const mockRolesService = {
+  createBasicRolesForNewOrganization: jest.fn(),
+};
+
 describe('OrganizationsController', () => {
   let controller: OrganizationsController;
   let service: typeof mockOrganizationsService;
@@ -59,6 +64,7 @@ describe('OrganizationsController', () => {
         { provide: AuthGuard, useValue: authGuardMock },
         { provide: JwtService, useValue: mockJwtService },
         { provide: UsersService, useValue: mockUsersService },
+        { provide: RolesService, useValue: mockRolesService },
       ],
     }).compile();
 
