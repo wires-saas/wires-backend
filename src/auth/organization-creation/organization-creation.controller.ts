@@ -77,6 +77,8 @@ export class OrganizationCreationController {
       .findOneByEmail(check.owner)
       .catch(() => undefined);
 
+    let ownerUserId: string = user?._id;
+
     if (check.requiresOwnerCreation) {
       if (!createOrganizationDto.userPassword) {
         throw new BadRequestException('User password is required');
@@ -84,10 +86,11 @@ export class OrganizationCreationController {
 
       if (!user) {
         this.logger.log('Creating organization owner account');
-        await this.usersService.createOwner(
+        const userCreated = await this.usersService.createOwner(
           check.owner,
           createOrganizationDto.userPassword,
         );
+        ownerUserId = userCreated._id;
       }
     }
 
@@ -98,7 +101,7 @@ export class OrganizationCreationController {
     });
 
     this.logger.log('Setting owner as admin of the organization');
-    await this.userRolesService.createOrUpdate(user._id, [
+    await this.userRolesService.createOrUpdate(ownerUserId, [
       {
         organization: organization._id,
         role: RoleName.ADMIN,
