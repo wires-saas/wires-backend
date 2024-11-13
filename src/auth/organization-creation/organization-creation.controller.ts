@@ -79,19 +79,17 @@ export class OrganizationCreationController {
 
     let ownerUserId: string = user?._id;
 
-    if (check.requiresOwnerCreation) {
+    if (check.requiresOwnerCreation && !user) {
       if (!createOrganizationDto.userPassword) {
         throw new BadRequestException('User password is required');
       }
 
-      if (!user) {
-        this.logger.log('Creating organization owner account');
-        const userCreated = await this.usersService.createOwner(
-          check.owner,
-          createOrganizationDto.userPassword,
-        );
-        ownerUserId = userCreated._id;
-      }
+      this.logger.log('Creating organization owner account');
+      const userCreated = await this.usersService.createOwner(
+        check.owner,
+        createOrganizationDto.userPassword,
+      );
+      ownerUserId = userCreated._id;
     }
 
     this.logger.log('Creating organization');
