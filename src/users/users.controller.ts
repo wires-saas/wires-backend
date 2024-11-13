@@ -101,7 +101,7 @@ export class UsersController {
     }
 
     const userCreated: User = await this.usersService.create(createUserDto);
-    this.logger.log('New user created with id #' + userCreated._id);
+    this.logger.log('New user created with id ' + userCreated._id);
 
     if (userCreated)
       await this.emailService.sendUserInviteEmail(

@@ -171,7 +171,7 @@ export class StripeController {
             event.data.object.cancel_at * 1000,
           );
         } else if (
-          event.data.object.previous_attributes.status === 'trialing' &&
+          event.data.previous_attributes.status === 'trialing' &&
           event.data.object.status === 'active'
         ) {
           this.logger.log(

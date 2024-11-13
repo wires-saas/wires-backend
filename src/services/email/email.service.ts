@@ -82,14 +82,14 @@ export class EmailService {
     organization: Organization,
     expiration: number,
   ): Promise<void> {
-    this.logger.log('Sending user invite email to user #' + user._id);
+    this.logger.log('Sending user invite email to user ' + user._id);
 
     const userEmail = user.email;
     try {
       this.encryptService.decrypt(user.email);
     } catch (e) {
       this.logger.warn(
-        'Could not decrypt email for user #' +
+        'Could not decrypt email for user ' +
           user._id +
           ' considering it as decrypted',
       );
@@ -140,14 +140,14 @@ export class EmailService {
     token: string,
     expiration: number,
   ): Promise<void> {
-    this.logger.log('Sending password reset email to user #' + user._id);
+    this.logger.log('Sending password reset email to user ' + user._id);
 
     const userEmail = user.email;
     try {
       this.encryptService.decrypt(user.email);
     } catch (e) {
       this.logger.warn(
-        'Could not decrypt email for user #' +
+        'Could not decrypt email for user ' +
           user._id +
           ' considering it as decrypted',
       );
@@ -194,7 +194,7 @@ export class EmailService {
     plan: PlanType,
   ): Promise<void> {
     this.logger.log(
-      'Sending organization creation email to customer #' + customerId,
+      'Sending organization creation email to customer ' + customerId,
     );
 
     const organizationCreationInvite = this.i18n.t(

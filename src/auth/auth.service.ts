@@ -71,7 +71,7 @@ export class AuthService {
         lastSeenAt: Date.now(),
       })
       .catch(() => {
-        this.logger.warn('Could not update lastSeenAt for user #' + user._id);
+        this.logger.warn('Could not update lastSeenAt for user ' + user._id);
         // silently ignoring the error
       });
 
