@@ -70,8 +70,6 @@ export class OrganizationCreationService {
     token: string,
     createOrganizationDto: CreateOrganizationWithTokenDto,
   ): Promise<void> {
-    throw new InternalServerErrorException('Not implemented');
-
     const check = await this.checkOrganizationCreationInviteToken(token);
 
     const user: UserWithPermissions | undefined = await this.usersService
