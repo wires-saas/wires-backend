@@ -2,6 +2,7 @@ import {
   BadRequestException,
   GoneException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -69,6 +70,8 @@ export class OrganizationCreationService {
     token: string,
     createOrganizationDto: CreateOrganizationWithTokenDto,
   ): Promise<void> {
+    throw new InternalServerErrorException('Not implemented');
+
     const check = await this.checkOrganizationCreationInviteToken(token);
 
     const user: UserWithPermissions | undefined = await this.usersService
@@ -114,5 +117,10 @@ export class OrganizationCreationService {
     await this.rolesService.createBasicRolesForNewOrganization(
       organization._id,
     );
+
+    // Missing :
+    // - default folders
+    // - default example blocks
+    // - upload default avatar in S3 (+ create folder)
   }
 }

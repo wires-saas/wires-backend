@@ -99,6 +99,7 @@ export class StripeController {
           );
 
           if (event.data.object.hosted_invoice_url) {
+            // TODO send email with invoice ? or Stripe does it ?
             this.logger.log('Sending invoice email to customer');
             await this.organizationPlansService.updateLastInvoice(
               plan.subscriptionId,

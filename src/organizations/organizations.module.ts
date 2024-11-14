@@ -18,6 +18,7 @@ import {
   OrganizationPlanSchema,
 } from './schemas/organization-plan.schema';
 import { RolesModule } from '../rbac/roles/roles.module';
+import { OrganizationSlugsController } from './organization-slugs.controller';
 
 @Module({
   imports: [
@@ -33,7 +34,11 @@ import { RolesModule } from '../rbac/roles/roles.module';
     forwardRef(() => OrganizationCreationModule),
   ],
   providers: [OrganizationsService, OrganizationPlansService],
-  controllers: [OrganizationsController, OrganizationPlansController],
+  controllers: [
+    OrganizationsController,
+    OrganizationPlansController,
+    OrganizationSlugsController,
+  ],
   exports: [OrganizationsService, OrganizationPlansService],
 })
 export class OrganizationsModule {}

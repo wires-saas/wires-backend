@@ -3,6 +3,7 @@ import {
   IsAlphanumeric,
   IsLowercase,
   IsNotEmpty,
+  IsOptional,
   IsString,
   MaxLength,
   MinLength,
@@ -24,7 +25,7 @@ export class CreateOrganizationWithTokenDto {
   @MaxLength(32)
   organizationSlug: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  userPassword: string;
+  userPassword?: string;
 }
