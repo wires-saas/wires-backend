@@ -107,4 +107,32 @@ export class MailController {
 
     return res.render(file, options);
   }
+
+  @Get('organization-creation-confirmation')
+  async getOrganizationCreationConfirmationEmail(@Res() res: Response) {
+    const file = 'email-organization-creation-confirmation.ejs';
+
+    const organizationCreationConfirmation = this.i18n.t(
+      'email.organizationCreationConfirmation',
+      {
+        args: { organization: 'Alphabet Corporation' },
+      },
+    );
+    const footer = this.i18n.t('email.footer');
+
+    const options = {
+      appName: this.configService.getOrThrow('appName'),
+      appUrl: this.configService.getOrThrow('appUrl'),
+      theme: this.configService.getOrThrow('theme'),
+      ...this.configService.getOrThrow('urls'),
+
+      loginURL: this.configService.getOrThrow('urls.loginURL'),
+
+      organizationCreationConfirmation,
+
+      footer,
+    };
+
+    return res.render(file, options);
+  }
 }

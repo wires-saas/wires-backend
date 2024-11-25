@@ -241,4 +241,58 @@ export class EmailService {
       },
     );
   }
+
+  async sendOrganizationCreationConfirmationEmail(
+    customerEmail: string,
+    organizationName: string,
+  ): Promise<void> {
+    this.logger.log(
+      'Sending organization creation confirmation email to owner',
+    );
+
+    const organizationCreationConfirmation = this.i18n.t(
+      'email.organizationCreationConfirmation',
+      {
+        args: { organization: organizationName },
+      },
+    );
+    const footer = this.i18n.t('email.footer');
+
+    const options = {
+      appName: this.configService.getOrThrow('appName'),
+      appUrl: this.configService.getOrThrow('appUrl'),
+      theme: this.configService.getOrThrow('theme'),
+      ...this.configService.getOrThrow('urls'),
+
+      loginURL: this.configService.getOrThrow('urls.loginURL'),
+
+      organizationCreationConfirmation,
+
+      footer,
+    };
+
+    const subject = this.i18n.t(
+      'email.organizationCreationConfirmation.subject',
+    );
+
+    return ejs.renderFile(
+      join(
+        __dirname,
+        '../../../',
+        'views',
+        'email-organization-creation-confirmation.ejs',
+      ),
+      options,
+      async (err, html) => {
+        if (err) {
+          return this.logger.error(
+            'An error occurred while trying to render email-organization-creation-confirmation.ejs',
+            err,
+          );
+        }
+
+        if (html) return await this.sendEmail(customerEmail, subject, html);
+      },
+    );
+  }
 }

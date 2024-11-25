@@ -10,6 +10,19 @@
     "greets": "Cordialement,",
     "team": "L'équipe"
   },
+  "organizationCreationConfirmation": {
+    "subject": "Création de l'organisation",
+    "preheader": "{ organization } a bien été créée",
+    "title": "Félicitations",
+    "welcome": "Félicitations !",
+    "message": {
+      "first": "L'organisation \"{ organization }\" a été créée avec succès",
+      "second": "Connectez-vous dès maintenant en cliquant sur le bouton ci-dessous"
+    },
+    "button": "Accéder à Wires",
+    "greets": "Cordialement,",
+    "team": "L'équipe"
+  },
   "userInvite": {
     "subject": "Invitation à rejoindre { organization }",
     "title": "Invitation de",

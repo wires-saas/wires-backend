@@ -15,6 +15,7 @@ import { StripeWebhookEventType } from './entities/webhook.entities';
 import { OrganizationPlansService } from '../organizations/organization-plans.service';
 import { PlanType } from '../organizations/entities/plan-type.entity';
 import { EmailService } from '../services/email/email.service';
+import { OrganizationPlan } from '../organizations/schemas/organization-plan.schema';
 
 @Controller('webhooks/stripe')
 export class StripeController {
@@ -79,9 +80,24 @@ export class StripeController {
       event.type === StripeWebhookEventType.INVOICE_PAYMENT_SUCCEEDED
     ) {
       // To ensure plan is activated when payment is successful
-      const plan = await this.organizationPlansService.findOneBySubscriptionId(
-        event.data.object.subscription,
-      );
+      let plan: OrganizationPlan =
+        await this.organizationPlansService.findOneBySubscriptionId(
+          event.data.object.subscription,
+        );
+
+      if (!plan) {
+        // 7 sec retry to handle Stripe webhooks random order
+        this.logger.log('Plan not found, retrying in 7 seconds');
+        plan = await new Promise((resolve) =>
+          setTimeout(() => {
+            resolve(
+              this.organizationPlansService.findOneBySubscriptionId(
+                event.data.object.subscription,
+              ),
+            );
+          }, 7000),
+        );
+      }
 
       if (plan) {
         if (event.data.object.status === 'paid') {

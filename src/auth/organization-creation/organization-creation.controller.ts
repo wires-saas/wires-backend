@@ -12,12 +12,14 @@ import {
   OrganizationCreationService,
 } from '../../organizations/modules/organization-creation/organization-creation.service';
 import { CreateOrganizationWithTokenDto } from './create-organization-with-token.dto';
+import { EmailService } from '../../services/email/email.service';
 
 @ApiExcludeController()
 @Controller('auth/organization-creation-invite')
 export class OrganizationCreationController {
   constructor(
     private organizationCreationService: OrganizationCreationService,
+    private emailService: EmailService,
   ) {}
 
   @Get(':token')
@@ -50,9 +52,15 @@ export class OrganizationCreationController {
     @Param('token') token: string,
     @Body() createOrganizationWithTokenDto: CreateOrganizationWithTokenDto,
   ): Promise<void> {
-    return this.organizationCreationService.createOrganizationAndResourcesWithToken(
-      token,
-      createOrganizationWithTokenDto,
+    const creation =
+      await this.organizationCreationService.createOrganizationAndResourcesWithToken(
+        token,
+        createOrganizationWithTokenDto,
+      );
+
+    await this.emailService.sendOrganizationCreationConfirmationEmail(
+      creation.ownerEmail,
+      creation.organizationName,
     );
   }
 }

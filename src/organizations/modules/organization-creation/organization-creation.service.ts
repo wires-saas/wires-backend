@@ -68,7 +68,7 @@ export class OrganizationCreationService {
   async createOrganizationAndResourcesWithToken(
     token: string,
     createOrganizationDto: CreateOrganizationWithTokenDto,
-  ): Promise<void> {
+  ): Promise<{ ownerEmail: string; organizationName: string }> {
     const check = await this.checkOrganizationCreationInviteToken(token);
 
     const user: UserWithPermissions | undefined = await this.usersService
@@ -114,6 +114,11 @@ export class OrganizationCreationService {
     await this.rolesService.createBasicRolesForNewOrganization(
       organization._id,
     );
+
+    return {
+      ownerEmail: ownerUserId,
+      organizationName: organization.name,
+    };
 
     // Missing :
     // - default folders
