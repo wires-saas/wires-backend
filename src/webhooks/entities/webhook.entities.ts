@@ -5,8 +5,10 @@ export enum StripeWebhookEventType {
   CHECKOUT_SESSION_COMPLETED = 'checkout.session.completed',
   CUSTOMER_CREATED = 'customer.created',
   CUSTOMER_UPDATED = 'customer.updated',
+  CUSTOMER_DELETED = 'customer.deleted',
   CUSTOMER_SUBSCRIPTION_CREATED = 'customer.subscription.created',
   CUSTOMER_SUBSCRIPTION_UPDATED = 'customer.subscription.updated',
+  CUSTOMER_SUBSCRIPTION_DELETED = 'customer.subscription.deleted',
   CUSTOMER_SUBSCRIPTION_TRIAL_WILL_END = 'customer.subscription.trial_will_end',
   PAYMENT_INTENT_CREATED = 'payment_intent.created',
   PAYMENT_INTENT_SUCCEEDED = 'payment_intent.succeeded',
@@ -20,4 +22,5 @@ export enum StripeWebhookEventType {
   SUBSCRIPTION_SCHEDULE_CREATED = 'subscription_schedule.created',
   SUBSCRIPTION_SCHEDULE_UPDATED = 'subscription_schedule.updated',
   SUBSCRIPTION_SCHEDULE_RELEASED = 'subscription_schedule.released',
+  SUBSCRIPTION_SCHEDULE_EXPIRING = 'subscription_schedule.expiring',
 }

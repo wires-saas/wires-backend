@@ -16,6 +16,7 @@ import { OrganizationPlansService } from '../organizations/organization-plans.se
 import { PlanType } from '../organizations/entities/plan-type.entity';
 import { EmailService } from '../services/email/email.service';
 import { OrganizationPlan } from '../organizations/schemas/organization-plan.schema';
+import { OrganizationsService } from '../organizations/organizations.service';
 
 @Controller('webhooks/stripe')
 export class StripeController {
@@ -23,6 +24,7 @@ export class StripeController {
 
   constructor(
     private readonly webhooksService: WebhooksService,
+    private readonly organizationsService: OrganizationsService,
     private readonly organizationPlansService: OrganizationPlansService,
     private readonly emailService: EmailService,
   ) {}
@@ -175,25 +177,57 @@ export class StripeController {
     ) {
       // Checkout session completion event is the only event that contains the organization slug
       // (we provide it under client_reference_id)
+      this.logger.log('Trying to affect plan to existing organization');
 
       const subscriptionId = event.data.object.subscription;
       const organizationSlug = event.data.object.client_reference_id;
+
       if (!organizationSlug) {
         this.logger.warn('No client reference id found in event data');
-
-        await this.organizationPlansService.updateCustomerEmail(
-          event.data.object.customer,
-          event.data.object.customer_details.email,
-        );
-      } else {
-        this.logger.log(
-          'Updating organization plan for organization ' + organizationSlug,
-        );
-        await this.organizationPlansService.updateOrganization(
-          subscriptionId,
-          organizationSlug,
+        throw new NotFoundException(
+          'No client reference id found in event data',
         );
       }
+
+      const organization =
+        await this.organizationsService.findOne(organizationSlug);
+      if (!organization) {
+        this.logger.error(
+          'Organization not found for slug ' + organizationSlug,
+        );
+        throw new NotFoundException(
+          'Organization not found for slug ' + organizationSlug,
+        );
+      }
+
+      let plan: OrganizationPlan =
+        await this.organizationPlansService.findOneBySubscriptionId(
+          subscriptionId,
+        );
+
+      if (!plan) {
+        // wait 7 seconds to handle Stripe webhooks random order
+        await new Promise((resolve) => setTimeout(resolve, 7000));
+        plan =
+          await this.organizationPlansService.findOneBySubscriptionId(
+            subscriptionId,
+          );
+      }
+
+      if (!plan) {
+        this.logger.error('No plan found for subscription');
+        throw new NotFoundException('No plan found for subscription');
+      }
+
+      this.logger.log(
+        'Syncing organization plan for organization ' + organizationSlug,
+      );
+      await this.organizationPlansService.updateOrganization(
+        subscriptionId,
+        organizationSlug,
+      );
+
+      await this.organizationsService.updatePlan(organizationSlug, plan._id);
     } else if (
       event.type === StripeWebhookEventType.CUSTOMER_SUBSCRIPTION_UPDATED
     ) {

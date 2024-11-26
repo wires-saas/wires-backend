@@ -33,6 +33,12 @@ export class OrganizationsService {
     return new this.organizationModel(org).save();
   }
 
+  updatePlan(organizationId: string, planId: string): Promise<Organization> {
+    return this.organizationModel
+      .findByIdAndUpdate(organizationId, { plan: planId }, { new: true })
+      .exec();
+  }
+
   async findAll(ability: MongoAbility): Promise<Organization[]> {
     return this.organizationModel
       .find(accessibleBy(ability, 'read').ofType(Organization))
