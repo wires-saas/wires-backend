@@ -215,7 +215,6 @@ export class StripeController {
 
       if (!plan) {
         this.logger.warn('No plan found for subscription, ignoring event');
-        throw new NotFoundException('No plan found for subscription');
       } else {
         if (event.data.object.canceled_at) {
           this.logger.log(
@@ -255,6 +254,7 @@ export class StripeController {
     } else if (
       event.type === StripeWebhookEventType.CUSTOMER_SUBSCRIPTION_DELETED
     ) {
+      // Plan has been cancelled previously and is now expired
       const plan = await this.organizationPlansService.findOneBySubscriptionId(
         event.data.object.id,
       );
