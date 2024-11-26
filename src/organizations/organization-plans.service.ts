@@ -97,19 +97,17 @@ export class OrganizationPlansService {
   }
 
   createOrUpdate(plan: PlanDto): Promise<OrganizationPlan> {
-    this.logger.log(
-      `Upsert plan ${plan.type} for customer ${plan.customerId} with subscription ${plan.subscriptionId}`,
-    );
+    this.logger.log(`Upsert plan for subscription ${plan.subscriptionId}`);
 
     return this.organizationPlanModel
       .findOneAndUpdate(
         {
           subscriptionId: plan.subscriptionId,
-          customerId: plan.customerId,
         },
         plan,
         {
           upsert: true,
+          new: true,
         },
       )
       .exec();

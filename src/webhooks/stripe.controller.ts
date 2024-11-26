@@ -45,7 +45,7 @@ export class StripeController {
   }
 
   @Post()
-  async create(
+  async handleEvent(
     @Body() webhookEvent: StripeWebhookEventDto,
   ): Promise<WebhookEvent> {
     this.logger.log('Received webhook event of type ' + webhookEvent.type);
@@ -183,11 +183,6 @@ export class StripeController {
           );
         }
 
-        const plan: OrganizationPlan =
-          await this.organizationPlansService.findOneBySubscriptionId(
-            subscriptionId,
-          );
-
         this.logger.log('Setting organization field of plan');
         const planPostUpdate =
           await this.organizationPlansService.createOrUpdate({
@@ -195,18 +190,14 @@ export class StripeController {
             organization: organization._id,
           });
 
+        this.logger.debug(JSON.stringify(planPostUpdate));
+
         if (planPostUpdate._id !== organization.plan) {
           this.logger.log('Setting plan field of organization');
           await this.organizationsService.updatePlan(
             organizationSlug,
             planPostUpdate._id,
           );
-        }
-
-        if (plan) {
-          // TODO notification email for plan renewal
-        } else {
-          // TODO notification email for plan creation
         }
       } else {
         this.logger.log('No organization slug found in event, ignoring');
