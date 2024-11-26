@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Body,
   Controller,
-  ForbiddenException,
   Get,
   Logger,
   NotFoundException,
@@ -17,6 +16,8 @@ import { PlanType } from '../organizations/entities/plan-type.entity';
 import { EmailService } from '../services/email/email.service';
 import { OrganizationPlan } from '../organizations/schemas/organization-plan.schema';
 import { OrganizationsService } from '../organizations/organizations.service';
+import { PlanStatus } from '../organizations/entities/plan-status.entity';
+import { randomId } from '../shared/utils/db.utils';
 
 @Controller('webhooks/stripe')
 export class StripeController {
@@ -53,118 +54,105 @@ export class StripeController {
       await this.webhooksService.createStripeEvent(webhookEvent);
 
     // Workflow for handling Stripe events
+    // Relevant events:
+    // Customer - keep customer email sync
+    // Invoice - activate plan, send creation email if relevant
+    // Checkout - attach plan to known organization
 
-    if (event.type === StripeWebhookEventType.CUSTOMER_SUBSCRIPTION_CREATED) {
-      // To create plan on subscription creation
+    // Important: as webhook event reception is not in a guaranteed order
+    // we tried to make the code as idempotent as possible (createOrUpdate)
 
-      const plan = await this.organizationPlansService.findOneBySubscriptionId(
-        event.data.object.id,
+    if (event.type === StripeWebhookEventType.INVOICE_PAYMENT_SUCCEEDED) {
+      // Fetching all relevant data from the event
+      const subscriptionId = event.data.object.subscription;
+      const customerId = event.data.object.customer;
+      const customerEmail = event.data.object.customer_email;
+      const planType = this.validatePlanType(
+        event.data.object.lines.data[0].plan.nickname,
       );
+      const periodStart = event.data.object.lines.data[0].period.start * 1000;
+      const periodEnd = event.data.object.lines.data[0].period.end * 1000;
+      const nbDays = (periodEnd - periodStart) / (1000 * 60 * 60 * 24);
+      const lastInvoice = event.data.object.hosted_invoice_url;
+      const planStatus =
+        event.data.object.status === 'paid'
+          ? PlanStatus.ACTIVE
+          : PlanStatus.INCOMPLETE;
 
-      const planType = this.validatePlanType(event.data.object.plan.nickname);
+      this.logger.log('Invoice payment covers ' + nbDays + ' days');
 
-      if (!plan) {
-        this.logger.log('Creating new organization plan for subscription');
-        await this.organizationPlansService.create(
-          planType,
-          event.data.object.id,
-          event.data.object.customer,
-          event.data.object.current_period_start * 1000,
-          event.data.object.current_period_end * 1000,
-          event.data.object.trial_end ? event.data.object.trial_end * 1000 : 0,
-          true,
-        );
-      } else {
-        this.logger.error('Plan already exists for subscription');
-        throw new ForbiddenException('Plan already exists');
-      }
-    } else if (
-      event.type === StripeWebhookEventType.INVOICE_PAYMENT_SUCCEEDED
-    ) {
-      // To ensure plan is activated when payment is successful
-      let plan: OrganizationPlan =
+      const plan: OrganizationPlan =
         await this.organizationPlansService.findOneBySubscriptionId(
-          event.data.object.subscription,
+          subscriptionId,
         );
 
-      if (!plan) {
-        // 7 sec retry to handle Stripe webhooks random order
-        this.logger.log('Plan not found, retrying in 7 seconds');
-        plan = await new Promise((resolve) =>
-          setTimeout(() => {
-            resolve(
-              this.organizationPlansService.findOneBySubscriptionId(
-                event.data.object.subscription,
-              ),
-            );
-          }, 7000),
-        );
-      }
+      const organizationCreation = !plan || !plan.organization;
 
-      if (plan) {
-        if (event.data.object.status === 'paid') {
-          this.logger.log(
-            'Activating plan for subscription ' + plan.subscriptionId,
-          );
-          await this.organizationPlansService.activate(plan.subscriptionId);
+      const isTrial = !plan && nbDays < 15;
 
-          this.logger.log(
-            'Syncing customer email for customer ' + event.data.object.customer,
-          );
-          await this.organizationPlansService.updateCustomerEmail(
-            event.data.object.customer,
-            event.data.object.customer_email,
-          );
+      if (organizationCreation) {
+        this.logger.log('Creating new organization plan with creation token');
 
-          if (event.data.object.hosted_invoice_url) {
-            // TODO send email with invoice ? or Stripe does it ?
-            this.logger.log('Sending invoice email to customer');
-            await this.organizationPlansService.updateLastInvoice(
-              plan.subscriptionId,
-              event.data.object.hosted_invoice_url,
-            );
-          }
+        const creationToken = randomId();
 
-          const eventPlanType = this.validatePlanType(
-            event.data.object.lines.data[0].plan.nickname,
-          );
-
-          if (plan.type !== eventPlanType) {
-            this.logger.log(
-              'Switching plan type from ' +
-                plan.type +
-                ' to ' +
-                eventPlanType +
-                ' for subscription ' +
-                plan.subscriptionId,
-            );
-            await this.organizationPlansService.updatePlanType(
-              plan.subscriptionId,
-              eventPlanType,
-            );
-          }
-
-          // Send email to user
-          if (!plan.organization) {
-            this.logger.log('Sending organization creation email to customer');
-            await this.emailService.sendOrganizationCreationEmail(
-              plan.customerId,
-              event.data.object.customer_email,
-              plan.organizationCreationToken,
-              plan.type,
-            );
-          }
+        if (isTrial) {
+          await this.organizationPlansService.createOrUpdate({
+            type: planType,
+            subscriptionId: subscriptionId,
+            customerId: customerId,
+            customerEmail: customerEmail,
+            status: planStatus,
+            currentPeriodStart: periodStart,
+            currentPeriodEnd: periodEnd,
+            trialEnd: periodEnd,
+            organizationCreationToken: creationToken,
+            lastInvoice: lastInvoice,
+          });
+        } else {
+          await this.organizationPlansService.createOrUpdate({
+            type: planType,
+            subscriptionId: subscriptionId,
+            customerId: customerId,
+            customerEmail: customerEmail,
+            status: planStatus,
+            currentPeriodStart: periodStart,
+            currentPeriodEnd: periodEnd,
+            trialEnd: 0,
+            organizationCreationToken: creationToken,
+            lastInvoice: lastInvoice,
+          });
         }
+
+        this.logger.log(
+          'Sending organization creation email to customer ' + customerId,
+        );
+        await this.emailService.sendOrganizationCreationEmail(
+          customerEmail,
+          creationToken,
+          planType,
+        );
       } else {
-        this.logger.error('No plan found for subscription');
-        throw new NotFoundException('No plan found for subscription');
-        // Stripe will retry webhook event
+        this.logger.log('Updating existing organization plan');
+        await this.organizationPlansService.createOrUpdate({
+          type: planType,
+          organization: plan.organization,
+          subscriptionId: subscriptionId,
+          customerId: customerId,
+          customerEmail: customerEmail,
+          status: planStatus,
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
+          trialEnd: 0,
+          organizationCreationToken: plan.organizationCreationToken,
+          lastInvoice: lastInvoice,
+        });
+
+        // TODO notification email
       }
     } else if (
       event.type === StripeWebhookEventType.CUSTOMER_CREATED ||
       event.type === StripeWebhookEventType.CUSTOMER_UPDATED
     ) {
-      // To keep customer email up-to-date
       this.logger.log(
         'Updating customer email for customer ' + event.data.object.id,
       );
@@ -182,52 +170,47 @@ export class StripeController {
       const subscriptionId = event.data.object.subscription;
       const organizationSlug = event.data.object.client_reference_id;
 
-      if (!organizationSlug) {
-        this.logger.warn('No client reference id found in event data');
-        throw new NotFoundException(
-          'No client reference id found in event data',
-        );
-      }
+      if (organizationSlug) {
+        const organization =
+          await this.organizationsService.findOne(organizationSlug);
 
-      const organization =
-        await this.organizationsService.findOne(organizationSlug);
-      if (!organization) {
-        this.logger.error(
-          'Organization not found for slug ' + organizationSlug,
-        );
-        throw new NotFoundException(
-          'Organization not found for slug ' + organizationSlug,
-        );
-      }
+        if (!organization) {
+          this.logger.error(
+            'Organization not found for slug ' + organizationSlug,
+          );
+          throw new NotFoundException(
+            'Client reference does not match any organization slug',
+          );
+        }
 
-      let plan: OrganizationPlan =
-        await this.organizationPlansService.findOneBySubscriptionId(
-          subscriptionId,
-        );
-
-      if (!plan) {
-        // wait 7 seconds to handle Stripe webhooks random order
-        await new Promise((resolve) => setTimeout(resolve, 7000));
-        plan =
+        const plan: OrganizationPlan =
           await this.organizationPlansService.findOneBySubscriptionId(
             subscriptionId,
           );
+
+        this.logger.log('Setting organization field of plan');
+        const planPostUpdate =
+          await this.organizationPlansService.createOrUpdate({
+            subscriptionId,
+            organization: organization._id,
+          });
+
+        if (planPostUpdate._id !== organization.plan) {
+          this.logger.log('Setting plan field of organization');
+          await this.organizationsService.updatePlan(
+            organizationSlug,
+            planPostUpdate._id,
+          );
+        }
+
+        if (plan) {
+          // TODO notification email for plan renewal
+        } else {
+          // TODO notification email for plan creation
+        }
+      } else {
+        this.logger.log('No organization slug found in event, ignoring');
       }
-
-      if (!plan) {
-        this.logger.error('No plan found for subscription');
-        throw new NotFoundException('No plan found for subscription');
-      }
-
-      this.logger.log(
-        'Syncing organization plan for organization ' + organizationSlug,
-      );
-      await this.organizationPlansService.updateOrganization(
-        subscriptionId,
-        organizationSlug,
-      );
-
-      await this.organizationsService.updatePlan(organizationSlug, plan._id);
     } else if (
       event.type === StripeWebhookEventType.CUSTOMER_SUBSCRIPTION_UPDATED
     ) {

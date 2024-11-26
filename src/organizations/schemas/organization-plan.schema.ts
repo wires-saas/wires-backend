@@ -73,7 +73,7 @@ export class OrganizationPlan {
   @Prop({ type: String })
   organizationCreationToken: string;
 
-  @Prop({ required: true, enum: PlanType })
+  @Prop({ enum: PlanType, default: PlanType.FREE })
   type: PlanType;
 
   @Prop({ type: String })
@@ -85,7 +85,7 @@ export class OrganizationPlan {
   @Prop({ type: String })
   lastInvoice: string;
 
-  @Prop({ type: String, enum: PlanStatus, required: true })
+  @Prop({ type: String, enum: PlanStatus, default: PlanStatus.INCOMPLETE })
   status: PlanStatus;
 
   @Prop({ type: Number })

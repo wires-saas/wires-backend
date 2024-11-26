@@ -9,6 +9,20 @@ import { PlanType } from './entities/plan-type.entity';
 import { randomId } from '../shared/utils/db.utils';
 import { PlanStatus } from './entities/plan-status.entity';
 
+export interface PlanDto {
+  type?: PlanType;
+  organization?: string;
+  subscriptionId: string;
+  customerId?: string;
+  customerEmail?: string;
+  currentPeriodStart?: number;
+  currentPeriodEnd?: number;
+  status?: PlanStatus;
+  organizationCreationToken?: string;
+  trialEnd?: number;
+  lastInvoice?: string;
+}
+
 @Injectable()
 export class OrganizationPlansService {
   private logger: Logger = new Logger(OrganizationPlansService.name);
@@ -20,7 +34,7 @@ export class OrganizationPlansService {
 
   private createFreePlan(organizationId: string): OrganizationPlan {
     return new OrganizationPlan({
-      _id: 'free',
+      _id: randomId(),
       organization: organizationId,
       type: PlanType.FREE,
     });
@@ -82,32 +96,18 @@ export class OrganizationPlansService {
     return new this.organizationPlanModel(plan).save();
   }
 
-  createOrUpdate(
-    type: PlanType,
-    subscriptionId: string,
-    customerId: string,
-    currentPeriodStart: number,
-    currentPeriodEnd: number,
-    status: PlanStatus,
-  ): Promise<OrganizationPlan> {
+  createOrUpdate(plan: PlanDto): Promise<OrganizationPlan> {
     this.logger.log(
-      `Upsert plan ${type} for customer ${customerId} with subscription ${subscriptionId}`,
+      `Upsert plan ${plan.type} for customer ${plan.customerId} with subscription ${plan.subscriptionId}`,
     );
 
     return this.organizationPlanModel
       .findOneAndUpdate(
         {
-          subscriptionId,
-          customerId,
+          subscriptionId: plan.subscriptionId,
+          customerId: plan.customerId,
         },
-        {
-          type,
-          subscriptionId,
-          customerId,
-          currentPeriodStart,
-          currentPeriodEnd,
-          status,
-        },
+        plan,
         {
           upsert: true,
         },

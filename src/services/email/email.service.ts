@@ -188,15 +188,10 @@ export class EmailService {
   }
 
   async sendOrganizationCreationEmail(
-    customerId: string,
     customerEmail: string,
     token: string,
     plan: PlanType,
   ): Promise<void> {
-    this.logger.log(
-      'Sending organization creation email to customer ' + customerId,
-    );
-
     const organizationCreationInvite = this.i18n.t(
       'email.organizationCreationInvite',
     );
