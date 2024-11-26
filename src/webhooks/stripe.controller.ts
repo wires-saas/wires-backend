@@ -190,8 +190,6 @@ export class StripeController {
             organization: organization._id,
           });
 
-        this.logger.debug(JSON.stringify(planPostUpdate));
-
         if (planPostUpdate._id !== organization.plan) {
           this.logger.log('Setting plan field of organization');
           await this.organizationsService.updatePlan(
@@ -253,6 +251,23 @@ export class StripeController {
             event.data.object.current_period_end * 1000,
           );
         }
+      }
+    } else if (
+      event.type === StripeWebhookEventType.CUSTOMER_SUBSCRIPTION_DELETED
+    ) {
+      const plan = await this.organizationPlansService.findOneBySubscriptionId(
+        event.data.object.id,
+      );
+
+      if (!plan) {
+        this.logger.warn(
+          'No plan found for subscription deletion, ignoring event',
+        );
+      } else {
+        this.logger.log(
+          'Expiring plan for subscription ' + plan.subscriptionId,
+        );
+        await this.organizationPlansService.expire(plan.subscriptionId);
       }
     }
 

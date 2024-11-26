@@ -236,6 +236,19 @@ export class OrganizationPlansService {
       .exec();
   }
 
+  async expire(subscriptionId: string): Promise<OrganizationPlan> {
+    return this.organizationPlanModel
+      .findOneAndUpdate(
+        {
+          subscriptionId,
+        },
+        {
+          status: PlanStatus.EXPIRED,
+        },
+      )
+      .exec();
+  }
+
   // Assigns an organization to a plan
   async updateOrganization(
     subscriptionId: string,

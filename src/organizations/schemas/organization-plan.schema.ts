@@ -12,13 +12,17 @@ export type OrganizationPlanDocument = HydratedDocument<OrganizationPlan>;
   id: false,
   virtuals: {
     permissions: {
-      get(): string[] {
-        return [
-          ...new Set([
-            ...this.customPermissions,
-            ...PlanTypePermissions[this.type],
-          ]),
-        ];
+      get(): unknown[] {
+        if (this.status === PlanStatus.ACTIVE) {
+          return [
+            ...new Set([
+              ...this.customPermissions,
+              ...PlanTypePermissions[this.type],
+            ]),
+          ];
+        } else {
+          return PlanTypePermissions[PlanType.FREE];
+        }
       },
     },
     isTrial: {
