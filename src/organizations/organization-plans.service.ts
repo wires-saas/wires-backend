@@ -8,20 +8,7 @@ import {
 import { PlanType } from './entities/plan-type.entity';
 import { randomId } from '../shared/utils/db.utils';
 import { PlanStatus } from './entities/plan-status.entity';
-
-export interface PlanDto {
-  type?: PlanType;
-  organization?: string;
-  subscriptionId: string;
-  customerId?: string;
-  customerEmail?: string;
-  currentPeriodStart?: number;
-  currentPeriodEnd?: number;
-  status?: PlanStatus;
-  organizationCreationToken?: string;
-  trialEnd?: number;
-  lastInvoice?: string;
-}
+import { PlanDto } from './dto/plan.dto';
 
 @Injectable()
 export class OrganizationPlansService {
@@ -40,59 +27,11 @@ export class OrganizationPlansService {
     });
   }
 
-  private createPlan(
-    type: PlanType,
-    subscriptionId: string,
-    customerId: string,
-    currentPeriodStart: number,
-    currentPeriodEnd: number,
-    trialEnd: number,
-    withOrganizationCreationToken: boolean,
-  ): OrganizationPlan {
-    return new OrganizationPlan({
-      _id: randomId(),
-      type,
-      subscriptionId,
-      customerId,
-      currentPeriodStart,
-      currentPeriodEnd,
-      trialEnd,
-      status: PlanStatus.INCOMPLETE,
-      organizationCreationToken: withOrganizationCreationToken
-        ? randomId()
-        : null,
-    });
-  }
-
   createFreePlanForOrganization(
     organizationId: string,
   ): Promise<OrganizationPlan> {
     this.logger.log(`Creating free plan for organization ${organizationId}`);
     const plan = this.createFreePlan(organizationId);
-    return new this.organizationPlanModel(plan).save();
-  }
-
-  create(
-    type: PlanType,
-    subscriptionId: string,
-    customerId: string,
-    currentPeriodStart: number,
-    currentPeriodEnd: number,
-    trialEnd: number,
-    withCreationToken: boolean,
-  ): Promise<OrganizationPlan> {
-    this.logger.log(
-      `Creating plan ${type} for customer ${customerId} with subscription ${subscriptionId}`,
-    );
-    const plan = this.createPlan(
-      type,
-      subscriptionId,
-      customerId,
-      currentPeriodStart,
-      currentPeriodEnd,
-      trialEnd,
-      withCreationToken,
-    );
     return new this.organizationPlanModel(plan).save();
   }
 
@@ -108,19 +47,6 @@ export class OrganizationPlansService {
         {
           upsert: true,
           new: true,
-        },
-      )
-      .exec();
-  }
-
-  async activate(subscriptionId: string): Promise<OrganizationPlan> {
-    return this.organizationPlanModel
-      .findOneAndUpdate(
-        {
-          subscriptionId,
-        },
-        {
-          status: PlanStatus.ACTIVE,
         },
       )
       .exec();
@@ -183,44 +109,6 @@ export class OrganizationPlansService {
       .exec();
   }
 
-  async updatePlanType(
-    subscriptionId: string,
-    planType: string,
-  ): Promise<unknown> {
-    return this.organizationPlanModel
-      .findOneAndUpdate(
-        {
-          subscriptionId,
-        },
-        {
-          type: planType,
-        },
-        {
-          upsert: false,
-        },
-      )
-      .exec();
-  }
-
-  async updateLastInvoice(
-    subscriptionId: string,
-    invoiceUrl: string,
-  ): Promise<OrganizationPlan> {
-    return this.organizationPlanModel
-      .findOneAndUpdate(
-        {
-          subscriptionId,
-        },
-        {
-          lastInvoice: invoiceUrl,
-        },
-        {
-          upsert: false,
-        },
-      )
-      .exec();
-  }
-
   // Set plan status to cancelled and update current period end
   async cancel(subscriptionId: string, end: number): Promise<OrganizationPlan> {
     return this.organizationPlanModel
@@ -244,23 +132,6 @@ export class OrganizationPlansService {
         },
         {
           status: PlanStatus.EXPIRED,
-        },
-      )
-      .exec();
-  }
-
-  // Assigns an organization to a plan
-  async updateOrganization(
-    subscriptionId: string,
-    organizationId: string,
-  ): Promise<OrganizationPlan> {
-    return this.organizationPlanModel
-      .findOneAndUpdate(
-        {
-          subscriptionId,
-        },
-        {
-          organization: organizationId,
         },
       )
       .exec();
@@ -307,23 +178,6 @@ export class OrganizationPlansService {
       .findOne({
         organizationCreationToken: token,
       })
-      .exec();
-  }
-
-  async findAllByCustomerId(customerId: string): Promise<OrganizationPlan[]> {
-    return this.organizationPlanModel
-      .find({
-        customerId,
-      })
-      .exec();
-  }
-
-  async remove(
-    organizationId: string,
-    planId: string,
-  ): Promise<OrganizationPlan> {
-    return this.organizationPlanModel
-      .findOneAndUpdate({ _id: planId, organization: organizationId })
       .exec();
   }
 }

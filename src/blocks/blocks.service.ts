@@ -113,4 +113,37 @@ export class BlocksService {
       '_id.organization': organizationId,
     });
   }
+
+  createExampleBlocks(
+    organizationId: string,
+    domain: string,
+  ): Promise<Block[]> {
+    this.logger.log('Creating 3 example blocks');
+
+    const exampleBlocks = [
+      new Block({
+        _id: {
+          block: '670576bde8c905763f09657f',
+          organization: organizationId,
+          timestamp: Date.now(),
+        },
+        displayName: 'Header 1',
+        description: 'Simple header with logo and organization title, centered',
+        code:
+          '<header>\n' +
+          '    <img src="' +
+          domain +
+          '/assets/imgs/logo_purple.png" width="80" class="block m-auto"/>\n' +
+          '    <h3 class="text-center">' +
+          organizationId +
+          '</h3>\n' +
+          '</header>',
+        wysiwygEnabled: false,
+        isArchived: false,
+        parameters: [],
+      }),
+    ];
+
+    return this.blockModel.insertMany(exampleBlocks);
+  }
 }

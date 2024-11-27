@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { FoldersService } from './folders.service';
 import { FoldersController } from './folders.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -17,11 +17,12 @@ import { BlocksModule } from '../blocks/blocks.module';
       { name: FolderItemColl, schema: FolderItemSchema },
     ]),
     SecurityModule,
-    UsersModule,
-    OrganizationsModule,
+    forwardRef(() => UsersModule),
+    forwardRef(() => OrganizationsModule),
     BlocksModule,
   ],
   controllers: [FoldersController],
   providers: [FoldersService, FolderItemsService],
+  exports: [FoldersService, FolderItemsService],
 })
 export class FoldersModule {}

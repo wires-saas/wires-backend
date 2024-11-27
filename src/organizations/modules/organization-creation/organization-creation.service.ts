@@ -15,6 +15,11 @@ import { RolesService } from '../../../rbac/roles/roles.service';
 import { UserRolesService } from '../../../users/user-roles/user-roles.service';
 import { RoleName } from '../../../shared/types/authentication.types';
 import { CreateOrganizationWithTokenDto } from '../../../auth/organization-creation/create-organization-with-token.dto';
+import { BlocksService } from '../../../blocks/blocks.service';
+import { ConfigService } from '@nestjs/config';
+import { FoldersService } from '../../../folders/folders.service';
+import { FolderItemsService } from '../../../folders/folder-items.service';
+import { CreateOrganizationDto } from '../../dto/create-organization.dto';
 
 export interface OrganizationCreationInviteTokenCheckResult {
   plan: PlanType;
@@ -30,14 +35,21 @@ export interface OrganizationCreationInviteTokenCheckResult {
 @Injectable()
 export class OrganizationCreationService {
   private logger = new Logger(OrganizationCreationService.name);
+  domain: string;
 
   constructor(
+    private blocksService: BlocksService,
+    private configService: ConfigService,
+    private foldersService: FoldersService,
+    private folderItemsService: FolderItemsService,
     private organizationsService: OrganizationsService,
     private organizationPlansService: OrganizationPlansService,
     private rolesService: RolesService,
     private usersService: UsersService,
     private userRolesService: UserRolesService,
-  ) {}
+  ) {
+    this.domain = this.configService.getOrThrow('appUrl');
+  }
 
   async checkOrganizationCreationInviteToken(
     token: string,
@@ -63,6 +75,64 @@ export class OrganizationCreationService {
       requiresOwnerCreation: !matchingUser,
       owner: organizationPlan.customerEmail,
     };
+  }
+
+  async createOrganizationResources(
+    organizationSlug: string,
+    ownerUserId?: string,
+  ): Promise<void> {
+    if (ownerUserId) {
+      this.logger.log('Setting owner as admin of the organization');
+      await this.userRolesService.createOrUpdate(ownerUserId, [
+        {
+          organization: organizationSlug,
+          role: RoleName.ADMIN,
+        },
+      ]);
+    }
+
+    this.logger.log('Creating basic roles for the organization');
+    await this.rolesService.createBasicRolesForNewOrganization(
+      organizationSlug,
+    );
+
+    this.logger.log('Creating example blocks for the organization');
+    await this.blocksService.createExampleBlocks(organizationSlug, this.domain);
+
+    this.logger.log('Creating default folders for the organization');
+    await this.foldersService.createDefaultFolders(organizationSlug);
+
+    this.logger.log(
+      'Placing example blocks in default folders for the organization',
+    );
+    await this.folderItemsService.placeExampleBlocksInDefaultFolders(
+      organizationSlug,
+    );
+  }
+
+  async createOrganizationAndResources(
+    createOrganizationDto: CreateOrganizationDto,
+  ) {
+    this.logger.log('Creating organization');
+    const organization = await this.organizationsService.create(
+      createOrganizationDto,
+    );
+
+    this.logger.log('Setting free plan for the new organization');
+    const plan =
+      await this.organizationPlansService.createFreePlanForOrganization(
+        organization._id,
+      );
+
+    const organizationWithPlan = await this.organizationsService.updatePlan(
+      organization._id,
+      plan._id,
+    );
+
+    this.logger.log('Creating organization resources');
+    await this.createOrganizationResources(organization._id);
+
+    return organizationWithPlan;
   }
 
   async createOrganizationAndResourcesWithToken(
@@ -96,33 +166,20 @@ export class OrganizationCreationService {
       slug: createOrganizationDto.organizationSlug,
     });
 
-    this.logger.log('Setting owner as admin of the organization');
-    await this.userRolesService.createOrUpdate(ownerUserId, [
-      {
-        organization: organization._id,
-        role: RoleName.ADMIN,
-      },
-    ]);
-
     this.logger.log('Setting plan for the organization');
     await this.organizationPlansService.updateOrganizationWithCreationToken(
       token,
       organization._id,
     ); // This will invalidate token (having an org attached to it)
 
-    this.logger.log('Creating basic roles for the organization');
-    await this.rolesService.createBasicRolesForNewOrganization(
-      organization._id,
-    );
+    await this.createOrganizationResources(organization._id, ownerUserId);
 
     return {
       ownerEmail: ownerUserId,
       organizationName: organization.name,
     };
 
-    // Missing :
-    // - default folders
-    // - default example blocks
-    // - upload default avatar in S3 (+ create folder)
+    // TODO
+    // - upload default avatar in S3 (+ init bucket)
   }
 }

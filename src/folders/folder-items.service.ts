@@ -86,4 +86,23 @@ export class FolderItemsService {
       '_id.item': itemId,
     });
   }
+
+  placeExampleBlocksInDefaultFolders(
+    organizationId: string,
+  ): Promise<FolderItem[]> {
+    // TODO more blocks
+
+    const folderItems = [
+      new FolderItem({
+        _id: {
+          item: '670576bde8c905763f09657f',
+          folder: '670574f237c09a4be6849858',
+          organization: organizationId,
+        },
+        type: FolderItemType.Block,
+      }),
+    ];
+
+    return this.folderItemModel.insertMany(folderItems);
+  }
 }

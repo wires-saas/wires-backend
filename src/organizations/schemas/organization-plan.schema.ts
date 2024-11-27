@@ -64,7 +64,7 @@ export class OrganizationPlan {
   @Prop({ required: true })
   _id: string;
 
-  @Prop({ required: true, type: String, unique: true })
+  @Prop({ type: String, unique: true })
   subscriptionId: string;
 
   @Prop({

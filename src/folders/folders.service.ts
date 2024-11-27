@@ -74,4 +74,20 @@ export class FoldersService {
       '_id.folder': folderId,
     });
   }
+
+  createDefaultFolders(organizationId: string): Promise<Folder[]> {
+    const defaultFolders = [
+      new Folder({
+        _id: {
+          folder: '670574f237c09a4be6849858',
+          organization: organizationId,
+        },
+        displayName: 'Headers',
+        description: '',
+        parentFolder: null,
+      }),
+    ];
+
+    return this.folderModel.insertMany(defaultFolders);
+  }
 }

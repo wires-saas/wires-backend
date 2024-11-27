@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -29,18 +30,18 @@ import { Action } from '../rbac/permissions/entities/action.entity';
 import { SuperAdminGuard } from '../auth/super-admin.guard';
 import { Gpt } from '../ai/schemas/gpt.schema';
 import { ScopedSubject } from '../rbac/casl/casl.utils';
-import { OrganizationPlansService } from './organization-plans.service';
-import { RolesService } from '../rbac/roles/roles.service';
+import { OrganizationCreationService } from './modules/organization-creation/organization-creation.service';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 @Controller('organizations')
 export class OrganizationsController {
+  private logger: Logger = new Logger(OrganizationsController.name);
+
   constructor(
     private readonly organizationsService: OrganizationsService,
-    private readonly organizationPlansService: OrganizationPlansService,
-    private readonly rolesService: RolesService,
+    private readonly organizationCreationService: OrganizationCreationService,
   ) {}
 
   @Post()
@@ -54,21 +55,10 @@ export class OrganizationsController {
   async create(
     @Body() createOrganizationDto: CreateOrganizationDto,
   ): Promise<Organization> {
-    const organization = await this.organizationsService.create(
+    this.logger.log('Super admin creating new organization');
+    return this.organizationCreationService.createOrganizationAndResources(
       createOrganizationDto,
     );
-
-    // Create free plan for organization
-    await this.organizationPlansService.createFreePlanForOrganization(
-      organization._id,
-    );
-
-    // Create basic roles for organization
-    await this.rolesService.createBasicRolesForNewOrganization(
-      organization._id,
-    );
-
-    return organization;
   }
 
   @Get()

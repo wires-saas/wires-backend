@@ -25,6 +25,9 @@ import { OrganizationCreationService } from '../../organizations/modules/organiz
 import { OrganizationPlansService } from '../../organizations/organization-plans.service';
 import { RolesService } from '../../rbac/roles/roles.service';
 import { UserRolesService } from '../../users/user-roles/user-roles.service';
+import { BlocksService } from '../../blocks/blocks.service';
+import { FoldersService } from '../../folders/folders.service';
+import { FolderItemsService } from '../../folders/folder-items.service';
 
 export class TestUtils {
   static createModel() {
@@ -120,6 +123,30 @@ export class TestUtils {
       remove: jest.fn(),
     };
 
+    const mockBlocksService = {
+      create: jest.fn(),
+      findAll: jest.fn(),
+      findOne: jest.fn(),
+      update: jest.fn(),
+      remove: jest.fn(),
+    };
+
+    const mockFoldersService = {
+      create: jest.fn(),
+      findAll: jest.fn(),
+      findOne: jest.fn(),
+      update: jest.fn(),
+      remove: jest.fn(),
+    };
+
+    const mockFolderItemsService = {
+      create: jest.fn(),
+      findAll: jest.fn(),
+      findOne: jest.fn(),
+      update: jest.fn(),
+      remove: jest.fn(),
+    };
+
     return Test.createTestingModule({
       imports: metadata.imports ? [...metadata.imports] : [],
       controllers: metadata.controllers ? [...metadata.controllers] : [],
@@ -159,6 +186,19 @@ export class TestUtils {
         {
           provide: UserRolesService,
           useValue: mockUserRolesService,
+        },
+        {
+          provide: BlocksService,
+          useValue: mockBlocksService,
+        },
+
+        {
+          provide: FoldersService,
+          useValue: mockFoldersService,
+        },
+        {
+          provide: FolderItemsService,
+          useValue: mockFolderItemsService,
         },
 
         ...metadata.providers,

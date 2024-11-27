@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { BlocksService } from './blocks.service';
 import { BlocksController } from './blocks.controller';
 import { SecurityModule } from '../services/security/security.module';
@@ -11,8 +11,8 @@ import { Block, BlockSchema } from './schemas/block.schema';
   imports: [
     MongooseModule.forFeature([{ name: Block.name, schema: BlockSchema }]),
     SecurityModule,
-    UsersModule,
-    OrganizationsModule,
+    forwardRef(() => UsersModule),
+    forwardRef(() => OrganizationsModule),
   ],
   controllers: [BlocksController],
   providers: [BlocksService],
