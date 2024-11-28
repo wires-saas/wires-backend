@@ -42,6 +42,7 @@ export class OrganizationsService {
   async findAll(ability: MongoAbility): Promise<Organization[]> {
     return this.organizationModel
       .find(accessibleBy(ability, 'read').ofType(Organization))
+      .sort({ name: 1 })
       .exec();
   }
 

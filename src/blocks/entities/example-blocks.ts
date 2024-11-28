@@ -1,0 +1,5 @@
+export enum ExampleBlockIds {
+  HEADER_1 = '670576bde8c905763f09657f',
+  FOOTER_1 = '6705784ae8c905763f096616',
+  ARTICLE_1 = '67057c3d3324f03722ba1838',
+}

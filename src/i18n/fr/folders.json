@@ -1,0 +1,14 @@
+{
+  "headers": {
+    "displayName": "En-têtes",
+    "description": ""
+  },
+  "contents": {
+    "displayName": "Contenus",
+    "description": ""
+  },
+  "footers": {
+    "displayName": "Pieds de page",
+    "description": ""
+  }
+}

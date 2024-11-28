@@ -1,0 +1,5 @@
+export enum DefaultFolderIds {
+  HEADERS = '670574f237c09a4be6849858',
+  FOOTERS = '6705784ae8c905763f096616',
+  CONTENTS = '67057c3d3324f03722ba1838',
+}

@@ -28,6 +28,7 @@ import { UserRolesService } from '../../users/user-roles/user-roles.service';
 import { BlocksService } from '../../blocks/blocks.service';
 import { FoldersService } from '../../folders/folders.service';
 import { FolderItemsService } from '../../folders/folder-items.service';
+import { I18nService } from 'nestjs-i18n';
 
 export class TestUtils {
   static createModel() {
@@ -47,6 +48,10 @@ export class TestUtils {
     const mockConfigService = {
       get: jest.fn(),
       getOrThrow: jest.fn(),
+    };
+
+    const mockI18NService = {
+      translate: jest.fn(),
     };
 
     const mockJwtService = {
@@ -199,6 +204,10 @@ export class TestUtils {
         {
           provide: FolderItemsService,
           useValue: mockFolderItemsService,
+        },
+        {
+          provide: I18nService,
+          useValue: mockI18NService,
         },
 
         ...metadata.providers,

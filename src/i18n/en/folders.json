@@ -1,0 +1,14 @@
+{
+  "headers": {
+    "displayName": "Headers",
+    "description": ""
+  },
+  "contents": {
+    "displayName": "Contents",
+    "description": ""
+  },
+  "footers": {
+    "displayName": "Footers",
+    "description": ""
+  }
+}

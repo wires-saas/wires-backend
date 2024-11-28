@@ -4,6 +4,8 @@ import { Model } from 'mongoose';
 import { FolderItem, FolderItemColl } from './schemas/folder-item.schema';
 import { FolderItemDto } from './dto/folder-item.dto';
 import { FolderItemType } from './entities/folder-item-type';
+import { ExampleBlockIds } from '../blocks/entities/example-blocks';
+import { DefaultFolderIds } from './entities/default-folders';
 
 @Injectable()
 export class FolderItemsService {
@@ -90,13 +92,27 @@ export class FolderItemsService {
   placeExampleBlocksInDefaultFolders(
     organizationId: string,
   ): Promise<FolderItem[]> {
-    // TODO more blocks
-
     const folderItems = [
       new FolderItem({
         _id: {
-          item: '670576bde8c905763f09657f',
-          folder: '670574f237c09a4be6849858',
+          item: ExampleBlockIds.HEADER_1,
+          folder: DefaultFolderIds.HEADERS,
+          organization: organizationId,
+        },
+        type: FolderItemType.Block,
+      }),
+      new FolderItem({
+        _id: {
+          item: ExampleBlockIds.ARTICLE_1,
+          folder: DefaultFolderIds.CONTENTS,
+          organization: organizationId,
+        },
+        type: FolderItemType.Block,
+      }),
+      new FolderItem({
+        _id: {
+          item: ExampleBlockIds.FOOTER_1,
+          folder: DefaultFolderIds.FOOTERS,
           organization: organizationId,
         },
         type: FolderItemType.Block,

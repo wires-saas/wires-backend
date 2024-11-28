@@ -1,0 +1,14 @@
+{
+  "header_1": {
+    "displayName": "En-tête 1",
+    "description": "En-tête simple avec logo et titre de l'organisation"
+  },
+  "footer_1": {
+    "displayName": "Pied de page 1",
+    "description": "Pied de page avec lien de désinscription, réseaux sociaux et mentions légales"
+  },
+  "article_1": {
+    "displayName": "Article 1",
+    "description": "Bloc article centré avec image, titre, description et lien"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "header_1": {
+    "displayName": "Header 1",
+    "description": "Simple header with logo and organization title, centered"
+  },
+  "footer_1": {
+    "displayName": "Footer 1",
+    "description": "Basic footer with unsubscription link, social networks and legal mentions"
+  },
+  "article_1": {
+    "displayName": "Article 1",
+    "description": "Article block with image, title, description and article link, centered"
+  }
+}

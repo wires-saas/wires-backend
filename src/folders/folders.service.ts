@@ -5,12 +5,17 @@ import { Folder } from './schemas/folder.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { randomId } from '../shared/utils/db.utils';
+import { DefaultFolderIds } from './entities/default-folders';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class FoldersService {
   private logger: Logger = new Logger(FoldersService.name);
 
-  constructor(@InjectModel(Folder.name) private folderModel: Model<Folder>) {}
+  constructor(
+    @InjectModel(Folder.name) private folderModel: Model<Folder>,
+    private readonly i18n: I18nService,
+  ) {}
 
   create(organizationId: string, createFolderDto: CreateFolderDto) {
     this.logger.log('Creating new folder');
@@ -79,11 +84,29 @@ export class FoldersService {
     const defaultFolders = [
       new Folder({
         _id: {
-          folder: '670574f237c09a4be6849858',
+          folder: DefaultFolderIds.HEADERS,
           organization: organizationId,
         },
-        displayName: 'Headers',
-        description: '',
+        displayName: this.i18n.t('folders.headers.displayName'),
+        description: this.i18n.t('folders.headers.description'),
+        parentFolder: null,
+      }),
+      new Folder({
+        _id: {
+          folder: DefaultFolderIds.CONTENTS,
+          organization: organizationId,
+        },
+        displayName: this.i18n.t('folders.contents.displayName'),
+        description: this.i18n.t('folders.contents.description'),
+        parentFolder: null,
+      }),
+      new Folder({
+        _id: {
+          folder: DefaultFolderIds.FOOTERS,
+          organization: organizationId,
+        },
+        displayName: this.i18n.t('folders.footers.displayName'),
+        description: this.i18n.t('folders.footers.description'),
         parentFolder: null,
       }),
     ];
