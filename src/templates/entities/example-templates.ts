@@ -1,0 +1,4 @@
+export enum ExampleTemplateIds {
+  ACCOUNT_CREATION = '670576bde8c905763f09657f',
+  NEWSLETTER = '6705784ae8c905763f096616',
+}

@@ -1,4 +1,6 @@
 import { Prop, Schema } from '@nestjs/mongoose';
+import { BlockParameterType } from '../entities/block-parameter-types';
+import { BlockParameterSource } from '../entities/block-parameter-sources';
 
 @Schema({
   timestamps: false,
@@ -11,18 +13,9 @@ export class BlockParameter {
 
   @Prop({
     type: String,
-    enum: [
-      'text',
-      'number',
-      'boolean',
-      'article',
-      'content',
-      'date',
-      'enum',
-      'array',
-    ],
+    enum: BlockParameterType,
   })
-  type: string;
+  type: BlockParameterType;
 
   @Prop({ type: String })
   displayName: string;
@@ -32,4 +25,7 @@ export class BlockParameter {
 
   @Prop({ type: Boolean })
   required: boolean;
+
+  @Prop({ type: String, enum: BlockParameterSource })
+  source: BlockParameterSource;
 }
