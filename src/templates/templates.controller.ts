@@ -22,151 +22,172 @@ import {
 } from '@nestjs/swagger';
 import { OrganizationGuard } from '../auth/organization.guard';
 import { AuthenticatedRequest } from '../shared/types/authentication.types';
-import { Block } from './schemas/template.schema';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
 import { ArchiveTemplateDto } from './dto/archive-template.dto';
 import { Action } from '../rbac/permissions/entities/action.entity';
 import { ScopedSubject } from '../rbac/casl/casl.utils';
+import { Template } from './schemas/template.schema';
 
 @ApiTags('Blocks')
 @ApiBearerAuth()
 @UseGuards(OrganizationGuard)
-@Controller('organizations/:organizationId/blocks')
+@Controller('organizations/:organizationId/templates')
 export class TemplatesController {
-  constructor(private readonly blocksService: TemplatesService) {}
+  constructor(private readonly templatesService: TemplatesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create new block' })
+  @ApiOperation({ summary: 'Create new template' })
   @ApiUnauthorizedResponse({
-    description: 'Cannot create block, requires "Create Block" permission',
+    description:
+      'Cannot create template, requires "Create Template" permission',
   })
   create(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
-    @Body() createBlockDto: CreateTemplateDto,
-  ): Promise<Block> {
+    @Body() createTemplateDto: CreateTemplateDto,
+  ): Promise<Template> {
     if (
-      req.ability.cannot(Action.Create, ScopedSubject(Block, organizationId))
+      req.ability.cannot(Action.Create, ScopedSubject(Template, organizationId))
     ) {
-      throw new UnauthorizedException('Cannot create block');
+      throw new UnauthorizedException('Cannot create template');
     }
 
-    return this.blocksService.create(organizationId, createBlockDto);
+    return this.templatesService.create(organizationId, createTemplateDto);
   }
 
-  @Put(':blockId')
-  @ApiOperation({ summary: 'Update existing block' })
+  @Put(':templateId')
+  @ApiOperation({ summary: 'Update existing template' })
   @ApiUnauthorizedResponse({
-    description: 'Cannot update block, requires "Update Block" permission',
+    description:
+      'Cannot update template, requires "Update Template" permission',
   })
-  @ApiNotFoundResponse({ description: 'Block not found' })
+  @ApiNotFoundResponse({ description: 'Template not found' })
   async update(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
-    @Param('blockId') blockId: string,
-    @Body() updateBlockDto: UpdateTemplateDto,
-  ): Promise<Block> {
+    @Param('templateId') templateId: string,
+    @Body() updateTemplateDto: UpdateTemplateDto,
+  ): Promise<Template> {
     if (
-      req.ability.cannot(Action.Update, ScopedSubject(Block, organizationId))
+      req.ability.cannot(Action.Update, ScopedSubject(Template, organizationId))
     ) {
-      throw new UnauthorizedException('Cannot update block');
+      throw new UnauthorizedException('Cannot update template');
     }
 
-    const block = await this.blocksService.findOne(organizationId, blockId);
-    if (!block) {
-      throw new NotFoundException('Block not found');
+    const template = await this.templatesService.findOne(
+      organizationId,
+      templateId,
+    );
+    if (!template) {
+      throw new NotFoundException('Template not found');
     }
 
-    return this.blocksService.update(blockId, organizationId, updateBlockDto);
+    return this.templatesService.update(
+      templateId,
+      organizationId,
+      updateTemplateDto,
+    );
   }
 
-  @Patch(':blockId')
-  @ApiOperation({ summary: 'Archive block' })
+  @Patch(':templateId')
+  @ApiOperation({ summary: 'Archive template' })
   @ApiUnauthorizedResponse({
-    description: 'Cannot archive block, requires "Update Block" permission',
+    description:
+      'Cannot archive template, requires "Update Template" permission',
   })
-  @ApiNotFoundResponse({ description: 'Block not found' })
+  @ApiNotFoundResponse({ description: 'Template not found' })
   async archive(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
-    @Param('blockId') blockId: string,
-    @Body() archiveBlockDto: ArchiveTemplateDto,
-  ): Promise<Block> {
+    @Param('templateId') templateId: string,
+    @Body() archiveTemplateDto: ArchiveTemplateDto,
+  ): Promise<Template> {
     if (
-      req.ability.cannot(Action.Update, ScopedSubject(Block, organizationId))
+      req.ability.cannot(Action.Update, ScopedSubject(Template, organizationId))
     ) {
-      throw new UnauthorizedException('Cannot update block');
+      throw new UnauthorizedException('Cannot update template');
     }
 
-    const block = await this.blocksService.findOne(organizationId, blockId);
-    if (!block) {
-      throw new NotFoundException('Block not found');
-    }
-
-    return this.blocksService.updateIsArchived(
-      blockId,
+    const template = await this.templatesService.findOne(
       organizationId,
-      block,
-      archiveBlockDto.isArchived,
+      templateId,
+    );
+    if (!template) {
+      throw new NotFoundException('Template not found');
+    }
+
+    return this.templatesService.updateIsArchived(
+      templateId,
+      organizationId,
+      template,
+      archiveTemplateDto.isArchived,
     );
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all blocks' })
+  @ApiOperation({ summary: 'Get all templates' })
   @ApiUnauthorizedResponse({
-    description: 'Cannot read blocks, requires "Read Block" permission',
+    description: 'Cannot read templates, requires "Read Template" permission',
   })
   findAll(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
-  ): Promise<Block[]> {
-    if (req.ability.cannot(Action.Read, ScopedSubject(Block, organizationId))) {
-      throw new UnauthorizedException('Cannot read blocks');
+  ): Promise<Template[]> {
+    if (
+      req.ability.cannot(Action.Read, ScopedSubject(Template, organizationId))
+    ) {
+      throw new UnauthorizedException('Cannot read templates');
     }
 
-    return this.blocksService.findAllOfOrganization(organizationId);
+    return this.templatesService.findAllOfOrganization(organizationId);
   }
 
-  @Get(':blockId')
-  @ApiOperation({ summary: 'Get block by ID' })
+  @Get(':templateId')
+  @ApiOperation({ summary: 'Get template by ID' })
   @ApiUnauthorizedResponse({
-    description: 'Cannot read block, requires "Read Block" permission',
+    description: 'Cannot read template, requires "Read Template" permission',
   })
-  @ApiNotFoundResponse({ description: 'Block not found' })
+  @ApiNotFoundResponse({ description: 'Template not found' })
   async findOne(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
-    @Param('blockId') blockId: string,
-  ): Promise<Block> {
-    if (req.ability.cannot(Action.Read, ScopedSubject(Block, organizationId))) {
-      throw new UnauthorizedException('Cannot read block');
+    @Param('templateId') templateId: string,
+  ): Promise<Template> {
+    if (
+      req.ability.cannot(Action.Read, ScopedSubject(Template, organizationId))
+    ) {
+      throw new UnauthorizedException('Cannot read template');
     }
 
-    const block = await this.blocksService.findOne(organizationId, blockId);
-    if (!block) {
-      throw new NotFoundException('Block not found');
+    const template = await this.templatesService.findOne(
+      organizationId,
+      templateId,
+    );
+    if (!template) {
+      throw new NotFoundException('Template not found');
     }
 
-    return block;
+    return template;
   }
 
-  @Delete(':blockId')
-  @ApiOperation({ summary: 'Delete block by ID' })
+  @Delete(':templateId')
+  @ApiOperation({ summary: 'Delete template by ID' })
   @ApiUnauthorizedResponse({
-    description: 'Cannot delete block, requires "Delete Block" permission',
+    description:
+      'Cannot delete template, requires "Delete Template" permission',
   })
   remove(
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
-    @Param('blockId') blockId: string,
+    @Param('templateId') templateId: string,
   ) {
     if (
-      req.ability.cannot(Action.Delete, ScopedSubject(Block, organizationId))
+      req.ability.cannot(Action.Delete, ScopedSubject(Template, organizationId))
     ) {
-      throw new UnauthorizedException('Cannot delete block');
+      throw new UnauthorizedException('Cannot delete template');
     }
 
-    return this.blocksService.remove(organizationId, blockId);
+    return this.templatesService.remove(organizationId, templateId);
   }
 }

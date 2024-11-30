@@ -19,20 +19,19 @@ export class TemplatesService {
   create(
     organizationId: string,
     createBlockDto: CreateTemplateDto,
-  ): Promise<Block> {
-    this.logger.log('Creating new block');
+  ): Promise<Template> {
+    this.logger.log('Creating new template');
 
-    return new this.blockModel(
-      new Block({
+    return new this.templateModel(
+      new Template({
         _id: {
-          block: randomId(),
+          template: randomId(),
           organization: organizationId,
           timestamp: Date.now(),
         },
         displayName: createBlockDto.displayName,
         description: createBlockDto.description,
-        code: createBlockDto.code,
-        wysiwygEnabled: createBlockDto.wysiwygEnabled,
+        blocks: createBlockDto.blocks,
         isArchived: false,
       }),
     ).save();
@@ -41,66 +40,66 @@ export class TemplatesService {
   update(
     blockId: string,
     organizationId: string,
-    updateBlockDto: UpdateTemplateDto,
-  ): Promise<Block> {
-    this.logger.log('Updating existing block');
+    updateTemplateDto: UpdateTemplateDto,
+  ): Promise<Template> {
+    this.logger.log('Updating existing template');
 
-    return new this.blockModel(
-      new Block({
+    return new this.templateModel(
+      new Template({
         _id: {
-          block: blockId,
+          template: blockId,
           organization: organizationId,
           timestamp: Date.now(),
         },
-        displayName: updateBlockDto.displayName,
-        description: updateBlockDto.description,
-        code: updateBlockDto.code,
-        wysiwygEnabled: updateBlockDto.wysiwygEnabled,
-        isArchived: updateBlockDto.isArchived,
+        displayName: updateTemplateDto.displayName,
+        description: updateTemplateDto.description,
+        blocks: updateTemplateDto.blocks,
+        isArchived: updateTemplateDto.isArchived,
       }),
     ).save();
   }
 
   async updateIsArchived(
-    blockId: string,
+    templateId: string,
     organizationId: string,
-    block: Block,
+    template: Template,
     isArchived: boolean,
-  ): Promise<Block> {
-    this.logger.log('Updating block isArchived');
+  ): Promise<Template> {
+    this.logger.log('Updating template isArchived');
 
-    return new this.blockModel(
-      new Block({
+    return new this.templateModel(
+      new Template({
         _id: {
-          block: blockId,
+          template: templateId,
           organization: organizationId,
           timestamp: Date.now(),
         },
-        displayName: block.displayName,
-        description: block.description,
-        code: block.code,
-        wysiwygEnabled: block.wysiwygEnabled,
+        displayName: template.displayName,
+        description: template.description,
+        blocks: template.blocks,
         isArchived: isArchived,
       }),
     ).save();
   }
 
-  async findAllOfOrganization(organizationId: string): Promise<Block[]> {
-    return this.blockModel
+  async findAllOfOrganization(organizationId: string): Promise<Template[]> {
+    return this.templateModel
       .aggregate([
         { $match: { '_id.organization': organizationId } },
         { $sort: { '_id.timestamp': -1 } },
-        { $group: { _id: '$_id.block', doc: { $first: '$$ROOT' } } },
+        { $group: { _id: '$_id.template', doc: { $first: '$$ROOT' } } },
         { $replaceRoot: { newRoot: '$doc' } },
         { $sort: { '_id.timestamp': -1 } },
       ])
-      .then((blocks) => blocks.map((block) => new this.blockModel(block)));
+      .then((templates) =>
+        templates.map((template) => new this.templateModel(template)),
+      );
   }
 
-  findOne(organizationId: string, blockId: string): Promise<Block> {
-    return this.blockModel.findOne(
+  findOne(organizationId: string, templateId: string): Promise<Template> {
+    return this.templateModel.findOne(
       {
-        '_id.block': blockId,
+        '_id.template': templateId,
         '_id.organization': organizationId,
       },
       {},
@@ -110,10 +109,10 @@ export class TemplatesService {
     );
   }
 
-  remove(organizationId: string, blockId: string) {
-    this.logger.log('Deleting block');
-    return this.blockModel.deleteMany({
-      '_id.block': blockId,
+  remove(organizationId: string, templateId: string) {
+    this.logger.log('Deleting template');
+    return this.templateModel.deleteMany({
+      '_id.template': templateId,
       '_id.organization': organizationId,
     });
   }

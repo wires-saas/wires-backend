@@ -21,16 +21,8 @@ export class CreateTemplateDto {
   description: string;
 
   @IsDefined()
-  @IsString()
-  code: string;
-
-  @IsDefined()
   @IsArray()
-  model: any;
-
-  @IsDefined()
-  @IsArray()
-  parameters: any;
+  blocks: any;
 
   @IsOptional()
   @IsBoolean()

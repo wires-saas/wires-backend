@@ -3,7 +3,7 @@ import { TemplatesController } from './templates.controller';
 import { TemplatesService } from './templates.service';
 import { TestUtils } from '../shared/utils/test.utils';
 
-const mockBlocksService = {
+const mockTemplatesService = {
   create: jest.fn(),
   findAll: jest.fn(),
   findAllOfOrganization: jest.fn(),
@@ -21,7 +21,7 @@ describe('TemplatesController', () => {
       providers: [
         {
           provide: TemplatesService,
-          useValue: mockBlocksService,
+          useValue: mockTemplatesService,
         },
       ],
     });

@@ -18,6 +18,7 @@ export const ManagerRolePermissions = [
   'read_gpt',
   'create_gptRequest',
   'manage_block',
+  'update_template',
   'manage_folder',
   'read_contactsProvider',
   'read_emailsProvider',

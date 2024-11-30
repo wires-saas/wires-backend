@@ -11,6 +11,7 @@ export const UserRolePermissions = [
   'read_gpt',
   'create_gptRequest',
   'read_block',
+  'read_template',
   'read_folder',
   'read_contactsProvider',
   'read_emailsProvider',

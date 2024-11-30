@@ -5,11 +5,13 @@ import { SecurityModule } from '../services/security/security.module';
 import { UsersModule } from '../users/users.module';
 import { OrganizationsModule } from '../organizations/organizations.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Block, TemplateSchema } from './schemas/template.schema';
+import { Template, TemplateSchema } from './schemas/template.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Block.name, schema: TemplateSchema }]),
+    MongooseModule.forFeature([
+      { name: Template.name, schema: TemplateSchema },
+    ]),
     SecurityModule,
     forwardRef(() => UsersModule),
     forwardRef(() => OrganizationsModule),

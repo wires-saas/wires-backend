@@ -16,6 +16,7 @@ const noRestrictions: Array<{ action: Action; subject: Subject }> = [
   { action: Action.Manage, subject: Subject.Tag },
 
   { action: Action.Manage, subject: Subject.Block },
+  { action: Action.Manage, subject: Subject.Template },
   { action: Action.Manage, subject: Subject.Folder },
 
   { action: Action.Manage, subject: Subject.Gpt },
@@ -43,6 +44,7 @@ export const PlanTypePermissions: Record<
     { action: Action.Read, subject: Subject.Tag },
 
     { action: Action.Read, subject: Subject.Block },
+    { action: Action.Read, subject: Subject.Template },
     { action: Action.Read, subject: Subject.Folder },
 
     { action: Action.Read, subject: Subject.Gpt },

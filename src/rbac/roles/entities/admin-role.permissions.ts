@@ -15,6 +15,7 @@ export const AdminRolePermissions = [
   'delete_gpt',
   'create_gptRequest',
   'manage_block',
+  'manage_template',
   'manage_folder',
   'manage_contactsProvider',
   'manage_emailsProvider',

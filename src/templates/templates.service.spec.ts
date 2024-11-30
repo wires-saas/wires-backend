@@ -1,10 +1,10 @@
 import { TestingModule } from '@nestjs/testing';
 import { TemplatesService } from './templates.service';
 import { TestUtils } from '../shared/utils/test.utils';
-import { Block } from './schemas/template.schema';
 import { getModelToken } from '@nestjs/mongoose';
+import { Template } from './schemas/template.schema';
 
-const mockBlockModel = {
+const mockTemplateModel = {
   save: jest.fn(),
   find: jest.fn(),
   findById: jest.fn(),
@@ -15,7 +15,7 @@ const mockBlockModel = {
   deleteOne: jest.fn(),
 };
 
-describe('BlocksService', () => {
+describe('TemplatesService', () => {
   let service: TemplatesService;
 
   beforeEach(async () => {
@@ -23,8 +23,8 @@ describe('BlocksService', () => {
       providers: [
         TemplatesService,
         {
-          provide: getModelToken(Block.name),
-          useValue: mockBlockModel,
+          provide: getModelToken(Template.name),
+          useValue: mockTemplateModel,
         },
       ],
     });

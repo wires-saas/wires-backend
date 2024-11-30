@@ -4,6 +4,7 @@ export enum Subject {
   Article = 'article',
   Billing = 'billing',
   Block = 'block',
+  Template = 'template',
   Feed = 'feed',
   FeedRun = 'feedRun',
   Folder = 'folder',

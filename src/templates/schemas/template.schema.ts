@@ -1,6 +1,7 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { TemplateId } from './template-id.schema';
+import { Block } from '../../blocks/schemas/block.schema';
 
 export type TemplateDocument = HydratedDocument<Template>;
 
@@ -53,8 +54,8 @@ export class Template {
   @Prop({ type: String })
   description: string;
 
-  @Prop({ type: String, required: true })
-  code: string;
+  @Prop({ type: [Block], required: true })
+  blocks: Block[];
 
   @Prop({ type: Boolean, required: true })
   isArchived: boolean;
