@@ -20,6 +20,10 @@ export class CreateTemplateDto {
   @IsString()
   description: string;
 
+  @IsNotEmpty()
+  @IsString()
+  icon: string;
+
   @IsDefined()
   @IsArray()
   blocks: any;

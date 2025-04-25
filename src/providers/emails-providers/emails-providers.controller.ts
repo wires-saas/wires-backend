@@ -33,7 +33,9 @@ import { UpdateSendersDto } from './dto/update-senders.dto';
 import { AuthenticatedRequest } from '../../shared/types/authentication.types';
 import { Action } from '../../rbac/permissions/entities/action.entity';
 import { ScopedSubject } from '../../rbac/casl/casl.utils';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Providers')
 @Controller('organizations/:organizationId/providers/emails')
 @UseGuards(OrganizationGuard)
 export class EmailsProvidersController {

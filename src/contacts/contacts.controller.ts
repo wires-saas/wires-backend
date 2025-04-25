@@ -20,7 +20,9 @@ import {
   CacheTTL,
 } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Contacts')
 @Controller('organizations/:organizationId/contacts')
 @UseGuards(OrganizationGuard)
 export class ContactsController {
@@ -30,29 +32,37 @@ export class ContactsController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create new contact' })
   create(@Body() createContactDto: CreateContactDto) {
     return this.contactsService.create(createContactDto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all contacts' })
   @CacheTTL(30000)
   @UseInterceptors(CacheInterceptor)
   async findAll(@Param('organizationId') organizationId: string) {
     return this.contactsService.findAll(organizationId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.contactsService.findOne(+id);
+  @Get(':contactId')
+  @ApiOperation({ summary: 'Get contact by ID' })
+  findOne(@Param('contactId') contactId: string) {
+    return this.contactsService.findOne(+contactId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateContactDto: UpdateContactDto) {
-    return this.contactsService.update(+id, updateContactDto);
+  @Patch(':contactId')
+  @ApiOperation({ summary: 'Update contact' })
+  update(
+    @Param('contactId') contactId: string,
+    @Body() updateContactDto: UpdateContactDto,
+  ) {
+    return this.contactsService.update(+contactId, updateContactDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contactsService.remove(+id);
+  @Delete(':contactId')
+  @ApiOperation({ summary: 'Delete contact' })
+  remove(@Param('contactId') contactId: string) {
+    return this.contactsService.remove(+contactId);
   }
 }

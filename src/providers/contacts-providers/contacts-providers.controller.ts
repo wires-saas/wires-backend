@@ -24,7 +24,9 @@ import {
   CacheTTL,
 } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Providers')
 @Controller('organizations/:organizationId/providers/contacts')
 @UseGuards(OrganizationGuard)
 export class ContactsProvidersController {

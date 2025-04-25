@@ -54,6 +54,9 @@ export class Template {
   @Prop({ type: String })
   description: string;
 
+  @Prop({ type: String })
+  icon: string;
+
   @Prop({ type: [Block], required: true })
   blocks: Block[];
 

@@ -98,6 +98,38 @@ export class BlocksService {
       .then((blocks) => blocks.map((block) => new this.blockModel(block)));
   }
 
+  async findAllOfOrganizationPaginated(
+    organizationId: string,
+    page: number,
+    limit: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    searchFilter?: string,
+  ): Promise<Block[]> {
+    return this.blockModel
+      .aggregate([
+        { $match: { '_id.organization': organizationId } },
+        { $sort: { '_id.timestamp': -1 } },
+        { $group: { _id: '$_id.block', doc: { $first: '$$ROOT' } } },
+        { $replaceRoot: { newRoot: '$doc' } },
+        { $sort: { '_id.timestamp': -1 } },
+        { $skip: page * limit },
+        { $limit: limit },
+      ])
+      .then((blocks) => blocks.map((block) => new this.blockModel(block)));
+  }
+
+  async countAllOfOrganization(organizationId: string): Promise<number> {
+    return this.blockModel
+      .aggregate([
+        { $match: { '_id.organization': organizationId } },
+        { $sort: { '_id.timestamp': -1 } },
+        { $group: { _id: '$_id.block', doc: { $first: '$$ROOT' } } },
+        { $replaceRoot: { newRoot: '$doc' } },
+        { $sort: { '_id.timestamp': -1 } },
+      ])
+      .then((blocks) => blocks.length);
+  }
+
   findOne(organizationId: string, blockId: string): Promise<Block> {
     return this.blockModel.findOne(
       {

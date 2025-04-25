@@ -52,6 +52,38 @@ export class FoldersController {
     private readonly blocksService: BlocksService,
   ) {}
 
+  private async fetchAllFolderItems(
+    organizationId: string,
+    folderId: string,
+    recursive: boolean,
+  ): Promise<FolderItem[]> {
+    // Fetch all items in the current folder
+    let items: FolderItem[] = await this.folderItemsService.findAllOfFolder(
+      organizationId,
+      folderId,
+    );
+
+    if (recursive) {
+      // Fetch all child folders of the current folder
+      const subfolders = await this.foldersService.findAllWithParent(
+        organizationId,
+        folderId,
+      );
+
+      // Recursively fetch items from all subfolders
+      for (const subfolder of subfolders) {
+        const subfolderItems = await this.fetchAllFolderItems(
+          organizationId,
+          subfolder.id,
+          true,
+        );
+        items = items.concat(subfolderItems);
+      }
+    }
+
+    return items;
+  }
+
   @Post()
   @ApiOperation({ summary: 'Create new folder' })
   @ApiUnauthorizedResponse({
@@ -212,13 +244,18 @@ export class FoldersController {
   @Get(':folderId/items')
   @ApiOperation({ summary: 'Get items of folder' })
   @ApiQuery({
-    name: 'type',
+    name: 'itemType',
     enum: FolderItemType,
     required: false,
     description: 'Filter items by type',
   })
   @ApiBadRequestResponse({
     description: 'Item type not supported, check FolderItemType',
+  })
+  @ApiQuery({
+    name: 'recursive',
+    required: false,
+    description: 'Include items of sub-folders recursively',
   })
   @ApiUnauthorizedResponse({
     description:
@@ -228,7 +265,8 @@ export class FoldersController {
     @Request() req: AuthenticatedRequest,
     @Param('organizationId') organizationId: string,
     @Param('folderId') folderId: string,
-    @Query('type') type?: FolderItemType,
+    @Query('recursive') recursive: boolean,
+    @Query('itemType') itemType?: FolderItemType,
   ): Promise<Array<Block>> {
     if (
       req.ability.cannot(Action.Read, ScopedSubject(Folder, organizationId)) ||
@@ -237,15 +275,23 @@ export class FoldersController {
       throw new UnauthorizedException('Cannot get items of folder');
     }
 
-    let items: FolderItem[] = await this.folderItemsService.findAllOfFolder(
-      organizationId,
-      folderId,
-    );
+    let items: FolderItem[];
+    if (recursive) {
+      items = await this.fetchAllFolderItems(organizationId, folderId, true);
+    } else {
+      items = await this.folderItemsService.findAllOfFolder(
+        organizationId,
+        folderId,
+      );
+    }
 
-    if (type) items = items.filter((i) => i.type === type);
+    console.log(items);
+    console.log(itemType);
+
+    if (itemType) items = items.filter((i) => i.type === itemType);
 
     // Maybe we should create an abstract type to handle plurality of items
-    const itemsPopulated: Block[] = [];
+    const itemsPopulated: any[] = [];
 
     for (const item of items) {
       switch (item.type) {

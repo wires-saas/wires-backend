@@ -18,7 +18,10 @@ import { OrganizationPlan } from '../organizations/schemas/organization-plan.sch
 import { OrganizationsService } from '../organizations/organizations.service';
 import { PlanStatus } from '../organizations/entities/plan-status.entity';
 import { randomId } from '../shared/utils/db.utils';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+// TODO add security layer
+@ApiExcludeController()
 @Controller('webhooks/stripe')
 export class StripeController {
   private readonly logger = new Logger(StripeController.name);

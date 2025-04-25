@@ -6,7 +6,7 @@ import * as compression from 'compression';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { config as readEnvFile } from 'dotenv';
-import * as basicAuth from 'express-basic-auth';
+// import * as basicAuth from 'express-basic-auth';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -23,6 +23,8 @@ async function bootstrap() {
   });
 
   // Protecting the documentation with basic auth
+
+  /* Disabling it while used by external services
   if (process.env.API_DOCS_PASSWORD) {
     app.use(
       '/docs*',
@@ -35,6 +37,7 @@ async function bootstrap() {
       }),
     );
   }
+   */
 
   const config = new DocumentBuilder()
     .setTitle('Documentation')

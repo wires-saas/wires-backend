@@ -50,6 +50,16 @@ export class FoldersService {
     });
   }
 
+  findAllWithParent(
+    organizationId: string,
+    parentFolderId: string,
+  ): Promise<Folder[]> {
+    return this.folderModel.find({
+      '_id.organization': organizationId,
+      parentFolder: parentFolderId,
+    });
+  }
+
   update(
     organizationId: string,
     folderId: string,
